@@ -1,6 +1,6 @@
-<h1>Phylogeography of wild coffee tree species in Madagascar</h1>
+<h1 align="center">Phylogeography of wild coffee tree species in Madagascar</h1>
     <!-- badges should work when repo will go public -->
-    <p>
+    <p align="center">
         <img src="https://img.shields.io/github/license/tahiri-lab/aPhyloGeo-CM"></img>
         <img src="https://img.shields.io/github/contributors/tahiri-lab/aphylogeo-cm?color=blue&logo=github"></img>
         <img src="https://img.shields.io/github/last-commit/tahiri-lab/aphylogeo-cm?color=purple&logo=github"></img>
@@ -63,6 +63,7 @@
         <ol>
             <li>ref1</li>
             <li>ref2</li>
+            <li>etc.</li>
         </ol>
 </section>
 <hr>
