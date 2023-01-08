@@ -28,7 +28,6 @@
         <p>Phylogeographic analysis of wild coffee tree species in Madagascar based on climate data
         </p>
 </section>
-<hr>
 
 <!-- Installation -->
 <section>
@@ -42,20 +41,17 @@
         <h3 id="install-mac">macOS</h3>
             <p>macOS etc.</p>
 </section>
-<hr>
 
 <!-- Workflow -->
 <section>
     <h2 id="workflow">Workflow</h2>
         <p>Workflow etc.</p>
 </section>
-<hr>
 <!-- Example -->
 <section>
     <h2 id="example">Wild coffee trees of Madagascar example</h2>
         <p>Project data example etc.</p>
 </section>
-<hr>
 
 <!-- References -->
 <section>
@@ -66,7 +62,6 @@
             <li>etc.</li>
         </ol>
 </section>
-<hr>
 
 <!-- Contact -->
 <section>
