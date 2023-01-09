@@ -17,7 +17,7 @@
                     <li><a href=#install-mac>macOS</a></li>
                 </ul>
             <li><a href=#workflow>Workflow</a></li>
-            <li><a href=#example>Wild coffee trees of Madagascar example</a></li>
+            <li><a href=#example>Wild coffee trees of Madagascar phylogeography</a></li>
             <li><a href=#refs>References</a></li>
             <li><a href=#contact>Contact us</a></li>
         </ol>
@@ -49,7 +49,7 @@
 </section>
 <!-- Example -->
 <section>
-    <h2 id="example">Wild coffee trees of Madagascar example</h2>
+    <h2 id="example">Wild coffee trees of Madagascar phylogeography</h2>
         <p>Project data example etc.</p>
 </section>
 
