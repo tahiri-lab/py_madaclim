@@ -66,6 +66,6 @@
 <!-- Contact -->
 <section>
     <h2 id="contact">Contact Us</h2>
-        <p>For any questions, feedback or to get in touch with us : Nadia.Tahiri@USherbrooke.ca</p>
+        <p>For any questions, feedback or to get in touch with us : <Nadia.Tahiri@USherbrooke.ca></p>
         <p>For our lab's other research projects, visit our <a href="https://tahirinadia.github.io/">website</a></p>
 </section>
