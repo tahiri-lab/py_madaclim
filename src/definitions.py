@@ -2,7 +2,7 @@
 from pathlib import Path
 
 # Main project/root folder
-ROOT_DIR = Path(__file__).parent
+ROOT_DIR = Path(__file__).parents[1]
 
 # Import YAML config variables + params
 import yaml
