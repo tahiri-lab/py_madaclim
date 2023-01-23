@@ -1,4 +1,8 @@
 __pycache__
+
 # testfiles
 tests/test.ipynb
 test.py
+
+#trimmed data
+*_trimmed.fasta
