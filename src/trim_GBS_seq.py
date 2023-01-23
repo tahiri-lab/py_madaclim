@@ -7,6 +7,9 @@ seq_len = config["genetic"]["bp_to_keep"]
 # Get all sequencing file names in data/GBS dir
 gbs_filenames = [file.name for file in SNP_DIR.iterdir() if SNP_DIR.is_dir() and file.is_file()]
 
+# Trimmed concat file
+outfile_concat = SNP_TRIM_DIR.joinpath(config["trimmed_filenames"]["concat_fasta"])
+
 # Save to individual _trimmed tag
 def trim_to_unique(in_dir, out_dir):
     for full_fasta in in_dir.iterdir():
@@ -25,14 +28,15 @@ def trim_to_unique(in_dir, out_dir):
                             out_file.write(nucleotide)
 
 def trim_to_concat(trimmed_dir, outfile):
-    with open(trimmed_dir / outfile, "r"):
+    with open(trimmed_dir / outfile, "w") as out_file:
         for trimmed_fasta in trimmed_dir.iterdir():
             if trimmed_fasta.is_file():
-                print(trimmed_fasta.read())
+                with open(trimmed_fasta, "r") as in_file:
+                    print(in_file.readline())   #TODO CONCAT TO single FILE
 
 if __name__ == "__main__":
     # Get trimmed fasta from full fasta
-    # trim_to_unique(SNP_DIR, SNP_TRIM_DIR)
+    trim_to_unique(SNP_DIR, SNP_TRIM_DIR)
 
     # Get concat fasta from all trimmed fasta
-            
+    # trim_to_concat(SNP_TRIM_DIR, outfile_concat)  #TODO VERIFY OUTPUT WHEN WORKING FUNC            
