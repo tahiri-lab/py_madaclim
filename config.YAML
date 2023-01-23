@@ -1,0 +1,8 @@
+# Filenames of inputs
+input_filenames:
+  concat_fasta: placeholder #TODO give name when implemented
+  GPS_in: species_locations # Without extension
+  
+# User parameters
+#TODO implement modulable params for calculations
+
