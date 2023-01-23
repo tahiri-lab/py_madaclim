@@ -12,5 +12,7 @@ trimmed_filenames:
   concat_fasta: coffea_GBS_trimmed  #No extension
 
 # User parameters
+genetic:
+  bp_to_keep: 1000
 #TODO implement modulable params for calculations
 
