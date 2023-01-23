@@ -1,0 +1,16 @@
+# Filenames of genetic and climate data
+input_filenames:
+  concat_fasta: placeholder #TODO give name when implemented
+  GPS_in: species_locations # No extension
+
+# Trimmed data directories
+trimmed_dirs:
+  GBS_in: GBS_trimmed
+
+# Trimmed filenames
+trimmed_filenames:
+  concat_fasta: coffea_GBS_trimmed  #No extension
+
+# User parameters
+#TODO implement modulable params for calculations
+
