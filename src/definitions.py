@@ -17,6 +17,3 @@ SNP_TRIM_DIR = ROOT_DIR.joinpath("data", config["trimmed_dirs"]["GBS_in"])
 # Module paths
 GENETIC_DIR = ROOT_DIR.joinpath("src", "genetic")
 CLIMATE_DIR = ROOT_DIR.joinpath("src", "climate")
-
-# Data file names
-SNP_TRIM_CONCAT = config["trimmed_filenames"]["concat_fasta"]
