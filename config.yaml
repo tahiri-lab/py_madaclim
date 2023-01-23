@@ -9,7 +9,7 @@ trimmed_dirs:
 
 # Trimmed filenames
 trimmed_filenames:
-  concat_fasta: coffea_GBS_trimmed  #No extension
+  concat_fasta: coffea_GBS_trimmed.fasta  #No extension
 
 # User parameters
 genetic:
