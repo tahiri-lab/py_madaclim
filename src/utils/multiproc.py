@@ -1,4 +1,4 @@
-from multiprocess import Process,Value,Manager
+from multiprocessing import Process,Value,Manager
 import psutil
 import time
 import math
