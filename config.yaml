@@ -14,9 +14,9 @@ genetic:
     main: genetic
     gbs_full : gbs_full
     gbs_trimmed: gbs_trimmed
-files:
-  full_concat_fasta: coffea_gbs.fasta
-  trimmed_concat_fasta: coffea_gbs_trimmed.fasta
+  files:
+    full_concat_fasta: coffea_gbs.fasta
+    trimmed_concat_fasta: coffea_gbs_trimmed.fasta
 
 
 # User parameters
