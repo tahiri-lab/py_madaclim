@@ -1,7 +1,9 @@
 # dir and file names for geoclimatic data
 geoclim:
   dir:
+    main: geoclim
     gps_data: geospatial
+    climate_data: climate
   files:
     raw_table: coff_madag_species_summary.xlsx
     gps_in: species_locations.csv
@@ -9,7 +11,8 @@ geoclim:
 # Dir and file names for genetic data
 genetic:
   dir:
-    gbs_full : gbs
+    main: genetic
+    gbs_full : gbs_full
     gbs_trimmed: gbs_trimmed
 files:
   full_concat_fasta: coffea_gbs.fasta
