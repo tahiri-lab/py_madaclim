@@ -1,4 +1,5 @@
 import pyproj
+import csv
 
 # List of all EPSG reference codes
 EPSG_codes = [int(code) for code in pyproj.get_codes('EPSG', 'CRS')]
@@ -46,8 +47,42 @@ class SpecimenGeoPoint:
         else:
             self._epsg = epsg
 
-    def __str__(self) -> str:
-        return f"SpecimenGeoPoint(id={self._id}, x={self._x}, y={self._y}, epsg={self._epsg})"
+    @classmethod
+    def load_csv(cls, csvfile):
+        """
+        Instantiate SpecimenGeoPoint objects into a list by parsing a csv file containing the attributes.
+        
+        Parameters
+        ----------
+        csvfile : .csv
+            .csv file containing attributes for SpecimenGeoPoint. Header be included and follow this order : 
+            id, epsg, x, y,
+        
+        Returns
+        -------
+        specimens : `list` of `SpecimenGeoPoint`
+            List of all SpecimenGeoPoint instances created from the csv file containing data. 
+        
+        Examples
+        --------
+        >>> from scripts.data_extraction import SpecimenGeoPoint
+        >>> from pathlib import Path
+        >>> csv_file = Path("./data/cities.csv")
+        >>> data = SpecimenGeoPoint.load_csv(csv_file)
+        >>> print(data)
+        >>> #TODO COMPLETE EXAMPLE
+        """
+
+        with open(csvfile, 'r') as file:
+            reader = csv.DictReader(file)
+            # Loop through csv and instantiate objects with proper types
+            specimens = [SpecimenGeoPoint(
+                id = row['id'],
+                epsg = int(row['epsg']),
+                x = float(row['x']),
+                y = float(row['y']))
+                for row in reader]
+        return specimens
 
     @property
     def id(self):
@@ -95,6 +130,11 @@ class SpecimenGeoPoint:
             )
         else:
             self._epsg = value
-
+    
+    def __repr__(self) -> str:
+        """
+        #TODO docstring
+        """
+        return f"SpecimenGeoPoint(id={self._id}, x={self._x}, y={self._y}, epsg={self._epsg})"
    
     
