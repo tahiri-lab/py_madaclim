@@ -10,9 +10,9 @@ with open(ROOT_DIR / "config.yaml", "r") as yf:
     config = yaml.safe_load(yf)
 
 # Data-relevant paths
-SNP_DIR = ROOT_DIR.joinpath("data", "GBS")
+SNP_DIR = ROOT_DIR.joinpath("data", "gbs")
 GPS_DIR = ROOT_DIR.joinpath("data", "geospatial")
-SNP_TRIM_DIR = ROOT_DIR.joinpath("data", config["trimmed_dirs"]["GBS_in"])
+SNP_TRIM_DIR = ROOT_DIR.joinpath("data", config["trimmed_dirs"]["gbs_in"])
 
 # Module paths
 GENETIC_DIR = ROOT_DIR.joinpath("src", "genetic")
