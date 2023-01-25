@@ -25,44 +25,78 @@ trim_len = config["params"]["bp_to_keep"]
 
 # Save to individual _trimmed tag
 def trim_to_unique(in_dir, out_dir):
+    
     # Create out_dir if needed
     if not out_dir.exists():
         out_dir.mkdir()
-    # Sanity check
-    if in_dir.is_dir():
-        # Loop through all files and trim starting from a random sequence
+    
+    # Loop through all files and trim starting from a random sequence
+    if in_dir.is_dir(): #Sanity check    
         for full_fasta in in_dir.iterdir():
             if full_fasta.is_file():
                 with open(full_fasta, "r") as fasta_in:
-                    # Catch the sequence id
-                    id = fasta_in.readline().strip("\n")
-                    seq_full = ("".join([line.rstrip() for line in fasta_in]))
+                    data = fasta_in.read().split("\n")
+                    id = data[0]   # Catch the sequence id
+                    seq_full = ("".join(data[1:]))  # Catch the whole sequence
+                    
                     # Set random start from at least trimming length away from sequence end
                     random.seed(0)
-                    trim_start = random.randint(0, (len(seq_full)-trim_len))
-                    seq_trimmed = seq_full[trim_start:trim_start+trim_len]
-                    print(seq_trimmed)
+                    trim_start = random.randint(0, (len(seq_full) - trim_len))
+                    seq_trimmed = seq_full[trim_start:trim_start + trim_len]
+                    
                     # Save to new dir/file with _trimmed tag
-                    with open(out_dir / (full_fasta.stem + "_trimmed" + full_fasta.suffix), "w") as out_file:
-                        out_file.write(f"{id}")
-                        # Newline every 80th character
-                        for i, nucleotide in enumerate(seq_trimmed):
-                            if i % 80 == 0 :
-                                out_file.write(f"\n")
-                            else :
-                                out_file.write(nucleotide)
-
+                    out_trimmed = out_dir / (full_fasta.stem + "_trimmed" + full_fasta.suffix)
+                    if not out_trimmed.is_file():
+                        with open(out_trimmed, "w") as out_file:
+                            out_file.write(f"{id}\n")
+                            
+                            # Newline every 60th character
+                            for i, nucleotide in enumerate(seq_trimmed):
+                                if i % 60 == 0 and i > 0:
+                                    out_file.write(f"\n{nucleotide}")                                
+                                else :
+                                    out_file.write(nucleotide)
+    #                 else:
+    #                     raise FileExistsError
+    # else:
+    #     raise NotADirectoryError
+    
 # Concatenate to single fasta file
 def trim_to_concat(trimmed_dir, outfile):
-    with open(trimmed_dir / outfile, "w") as out_file:
-        for trimmed_fasta in trimmed_dir.iterdir():
-            if trimmed_fasta.is_file():
-                with open(trimmed_fasta, "r") as in_file:
-                    print(in_file.readline())   #TODO CONCAT TO single FILE
-
+    # Sorted list of all trimmed fasta files to concat
+    trimmed_fastas = [fastafile for fastafile in sorted(trimmed_dir.iterdir())]
+    
+    # Sanity check + Write to trimmed.fasta (output) 
+    if trimmed_dir.is_dir():
+        with open(trimmed_dir / outfile, "w") as concat_file:
+            
+            # Loop through all individual fasta
+            for trimmed_fasta in trimmed_fastas:
+                if trimmed_fasta.is_file(): # Sanity check
+                    with open(trimmed_fasta, "r") as in_file:
+                        data = in_file.read().split("\n")
+                        id = data[0]   # Catch the sequence id and write to file
+                        seq_full = ("".join(data[1:]))  # Catch the whole sequence
+                        
+                        # Write header and skip line
+                        concat_file.write(f"{id}\n")
+                        
+                        # Newline every 60th character                        
+                        for i, nucleotide in enumerate(seq_full):
+                            if i % 60 == 0 and i > 0:
+                                concat_file.write(f"\n{nucleotide}")
+                            else:
+                                concat_file.write(nucleotide)
+                    concat_file.write(f"\n")                
+                else:
+                    raise FileNotFoundError
+    else:
+        raise NotADirectoryError
+                        
 if __name__ == "__main__":
     # Get trimmed fasta from full fasta
     trim_to_unique(SNP_DIR, SNP_TRIM_DIR)
 
     # Get concat fasta from all trimmed fasta
-    # trim_to_concat(SNP_TRIM_DIR, outfile_concat)  #TODO VERIFY OUTPUT WHEN WORKING FUNC
+    trim_to_concat(SNP_TRIM_DIR, outfile_concat)
+    
