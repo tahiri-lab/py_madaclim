@@ -2,6 +2,7 @@ import csv
 import pandas as pd
 import yaml
 from pathlib import Path
+import numpy as np
 
 # Get ROOT_DIR (as in definitions.py)
 ROOT_DIR = Path(__file__).parents[1]
