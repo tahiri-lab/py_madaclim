@@ -56,10 +56,10 @@ def trim_to_unique(in_dir, out_dir):
                                     out_file.write(f"\n{nucleotide}")                                
                                 else :
                                     out_file.write(nucleotide)
-    #                 else:
-    #                     raise FileExistsError
-    # else:
-    #     raise NotADirectoryError
+                    else:
+                        raise FileExistsError
+    else:
+        raise NotADirectoryError
     
 # Concatenate to single fasta file
 def trim_to_concat(trimmed_dir, outfile):
