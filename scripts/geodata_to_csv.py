@@ -1,4 +1,3 @@
-import csv
 import pandas as pd
 import yaml
 from pathlib import Path
@@ -17,7 +16,8 @@ GPS_DATA_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["gps_data"]
 
 # File names
 raw_in = config["geoclim"]["files"]["raw_table"]
-csv_out = config["geoclim"]["files"]["gps_in"]
+gps_all = config["geoclim"]["files"]["gps_all"]
+gbs_filtered = config["geoclim"]["files"]["gbs_filtered"]
 
 if __name__ == "__main__":
     # Read from raw table
@@ -27,13 +27,19 @@ if __name__ == "__main__":
     df = df.dropna(how="all")
     df["GBS sequence"] = df["GBS sequence"].str.rstrip()    #* \n still present after stripping
 
-    # Converting to proper NaN
-    df = df.replace({"-": np.nan})
-    print(df)
-    
-    # Keep df for all species WITH GPS positions + Genome size data
-    df_gps_all = df
+    # Remove \n in Botanical series
+    df = df.replace(r"\n","", regex=True)
 
-    # Clean for missing GBS sequences
+    # Converting to proper NaN and reordering
+    df = df.replace({"-": np.nan})
+    df = df[["Species", "Species code", "Population code", "GBS sequence", "Botanical series", "Genome size (2C. pg)", "Latitude", "Longitude"]]
+    df.head()
+
+    # CSV for all species WITH GPS positions available
+    df_gps_all = df
+    print(df_gps_all)
+    df_gps_all.to_csv(GPS_DATA_DIR / gps_all, index=False)
+
+    # CSV for species with BOTH sequencing + GPS data ONLY
     df_gbs_only = df_gps_all.dropna()
-    print(df_gbs_only)
+    df_gbs_only.to_csv(GPS_DATA_DIR / gbs_filtered, index=False)  
