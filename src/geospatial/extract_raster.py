@@ -13,7 +13,7 @@ class SpecimenGeoPoint:
     list: initialize list to later get all class instances
     """
 
-    def __init__(self, id : str, x, y, epsg=4326):
+    def __init__(self, id, x, y, epsg=4326):
         """
         #TODO docstring for constructor
         """
@@ -135,6 +135,19 @@ class SpecimenGeoPoint:
         """
         #TODO docstring
         """
-        return f"SpecimenGeoPoint(id={self._id}, x={self._x}, y={self._y}, epsg={self._epsg})"
+        return f"{self.__class__.__name__}(id={self._id}, x={self._x}, y={self._y}, epsg={self._epsg})"
+
+    def get_all(self):
+        pass
    
+class MadaclimDataPoint(SpecimenGeoPoint):
+    """
+    #TODO docstring
+    """
+    def __init__(self, id, x, y, epsg=32738):
+        """
+        #TODO docstring
+        """
+        super().__init__(id, x, y, epsg=32738)
+
     
