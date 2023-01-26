@@ -6,7 +6,8 @@ geoclim:
     climate_data: climate
   files:
     raw_table: coff_madag_species_summary.xlsx
-    gps_in: species_locations.csv
+    gps_all: species_locations_all_positions.csv
+    gbs_filtered: species_locations_gbs_only.csv
 
 # Dir and file names for genetic data
 genetic:
