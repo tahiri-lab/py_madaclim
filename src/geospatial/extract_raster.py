@@ -1,5 +1,6 @@
 import pyproj
 import csv
+from pyproj import Transformer, CRS
 
 # List of all EPSG reference codes
 EPSG_codes = [int(code) for code in pyproj.get_codes('EPSG', 'CRS')]
@@ -147,7 +148,28 @@ class SpecimenGeoPoint:
             and not callable(getattr(self, att))    # Filter methods
         ]
         attributes = sorted(attributes)
-        return attributes   
+        return attributes
+
+    def transform_crs(self, epsg_out):
+        """
+        Transforms the coordinates to the desired EPSG coordinate reference system. 
+        Default argument is EPSG:4326 which is the reference for the WorldClim and Chelsa datasets
+        
+        Parameters
+        ----------
+        epsg_out : int
+            EPSG Geodetic Parameter Dataset code of the coordinate reference system (CRS) (default is 4326)
+        #TODO FINISH DOCSTRING
+        """
+        # Check if code valid
+        if epsg_out not in EPSG_codes:
+            raise ValueError("Input EPSG code not valid, see https://pyproj4.github.io/pyproj/stable/api/database.html#pyproj.database.get_codes")
+        
+        # Call transform method from pyproj
+        transformer = Transformer.from_crs(self.epsg, CRS.from_epsg(epsg_out), always_xy=True)
+        x_out, y_out = transformer.transform(self.x, self.y)
+        self.x = x_out
+        self.y = y_out
    
 class MadaclimDataPoint(SpecimenGeoPoint):
     """
