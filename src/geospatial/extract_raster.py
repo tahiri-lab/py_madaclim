@@ -139,6 +139,19 @@ class SpecimenGeoPoint:
 
     def get_all(self):
         pass
+
+    def get_info(self):
+        """
+        #TODO docstring
+        """
+        attributes = [
+            att for att in dir(self)
+            if att != "all"    # Remove all att
+            if not att.startswith("__" and "_")     # Filter special methods and setters 
+            and not callable(getattr(self, att))    # Filter methods
+        ]
+        attributes = sorted(attributes)
+        return attributes   
    
 class MadaclimDataPoint(SpecimenGeoPoint):
     """
@@ -149,5 +162,19 @@ class MadaclimDataPoint(SpecimenGeoPoint):
         #TODO docstring
         """
         super().__init__(id, x, y, epsg=32738)
+
+    def get_climate_attributes(self):
+        """
+        #TODO docstring
+        """
+        attributes = [
+            att for att in dir(self)
+            if att not in ["all", "id", "x", "y", "epsg"]    # Remove all att
+            if not att.startswith("__" and "_")     # Filter special methods and setters 
+            and not callable(getattr(self, att))    # Filter methods
+        ]
+        attributes = sorted(attributes)
+        return attributes 
+        
 
     
