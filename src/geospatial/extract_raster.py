@@ -4,6 +4,8 @@ import csv
 # List of all EPSG reference codes
 EPSG_codes = [int(code) for code in pyproj.get_codes('EPSG', 'CRS')]
 
+#TODO def function to calclulate min/max bounds of a given CRS
+    
 class SpecimenGeoPoint:
     """
     #TODO class docstring
@@ -17,36 +19,77 @@ class SpecimenGeoPoint:
         """
         #TODO docstring for constructor
         """
-        self._id = id
+        self.id = id
+        self.x = x
+        self.y = y
+        self.epsg = epsg
+    
+        # Append each instances of SpecimenGeoPoint class to all list when an instance is born
+        SpecimenGeoPoint.all.append(self)
 
-        # Float check for x,y
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        self._id = value
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        # Do int/valid str conversion
         try:
-            x = float(x)
-            y = float(y)
+            value = float(value)
         except ValueError:
-            pass
-        if not (isinstance(x, float) or isinstance(x, int)):
-            raise TypeError("x coordinate must be float or int")
-        elif not (isinstance(y, float) or isinstance(y, int)):
-            raise TypeError("y coordinate must be float or int")
+            print(f"{value} coordinate must be float or int")
+        # Failed try
+        if not (isinstance(value, float) or isinstance(value, int)):
+            raise TypeError(f"Attribute '{value}' coordinate must be float or int")
         else:
-            self._x = x
-            self._y = y
+            self._x = value
+            #TODO IMPLEMENT COODINATE SAFE CHECKING DEPENDING ON EPSG
+            #https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.set_crs.html
+    
+    @property
+    def y(self):
+        return self._y
 
-        # EPSG code in db as str/int
-        try : 
-            epsg = int(epsg)
+    @y.setter
+    def y(self, value):
+        # Do int/valid str conversion
+        try:
+            value = float(value)
         except ValueError:
-            print("If epsg code entered as str, only [0-9] allowed")
-        # epsg code validation
-        if epsg not in EPSG_codes:
+            print(f"{value} coordinate must be float or int")
+        # Failed try
+        if not (isinstance(value, float) or isinstance(value, int)):
+            raise TypeError(f"Attribute '{value}' coordinate must be float or int")
+        else:
+            self._y = value
+            #TODO IMPLEMENT COODINATE SAFE CHECKING DEPENDING ON EPSG
+            #https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.set_crs.html
+    
+    @property
+    def epsg(self):
+        return self._epsg
+
+    @epsg.setter
+    def epsg(self, value):
+        if not isinstance(value, int):
+            raise TypeError("epsg must be an int")
+
+        elif value not in EPSG_codes:
             raise ValueError(
                 "Input EPSG code not valid, see"
                 "https://pyproj4.github.io/pyproj/stable/api/database.html#pyproj.database.get_codes"
             )
         else:
-            self._epsg = epsg
-
+            self._epsg = value
+    
     @classmethod
     def load_csv(cls, csvfile):
         """
@@ -84,53 +127,6 @@ class SpecimenGeoPoint:
                 for row in reader]
         return specimens
 
-    @property
-    def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, value):
-        self._id = value
-
-    @property
-    def x(self):
-        return self._x
-
-    @x.setter
-    def x(self, value):
-        if not isinstance(float(value), float):
-            raise TypeError("x coordinate must be a float or int")
-        else :
-            self._x = value
-    
-    @property
-    def y(self):
-        return self._y
-
-    @y.setter
-    def y(self, value):
-        if not isinstance(float(value), float):
-            raise TypeError("y coordinate must be a float or int")
-        else :
-            self._y = value
-    
-    @property
-    def epsg(self):
-        return self._epsg
-
-    @epsg.setter
-    def epsg(self, value):
-        if not isinstance(value, int):
-            raise TypeError("epsg must be an int")
-
-        elif value not in EPSG_codes:
-            raise ValueError(
-                "Input EPSG code not valid, see"
-                "https://pyproj4.github.io/pyproj/stable/api/database.html#pyproj.database.get_codes"
-            )
-        else:
-            self._epsg = value
-    
     def __repr__(self) -> str:
         """
         #TODO docstring
