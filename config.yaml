@@ -19,6 +19,10 @@ genetic:
     full_concat_fasta: coffea_gbs.fasta
     trimmed_concat_fasta: coffea_gbs_trimmed.fasta
 
+# URLs for data
+URLs:
+  madaclim_current: http://madaclim.cirad.fr/climate/current.tif
+  
 
 # User parameters
 params:
