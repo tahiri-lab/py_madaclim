@@ -32,6 +32,14 @@ GPS_ALL = config["geoclim"]["files"]["gps_all"]
 GPS_GBS_ONLY = config["geoclim"]["files"]["gbs_filtered"]
 MADACLIM_CURRENT_TIF = config["geoclim"]["files"]["madaclim_current"]
 
+# Madaclim climate variables
+class MadaclimLayers:
+    """
+    #TODO docstring CLASS FOR MADACLIM DB PARAMS
+    """
+    def __init__(self):
+        pass
+    
 if __name__ == "__main__":
     print(f"SNP path : {SNP_DIR}")
     print(MADACLIM_CURRENT_TIF)
