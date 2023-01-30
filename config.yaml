@@ -8,7 +8,7 @@ geoclim:
     raw_table: coff_madag_species_summary.xlsx
     gps_all: species_locations_all_positions.csv
     gbs_filtered: species_locations_gbs_only.csv
-    madaclim_current: current.tif
+    madaclim_current: madaclim_current.tif
 
 # Dir and file names for genetic data
 genetic:
