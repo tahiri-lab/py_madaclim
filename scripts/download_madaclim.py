@@ -11,6 +11,7 @@ with open(ROOT_DIR.joinpath("config.yaml"), "r") as yaml_file:
 
 CLIM_DATA_DIR = ROOT_DIR.joinpath("data") / config["geoclim"]["dir"]["main"] / config["geoclim"]["dir"]["climate_data"]
 current_madaclim_url = config["URLs"]["madaclim_current"]
+current_madaclim_tif = config["geoclim"]["files"]["madaclim_current"]
 
 def runcmd(cmd, verbose = False, *args, **kwargs):
 
@@ -29,7 +30,7 @@ def runcmd(cmd, verbose = False, *args, **kwargs):
 if __name__ == "__main__":
     if not CLIM_DATA_DIR.exists():
         CLIM_DATA_DIR.mkdir()
-        runcmd(f"wget -P {CLIM_DATA_DIR} {current_madaclim_url}", verbose=True)
+        runcmd(f"wget -P {CLIM_DATA_DIR} -O {current_madaclim_tif} {current_madaclim_url}", verbose=True)
 
     else:
-        runcmd(f"wget -P {CLIM_DATA_DIR} {current_madaclim_url}", verbose=True)
+        runcmd(f"wget -P {CLIM_DATA_DIR} -O {current_madaclim_tif} {current_madaclim_url}", verbose=True)
