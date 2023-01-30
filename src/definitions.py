@@ -26,6 +26,13 @@ CLIMATE_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["climate_data"]
 GENETIC_MOD = ROOT_DIR.joinpath("src", "genetic")
 GEOCLIM_MOD = ROOT_DIR.joinpath("src", "climate")
 
+# File names
+METADATA_RAW = config["geoclim"]["files"]["raw_table"]
+GPS_ALL = config["geoclim"]["files"]["gps_all"]
+GPS_GBS_ONLY = config["geoclim"]["files"]["gbs_filtered"]
+MADACLIM_CURRENT_TIF = config["geoclim"]["files"]["madaclim_current"]
+
 if __name__ == "__main__":
     print(f"SNP path : {SNP_DIR}")
+    print(MADACLIM_CURRENT_TIF)
     
