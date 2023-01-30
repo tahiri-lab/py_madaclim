@@ -139,12 +139,6 @@ bio19:
   unit: "kg / m**2 / month"
   filename: "wc2.1_30s_bio_19.tif"
   explanation : "The coldest quarter of the year is determined (to the nearest week), and the total precipitation over this period is calculated."
-elevation:
-  name: "elevation"
-  longname: "Elevation metres"
-  unit: "Meters"
-  filename: "wc2.1_30s_elev.tif"
-  explanation: "Elevation in meters derived from Shuttle Radar Topography Mission (SRTM)"
 
 # User parameters
 params:
