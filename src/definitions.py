@@ -26,4 +26,6 @@ CLIMATE_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["climate_data"]
 GENETIC_MOD = ROOT_DIR.joinpath("src", "genetic")
 GEOCLIM_MOD = ROOT_DIR.joinpath("src", "climate")
 
-print(SNP_DIR)
+if __name__ == "__main__":
+    print(f"SNP path : {SNP_DIR}")
+    
