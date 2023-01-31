@@ -38,15 +38,34 @@ if __name__ == "__main__":
     df["Longitude"] = df["Longitude"].str.replace("NO ", "")
     df["Longitude"] = df["Longitude"].str.replace(",", ".").astype(float)
 
-    # CSV for all species WITH GPS positions available
+    # df for all species WITH GPS positions available
     df_gps_all = df
     df_gps_all = df_gps_all.dropna(subset=["Latitude", "Longitude"])
     print(f"Number of samples for all specimens WITH GPS : {len(df_gps_all)}")
     df_gps_all = df_gps_all.reset_index().drop(columns=["index"])
-    df_gps_all.to_csv(GEOSPATIAL_DIR / GPS_ALL, index=False)
-
-    # CSV for species with BOTH sequencing + GPS data ONLY
+    
+    # df for species with BOTH sequencing + GPS data ONLY
     df_gbs_only = df_gps_all.dropna()
     print(f"Number of samples for specimens with BOTH GPS AND genetic data : {len(df_gbs_only)}")
     df_gbs_only = df_gbs_only.reset_index().drop(columns=["index"])
     df_gbs_only.to_csv(GEOSPATIAL_DIR / GPS_GBS_ONLY, index=False)
+
+    # CSV for both conditions
+    # Check output dir
+    try:
+        GEOSPATIAL_DIR.mkdir(parents=True, exist_ok=False)
+    except FileExistsError:
+        print(f"Folder {GEOSPATIAL_DIR.name} exists, proceeding...")
+    
+    # Delete existing files
+    try:
+        (GEOSPATIAL_DIR / GPS_ALL).unlink(missing_ok=False)
+    except FileNotFoundError:
+        print(f"File {GPS_ALL} not found, first time running the program!")
+    df_gps_all.to_csv(GEOSPATIAL_DIR / GPS_ALL, index=False)    # All samples
+
+    try:
+        (GEOSPATIAL_DIR / GPS_GBS_ONLY).unlink(missing_ok=False)
+    except FileNotFoundError:
+        print(f"File {GPS_GBS_ONLY} not found, first time running the program!")
+    df_gbs_only.to_csv(GEOSPATIAL_DIR / GPS_GBS_ONLY, index=False)    # All samples
