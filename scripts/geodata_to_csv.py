@@ -12,7 +12,7 @@ with open(ROOT_DIR.joinpath("config.yaml"), "r") as yaml_file:
 
 # Geospatial data dirs
 GEOCLIM_DIR = ROOT_DIR.joinpath("data") / config["geoclim"]["dir"]["main"]
-GPS_DATA_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["gps_data"]
+GEOSPATIAL_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["gps_data"]
 
 # File names
 METADATA_RAW = config["geoclim"]["files"]["raw_table"]
@@ -22,7 +22,7 @@ MADACLIM_CURRENT_TIF = config["geoclim"]["files"]["madaclim_current"]
 
 if __name__ == "__main__":
     # Read from raw table
-    df = pd.read_excel(GPS_DATA_DIR / METADATA_RAW, decimal=",")
+    df = pd.read_excel(GEOSPATIAL_DIR / METADATA_RAW, decimal=",")
 
     # Remove blank rows
     df = df.dropna(how="all")
