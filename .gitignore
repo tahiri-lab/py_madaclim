@@ -3,6 +3,3 @@ __pycache__
 # testfiles
 test.py
 scripts/test.ipynb
-
-#trimmed data
-*_trimmed.fasta
