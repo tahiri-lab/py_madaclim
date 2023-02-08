@@ -38,7 +38,7 @@ bioclim_defs:
     explanation: "The mean over the whole year of the weekly diurnal temperature ranges. Each weekly diurnal range is the difference between that week's maximum and minimum temperature. "
   bio3:
     name: "bio3"
-    longname: "Isothermality 2/7"
+    longname: "Isothermality (bio2/bio7)"
     unit: "Celcius"
     explanation: "The mean diurnal range (parameter bio2) divided by the Annual Temperature Range (parameter bio7)."
   bio4:
