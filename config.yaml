@@ -9,6 +9,7 @@ geoclim:
     gps_all: species_locations_all_positions.csv
     gbs_filtered: species_locations_gbs_only.csv
     madaclim_current: madaclim_current.tif
+    madaclim_enviro: madaclim_enviro.tif
 
 # Dir and file names for genetic data
 genetic:
@@ -23,6 +24,7 @@ genetic:
 # URLs for data
 URLs:
   madaclim_current: http://madaclim.cirad.fr/climate/current.tif
+  environment: http://madaclim.cirad.fr/environ/environ.tif
   
 # Bioclimatic variables definition
 bioclim_defs:
