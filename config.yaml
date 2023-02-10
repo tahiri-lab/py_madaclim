@@ -9,6 +9,7 @@ geoclim:
     gps_all: species_locations_all_positions.csv
     gbs_filtered: species_locations_gbs_only.csv
     madaclim_current: madaclim_current.tif
+    madaclim_enviro: madaclim_enviro.tif
 
 # Dir and file names for genetic data
 genetic:
@@ -23,6 +24,7 @@ genetic:
 # URLs for data
 URLs:
   madaclim_current: http://madaclim.cirad.fr/climate/current.tif
+  environment: http://madaclim.cirad.fr/environ/environ.tif
   
 # Bioclimatic variables definition
 bioclim_defs:
@@ -38,7 +40,7 @@ bioclim_defs:
     explanation: "The mean over the whole year of the weekly diurnal temperature ranges. Each weekly diurnal range is the difference between that week's maximum and minimum temperature. "
   bio3:
     name: "bio3"
-    longname: "Isothermality 2/7"
+    longname: "Isothermality (bio2/bio7)"
     unit: "Celcius"
     explanation: "The mean diurnal range (parameter bio2) divided by the Annual Temperature Range (parameter bio7)."
   bio4:
