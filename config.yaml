@@ -65,7 +65,7 @@ bioclim_defs:
     explanation : "The difference between the Max Temperature of Warmest Period and the Min Temperature of Coldest Period."
   bio8:
     name: "bio8"
-    longname: "Temperature Annual Range (5-6)"
+    longname: "Mean Temperature of Wettest Quarter"
     unit: "Celcius"
     explanation : "The wettest quarter of the year is determined (to the nearest week), and the mean temperature of this period is calculated. "
   bio9:
