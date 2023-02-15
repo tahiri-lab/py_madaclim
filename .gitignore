@@ -5,3 +5,6 @@ __pycache__
 # testfiles
 test.py
 scripts/test.ipynb
+
+# editable package dev-mode
+*.egg-info
