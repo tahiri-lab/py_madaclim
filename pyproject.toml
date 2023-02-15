@@ -1,0 +1,12 @@
+[project]
+name = "coffeaPhylogeo"
+version = "0.0.1"
+license = {file = "LICENSE.txt"}
+dynamic = ["readme"]    # Add dependencies "dependencies"
+
+[tool.setuptools.packages.find]
+where =["src"]
+
+[tool.setuptools.dynamic]
+readme = {file = "README.md"}
+# dependencies = {file = ["requirements.txt"]}
