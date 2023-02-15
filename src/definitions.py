@@ -4,9 +4,12 @@ from pathlib import Path
 # Relative main folder path
 ROOT_DIR = Path(__file__).parents[1]
 
+# Package src dir
+SRC_DIR = ROOT_DIR / "src"
+
 # Import YAML config variables + params
 import yaml
-with open(ROOT_DIR / "config.yaml", "r") as yf:
+with open(SRC_DIR / "config.yaml", "r") as yf:
     config = yaml.safe_load(yf)
 
 # Main data dir path
