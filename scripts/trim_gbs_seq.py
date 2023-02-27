@@ -1,6 +1,10 @@
 from pathlib import Path
+import argparse
 import yaml
+
+from Bio.SeqIO.FastaIO import SimpleFastaParser
 from numpy import random
+
 
 def get_default_fasta_dir():
     # Get ROOT path
@@ -27,24 +31,26 @@ def dir_path(in_path):
     else:
         raise argparse.ArgumentTypeError(f"{path} is not a valid path")
     
-def get_seq_lin(fasta):
+def get_seq_len(fasta):
     count_seq = 0
-    len_seq = []
+    length_seq = []
     # Parse single or multi_fasta
     with open(fasta, "r") as f:
         for title, seq in SimpleFastaParser(f):
             count_seq += 1
-            len_seq.append(len(seq))
-    min_seq_len = min(len_seq)
+            length_seq.append(len(seq))
+    min_seq_length = min(length_seq)
     
-    return count_seq, min_seq_len
+    return count_seq, min_seq_length
 
-def get_start_pos(startpos_percent, seq_len):
-    startpos = (startpos_percent / 100) * seq_len
+def get_start_pos(startpos_percent, seq_length):
+    startpos = (startpos_percent / 100) * seq_length
     # Determine length of sequence from startpos to end of sequence
-    start_to_end_len = seq_len - startpos
-    return startpos, start_to_end_len
+    start_to_end_length = seq_length - startpos
+    return startpos, start_to_end_length
     
+def trim_len(fasta, trim_length):
+    pass
 
 
     
