@@ -27,9 +27,17 @@ def dir_path(in_path):
     else:
         raise argparse.ArgumentTypeError(f"{path} is not a valid path")
     
-def get_max_trim_length(startpos):
-    pass
-
+def get_seq_lin(fasta):
+    count_seq = 0
+    len_seq = []
+    # Parse 
+    with open(fasta, "r") as f:
+        for title, seq in SimpleFastaParser(f):
+            count_seq += 1
+            len_seq.append(len(seq))
+    min_seq_len = min(len_seq)
+    return min_seq_len
+    
 config, SNP_DIR, SNP_TRIM_DIR = get_default_fasta_dir()
 
 # Get all sequencing file names in data/GBS dir
