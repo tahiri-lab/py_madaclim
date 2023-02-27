@@ -58,9 +58,49 @@ def trim_len(fasta, trim_length):
     else:
         return trim_length
 
-# def _build_arg_parser:
+def _build_arg_parser():
+    parser = argparse.ArgumentParser(
+    description = 
+    """
+    Takes multiple pre-aligned fasta files (or a single multifasta)
+    and concatenates them in a single file.\n 
+    Then trims all the sequences to a given length from either a random seed or a given start position.
+    """,
+    epilog = "Output can be used for tests in phylogenetic tree building with smaller sets for lower computing time"
+    )
 
+    parser.add_argument(
+        "in_dir",
+        nargs='?',
+        type=dir_path,
+        default=FASTA_DIR,
+        help="Directory name that contains the fasta files"
+    )
 
+    parser.add_argument(
+        "-l", "--length",
+        nargs="?",
+        type=check_trim_length,
+        default=config["params"]["bp_to_keep"],
+        help="Length(%(type)s) of the sequence to trim. [Default = %(default)s]."
+    )
+
+    parser.add_argument(
+        "-sp", "--startpos",
+        nargs="?",
+        metavar="N",
+        type=int,
+        choices=range(0,100),
+        help="Start position from pth percentile of sequence instead of random. Choose from 0 to 99. Depends on chosen trim_length."
+    )
+
+    parser.add_argument(
+        "-c", "--concat",
+        action="store_true",
+        help="Add if input fasta is a single file that is already concatenated"
+    )
+    
+    return parser
     
 config, SNP_DIR, SNP_TRIM_DIR = get_default_fasta_dir()
 
