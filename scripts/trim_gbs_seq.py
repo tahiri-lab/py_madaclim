@@ -2,17 +2,35 @@ from pathlib import Path
 import yaml
 from numpy import random
 
-# Get ROOT path
-ROOT_DIR = Path(__file__).parents[1]
+def get_default_fasta_dir():
+    # Get ROOT path
+    ROOT_DIR = Path(__file__).parents[1]
 
-# Names based on config file
-with open(ROOT_DIR.joinpath("config.yaml"), "r") as yaml_file:
-    config = yaml.safe_load(yaml_file)
+    # Package src dir
+    SRC_DIR = ROOT_DIR / "src"
+
+    # Names based on config file
+    with open(SRC_DIR.joinpath("config.yaml"), "r") as yaml_file:
+        config = yaml.safe_load(yaml_file)
+        
+    # Genetic data dirs
+    GENETIC_DIR = ROOT_DIR.joinpath("data") / config["genetic"]["dir"]["main"]
+    SNP_DIR = GENETIC_DIR / config["genetic"]["dir"]["gbs_full"]
+    SNP_TRIM_DIR = GENETIC_DIR / config["genetic"]["dir"]["gbs_trimmed"]
+
+    return config, SNP_DIR, SNP_TRIM_DIR
+
+def dir_path(in_path):
+    path = Path(in_path)
+    if path.is_dir():
+        return path
+    else:
+        raise argparse.ArgumentTypeError(f"{path} is not a valid path")
     
-# Genetic data dirs
-GENETIC_DIR = ROOT_DIR.joinpath("data") / config["genetic"]["dir"]["main"]
-SNP_DIR = GENETIC_DIR / config["genetic"]["dir"]["gbs_full"]
-SNP_TRIM_DIR = GENETIC_DIR / config["genetic"]["dir"]["gbs_trimmed"]
+def get_max_trim_length(startpos):
+    pass
+
+config, SNP_DIR, SNP_TRIM_DIR = get_default_fasta_dir()
 
 # Get all sequencing file names in data/GBS dir
 gbs_filenames = [file.name for file in SNP_DIR.iterdir() if SNP_DIR.is_dir() and file.is_file()]
