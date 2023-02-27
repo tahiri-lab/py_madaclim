@@ -24,12 +24,21 @@ def get_default_fasta_dir():
 
     return config, SNP_DIR, SNP_TRIM_DIR
 
-def dir_path(in_path):
-    path = Path(in_path)
-    if path.is_dir():
-        return path
+def indir_path(in_path):
+    in_dir = Path(in_path)
+    if in_dir.is_dir():
+        return in_dir
     else:
-        raise argparse.ArgumentTypeError(f"{path} is not a valid path")
+        raise argparse.ArgumentTypeError(f"{in_dir} is not a valid path")
+    
+def outdir_path(out_path):
+    out_dir = Path(out_path)
+    # Create out_dir if needed
+    if not out_dir.exists():
+        out_dir.mkdir()
+        return out_dir
+    else:
+        return out_dir
     
 def get_seq_len(fasta):
     count_seq = 0
@@ -49,16 +58,20 @@ def get_start_pos(startpos_percent, seq_length):
     start_to_end_length = seq_length - startpos
     return startpos, start_to_end_length
     
-def trim_len(fasta, trim_length):
-    num_seq, seq_length = get_seq_len(fasta)
-    if trim_length > seq_length:
-        raise argparse.ArgumentError(
-            f"Length to trim must be smaller than the {num_seq} sequence(s) of length {seq_length}"
-        )
-    else:
-        return trim_length
+#!TODO REMOVE NOT USED
+# def trim_len(fasta, trim_length):
+#     num_seq, seq_length = get_seq_len(fasta)
+#     if trim_length > seq_length:
+#         raise ValueError(
+#             f"Length to trim must be smaller than the {num_seq} sequence(s) of length {seq_length}"
+#         )
+#     else:
+#         return trim_length
 
 def _build_arg_parser():
+    # For defaults
+    config, SNP_DIR, SNP_TRIM_DIR = get_default_fasta_dir()
+
     parser = argparse.ArgumentParser(
     description = 
     """
@@ -72,17 +85,25 @@ def _build_arg_parser():
     parser.add_argument(
         "in_dir",
         nargs='?',
-        type=dir_path,
-        default=FASTA_DIR,
+        type=indir_path,
+        default=SNP_DIR,
         help="Directory name that contains the fasta files"
+    )
+
+    parser.add_argument(
+        "out_dir",
+        nargs="?",
+        type=outdir_path,
+        default=SNP_TRIM_DIR,
+        help="Directory name that contains the trimmed fasta files"
     )
 
     parser.add_argument(
         "-l", "--length",
         nargs="?",
-        type=trim_len,
+        type=int,
         default=config["params"]["bp_to_keep"],
-        help="Length(%(type)s) of the sequence to trim. [Default = %(default)s]."
+        help="Length(int) of the sequence to trim. [Default = %(default)s]."
     )
 
     parser.add_argument(
@@ -91,7 +112,8 @@ def _build_arg_parser():
         metavar="N",
         type=int,
         choices=range(0,100),
-        help="Start position from pth percentile of sequence instead of random. Choose from 0 to 99. Depends on chosen trim_length."
+        default=None,
+        help="Start position from pth percentile of sequence instead of random. Choose from 0 to 99. [Default = %(default)s for random]"
     )
 
     parser.add_argument(
@@ -184,9 +206,11 @@ def trim_to_concat(trimmed_dir, outfile):
         raise NotADirectoryError
                         
 if __name__ == "__main__":
+    args = _build_arg_parser()
+    args.parse_args()
     # Get trimmed fasta from full fasta
-    trim_to_unique(SNP_DIR, SNP_TRIM_DIR)
+    # trim_to_unique(SNP_DIR, SNP_TRIM_DIR)
 
-    # Get concat fasta from all trimmed fasta
-    trim_to_concat(SNP_TRIM_DIR, outfile_concat)
+    # # Get concat fasta from all trimmed fasta
+    # trim_to_concat(SNP_TRIM_DIR, outfile_concat)
     
