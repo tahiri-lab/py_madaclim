@@ -50,7 +50,15 @@ def get_start_pos(startpos_percent, seq_length):
     return startpos, start_to_end_length
     
 def trim_len(fasta, trim_length):
-    pass
+    num_seq, seq_length = get_seq_len(fasta)
+    if trim_length > seq_length:
+        raise argparse.ArgumentError(
+            f"Length to trim must be smaller than the {num_seq} sequence(s) of length {seq_length}"
+        )
+    else:
+        return trim_length
+
+# def _build_arg_parser:
 
 
     
