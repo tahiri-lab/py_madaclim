@@ -30,13 +30,23 @@ def dir_path(in_path):
 def get_seq_lin(fasta):
     count_seq = 0
     len_seq = []
-    # Parse 
+    # Parse single or multi_fasta
     with open(fasta, "r") as f:
         for title, seq in SimpleFastaParser(f):
             count_seq += 1
             len_seq.append(len(seq))
     min_seq_len = min(len_seq)
-    return min_seq_len
+    
+    return count_seq, min_seq_len
+
+def get_start_pos(startpos_percent, seq_len):
+    startpos = (startpos_percent / 100) * seq_len
+    # Determine length of sequence from startpos to end of sequence
+    start_to_end_len = seq_len - startpos
+    return startpos, start_to_end_len
+    
+
+
     
 config, SNP_DIR, SNP_TRIM_DIR = get_default_fasta_dir()
 
