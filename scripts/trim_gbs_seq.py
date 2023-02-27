@@ -123,7 +123,13 @@ def _build_arg_parser():
     )
     
     return parser
-    
+
+def validate_args():
+    parser = _build_arg_parser()
+    args = parser.parse_args()
+
+    #TODO VALIDATION CHECKS FOR ARGS
+
 config, SNP_DIR, SNP_TRIM_DIR = get_default_fasta_dir()
 
 # Get all sequencing file names in data/GBS dir
@@ -206,8 +212,7 @@ def trim_to_concat(trimmed_dir, outfile):
         raise NotADirectoryError
                         
 if __name__ == "__main__":
-    args = _build_arg_parser()
-    args.parse_args()
+    validate_args()
     # Get trimmed fasta from full fasta
     # trim_to_unique(SNP_DIR, SNP_TRIM_DIR)
 
