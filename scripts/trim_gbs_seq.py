@@ -80,7 +80,7 @@ def _build_arg_parser():
     parser.add_argument(
         "-l", "--length",
         nargs="?",
-        type=check_trim_length,
+        type=trim_len,
         default=config["params"]["bp_to_keep"],
         help="Length(%(type)s) of the sequence to trim. [Default = %(default)s]."
     )
