@@ -8,21 +8,21 @@ from numpy import random
 
 def get_default_fasta_dir():
     # Get ROOT path
-    ROOT_DIR = Path(__file__).parents[1]
+    root_dir = Path(__file__).parents[1]
 
     # Package src dir
-    SRC_DIR = ROOT_DIR / "src"
+    src_dir = root_dir / "src"
 
     # Names based on config file
-    with open(SRC_DIR.joinpath("config.yaml"), "r") as yaml_file:
+    with open(src_dir.joinpath("config.yaml"), "r") as yaml_file:
         config = yaml.safe_load(yaml_file)
         
     # Genetic data dirs
-    GENETIC_DIR = ROOT_DIR.joinpath("data") / config["genetic"]["dir"]["main"]
-    SNP_DIR = GENETIC_DIR / config["genetic"]["dir"]["gbs_full"]
-    SNP_TRIM_DIR = GENETIC_DIR / config["genetic"]["dir"]["gbs_trimmed"]
+    genetic_dir = root_dir.joinpath("data") / config["genetic"]["dir"]["main"]
+    snp_dir = genetic_dir / config["genetic"]["dir"]["gbs_full"]
+    snp_trim_dir = genetic_dir / config["genetic"]["dir"]["gbs_trimmed"]
 
-    return config, SNP_DIR, SNP_TRIM_DIR
+    return config, snp_dir, snp_trim_dir
 
 def indir_path(in_path):
     in_dir = Path(in_path)
@@ -68,9 +68,7 @@ def get_start_pos(startpos_percent, seq_length):
 #     else:
 #         return trim_length
 
-def _build_arg_parser():
-    # For defaults
-    config, SNP_DIR, SNP_TRIM_DIR = get_default_fasta_dir()
+def _build_arg_parser(config, snp_dir, snp_trim_dir):
 
     parser = argparse.ArgumentParser(
     description = 
@@ -86,7 +84,7 @@ def _build_arg_parser():
         "in_dir",
         nargs='?',
         type=indir_path,
-        default=SNP_DIR,
+        default=snp_dir,
         help="Directory name that contains the fasta files"
     )
 
@@ -94,7 +92,7 @@ def _build_arg_parser():
         "out_dir",
         nargs="?",
         type=outdir_path,
-        default=SNP_TRIM_DIR,
+        default=snp_trim_dir,
         help="Directory name that contains the trimmed fasta files"
     )
 
