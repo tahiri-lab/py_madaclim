@@ -124,9 +124,26 @@ def _build_arg_parser():
     
     return parser
 
-def validate_args():
+def main():
+    # Construct the arguments object
     parser = _build_arg_parser()
     args = parser.parse_args()
+
+    # Validate logic of args (input based, not data based)
+    # IO check for out since in_dir is built-in argparse
+    # outdir_path(args.out_dir)
+
+    # Positive trim length
+    if args.length <= 0:
+        raise ValueError("Length of trimmed sequence must be greather than 0.")
+    
+    if args.startpos is None:
+        start_random = True    # For random seed in trim function
+    
+    # x = get_default_fasta_dir()
+    
+    # print(args.length)
+
 
     #TODO VALIDATION CHECKS FOR ARGS
 
@@ -212,7 +229,7 @@ def trim_to_concat(trimmed_dir, outfile):
         raise NotADirectoryError
                         
 if __name__ == "__main__":
-    validate_args()
+    main()
     # Get trimmed fasta from full fasta
     # trim_to_unique(SNP_DIR, SNP_TRIM_DIR)
 
