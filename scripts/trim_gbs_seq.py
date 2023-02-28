@@ -40,17 +40,30 @@ def outdir_path(out_path):
     else:
         return out_dir
     
-def get_seq_len(fasta):
-    count_seq = 0
-    length_seq = []
-    # Parse single or multi_fasta
-    with open(fasta, "r") as f:
-        for title, seq in SimpleFastaParser(f):
-            count_seq += 1
-            length_seq.append(len(seq))
-    min_seq_length = min(length_seq)
+def get_seq_len(fasta_files, concat=False): 
+    # Parse multiple single sequence fasta files
+    if not concat:
+        count_seq = len(fasta_files)
+        for fasta_file in fasta_files:
+            length_seq = []
+            with open(fasta_file, "r") as f:
+                for title, seq in SimpleFastaParser(f):
+                    length_seq.append(len(seq))
+            min_seq_length = min(length_seq)
+            
+            return count_seq, min_seq_length
     
-    return count_seq, min_seq_length
+    # Parse a single multifasta
+    else:
+        if len(fasta_files) != 1:
+            raise IOError(f"More than a single multi fasta file in the in_dir : {fasta_files}")
+        with open(fasta_files[0], "r") as f:
+            for title, seq in SimpleFastaParser(f):
+                count_seq += 1
+                length_seq.append(len(seq))
+            min_seq_length = min(length_seq)
+        return count_seq, min_seq_length
+
 
 def get_start_pos(startpos_percent, seq_length):
     startpos = (startpos_percent / 100) * seq_length
@@ -58,6 +71,8 @@ def get_start_pos(startpos_percent, seq_length):
     start_to_end_length = seq_length - startpos
     return startpos, start_to_end_length
     
+# def 
+
 #!TODO REMOVE NOT USED
 # def trim_len(fasta, trim_length):
 #     num_seq, seq_length = get_seq_len(fasta)
@@ -128,20 +143,32 @@ def main():
     parser = _build_arg_parser(config, snp_dir, snp_trim_dir)
     args = parser.parse_args()
 
-    # Validate logic of args (input based, not data based)
-    # IO check for out since in_dir is built-in argparse
-    # outdir_path(args.out_dir)
+    # IO check for out only since in_dir is built-in argparse
+    outdir_path(args.out_dir)
+
+    # All SNP containing files in in_indir
+    snp_filenames = [file for file in args.in_dir.iterdir() if file.is_file() and ".fasta" in file.suffixes]
+
+    print(snp_filenames)
+    
+    # Calculate minimal length of sequence(s)
+    count_seqs, min_seq_length = get_seq_len(snp_filenames, args.concat)
+    print(count_seqs)
+    print(min_seq_length)
+
 
     # Positive trim length
     if args.length <= 0:
         raise ValueError("Length of trimmed sequence must be greather than 0.")
+    # elif args.length < 
     
     if args.startpos is None:
         start_random = True    # For random seed in trim function
+
     
     # x = get_default_fasta_dir()
     
-    # print(args.length)
+    print(args)
 
 
     #TODO VALIDATION CHECKS FOR ARGS
