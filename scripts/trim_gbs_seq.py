@@ -124,7 +124,8 @@ def _build_arg_parser(config, snp_dir, snp_trim_dir):
 
 def main():
     # Construct the arguments object
-    parser = _build_arg_parser()
+    config, snp_dir, snp_trim_dir = get_default_fasta_dir()
+    parser = _build_arg_parser(config, snp_dir, snp_trim_dir)
     args = parser.parse_args()
 
     # Validate logic of args (input based, not data based)
