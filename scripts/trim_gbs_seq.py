@@ -84,10 +84,16 @@ def get_start_pos(startpos_percent, seq_length, trim_length):
     
 def concatenate_fasta_files(in_dir, fasta_files, out_dir, concat_filename):
     if len(fasta_files) < 2:
-        raise ValueError("Must have more at least more than 1 file to perform concatenation")
+        raise ValueError(
+            """
+            Must have more at least more than 1 file to perform concatenation.
+            If trying to perform fasta trimming from a single multi fasta file, use the --concat flag.
+            """
+        )
     else:
         if in_dir.is_dir():    # Second sanity check
-            outdir_path = Path(out_dir)
+            outdir_path = in_dir / out_dir
+            outdir_path.mkdir(exist_ok=True)    # Create nested dir for concat
             concat_file = outdir_path / concat_filename
             concat_file.unlink(missing_ok=True)    # Proper overwrite
             with open(concat_file, "w") as cf:
@@ -109,30 +115,70 @@ def concatenate_fasta_files(in_dir, fasta_files, out_dir, concat_filename):
         else:
             raise NotADirectoryError
 
-def trim_fasta(in_dir, fasta_files, out_dir, from_concat):
+def trim_fasta(in_dir, fasta_files, startpos, trim_length, out_dir, out_concat_trim_fasta, from_concat):
     if not out_dir.exists():    # Second check for outdir
-        out_dir.mkdir()
-    
-    if in_dir.is_dir():    # Third check for indir
-        # From multiple single fasta files
-        if not from_concat:
-            pass
-        # From single multi fasta file
-        else:
-            # with open(out_dir / )
-            pass
-    else:
-        raise NotADirectoryError        
+        out_dir.mkdir() 
+    if not in_dir.is_dir():    # Third check for indir
+        raise NotADirectoryError
+        
+    # From multiple single fasta files
+    if not from_concat:
+        count_seq = 0
+        for fasta_file in fasta_files:    # Read from each then write to file
+            if not fasta_file.is_file():
+                raise FileNotFoundError
+            with open(fasta_file, "r") as fasta_full:
+                for title, seq in SimpleFastaParser(fasta_full):
+                    count_seq += 1
+                    title = f">{title}\n"
+                    trimmed_seq = seq[startpos:startpos + trim_length]
+                # Save to new dir/file with _trimmed tag
+                out_trimmed = out_dir / f"{fasta_file.stem}_trimmed{trim_length}{fasta_file.suffix}"
+                out_trimmed.unlink(missing_ok=True)
+                with open(out_trimmed, "w") as ot:
+                    ot.write(title)
+                    # Newline every 60th
+                    for i, nucleotide in enumerate(trimmed_seq):
+                                    if i % 60 == 0 and i > 0:
+                                        ot.write(f"\n{nucleotide}")
+                                    else:
+                                        ot.write(nucleotide)
+        print(f"Finished trimming all {count_seq} fasta files and saved to {out_dir}/ directoy")
+        
+        # Create a concatenation of trimmed fasta files in seperate dir
+        # out_dir_trimmed_concat = out_dir / "trimmed_concat"
+        # out_dir_trimmed_concat.mkdir(exist_ok=True)
+        trimmed_fastas = [file for file in out_dir.iterdir() if file.is_file() and ".fasta" in file.suffixes]
+        concatenate_fasta_files(in_dir=out_dir, out_dir="trimmed_concat", fasta_files=trimmed_fastas, concat_filename="trimmed_fasta_concat.fasta")
 
-#!TODO REMOVE NOT USED
-# def trim_len(fasta, trim_length):
-#     num_seq, seq_length = get_seq_len(fasta)
-#     if trim_length > seq_length:
-#         raise ValueError(
-#             f"Length to trim must be smaller than the {num_seq} sequence(s) of length {seq_length}"
-#         )
-#     else:
-#         return trim_length
+
+    # From single multi fasta file
+    else:
+        if len(fasta_files) != 1:
+            raise ValueError(f"Directory {in_dir} must contain only a single multifasta file")
+        out_concat_trim_fasta = Path(out_concat_trim_fasta)
+        out_concat_trimmed = out_dir / f"{out_concat_trim_fasta.stem}_trimmed{trim_length}{out_concat_trim_fasta.suffix}"
+        (out_concat_trimmed).unlink(missing_ok=True)    # Proper overwrite
+        with open(out_concat_trimmed, "w") as out_ctf:
+            count_seq = 0
+            for multi_fasta in fasta_files:
+                if not multi_fasta.is_file():
+                    raise FileNotFoundError
+                with open(multi_fasta, "r") as mf:
+                    for title, seq in SimpleFastaParser(mf):
+                        count_seq += 1
+                        title = f">{title}\n"
+                        out_ctf.write(title)
+                        trimmed_seq = seq[startpos:startpos + trim_length]
+                        # Newline every 60th
+                        for i, nucleotide in enumerate(trimmed_seq):
+                                        if i % 60 == 0 and i > 0:
+                                            out_ctf.write(f"\n{nucleotide}")
+                                        else:
+                                            out_ctf.write(nucleotide)
+                        out_ctf.write(f"\n")
+               
+        print(f"Finished trimming all {count_seq} fasta sequences from and to a single file : {out_concat_trimmed}")
 
 def _build_arg_parser(config, snp_dir, snp_trim_dir):
 
@@ -142,6 +188,11 @@ def _build_arg_parser(config, snp_dir, snp_trim_dir):
     Takes multiple pre-aligned fasta files (or a single multifasta)
     and concatenates them in a single file.\n 
     Then trims all the sequences to a given length from either a random seed or a given start position.
+    Also outputs a concatenated multi fasta of all trimmed files.
+
+    Choose the length of the trim with the -l, --length flag.
+    Choose the start position of the trim with -sp, --startpos flag.
+    Use the --concat flag is starting from a single multi-fasta file.
     """,
     epilog = "Output can be used for tests in phylogenetic tree building with smaller sets for lower computing time"
     )
@@ -222,71 +273,27 @@ def main():
         print(f"Trimming {args.length:,} bp from the {args.startpos:,}th% of the full sequence ({start_pos:,} bp) up to {end_pos:,} bp...")
     print(args)
 
-    # Trim files accordingly and create both individual and concatenated files
-
-    if not args.concat:
-        # Create a single concat of full sequences when necessary
+    # Concatenate files for multiple single fasta
+    outfile_concat_name = config["genetic"]["files"]["trimmed_concat_fasta"]
+    if not args.concat:    # Create a single concat of full sequences when necessary
         num_concat = concatenate_fasta_files(
             in_dir=args.in_dir, 
             fasta_files=fasta_filepaths,
-            out_dir=args.in_dir,
+            out_dir="full_concat",
             concat_filename="full_fasta_concat.fasta"
         )
         print(f"Concatenated {num_concat} fasta files to {args.in_dir} directory as full_fasta_concat.fasta")
 
-    else:
-        pass
-
-
-# Trimmed concat file
-# outfile_concat = SNP_TRIM_DIR.joinpath(config["genetic"]["files"]["trimmed_concat_fasta"])
-
-# Number of bases to keep
-# trim_len = config["params"]["bp_to_keep"]
-
-# Save to individual _trimmed tag
-def trim_to_unique(in_dir, out_dir):
-    
-    # Create out_dir if needed
-    if not out_dir.exists():
-        out_dir.mkdir()
-    
-    # Loop through all files and trim starting from a random sequence
-    if in_dir.is_dir(): #Sanity check    
-        for full_fasta in in_dir.iterdir():
-            if full_fasta.is_file():
-                with open(full_fasta, "r") as fasta_in:
-                    data = fasta_in.read().split("\n")
-                    id = data[0]   # Catch the sequence id
-                    seq_full = ("".join(data[1:]))  # Catch the whole sequence
-                    
-                    # Set random start from at least trimming length away from sequence end
-                    random.seed(0)
-                    trim_start = random.randint(0, (len(seq_full) - trim_len))
-                    seq_trimmed = seq_full[trim_start:trim_start + trim_len]
-                    
-                    # Save to new dir/file with _trimmed tag
-                    out_trimmed = out_dir / (full_fasta.stem + "_trimmed" + full_fasta.suffix)
-                    if not out_trimmed.is_file():
-                        with open(out_trimmed, "w") as out_file:
-                            out_file.write(f"{id}\n")
-                            
-                            # Newline every 60th character
-                            for i, nucleotide in enumerate(seq_trimmed):
-                                if i % 60 == 0 and i > 0:
-                                    out_file.write(f"\n{nucleotide}")                                
-                                else :
-                                    out_file.write(nucleotide)
-                    else:
-                        raise FileExistsError
-    else:
-        raise NotADirectoryError
+    # Trim for both one multi fasta or multiple individual fasta files based on --concat
+    trim_fasta(
+            in_dir=args.in_dir,
+            fasta_files=fasta_filepaths,
+            startpos=start_pos,
+            trim_length=args.length,
+            out_dir=args.out_dir,
+            out_concat_trim_fasta=outfile_concat_name,
+            from_concat=args.concat
+    )
                         
 if __name__ == "__main__":
     main()
-    # Get trimmed fasta from full fasta
-    # trim_to_unique(SNP_DIR, SNP_TRIM_DIR)
-
-    # # Get concat fasta from all trimmed fasta
-    # trim_to_concat(SNP_TRIM_DIR, outfile_concat)
-    
