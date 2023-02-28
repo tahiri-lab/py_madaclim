@@ -50,9 +50,7 @@ def get_seq_len(fasta_files, concat=False):
             with open(fasta_file, "r") as f:
                 for title, seq in SimpleFastaParser(f):
                     length_seq.append(len(seq))
-        min_seq_length = min(length_seq)
-        print(length_seq)
-            
+        min_seq_length = min(length_seq)            
         return count_seq, min_seq_length
     
     # Parse a single multifasta
@@ -69,11 +67,20 @@ def get_seq_len(fasta_files, concat=False):
         return count_seq, min_seq_length
 
 
-def get_start_pos(startpos_percent, seq_length):
-    startpos = (startpos_percent / 100) * seq_length
-    # Determine length of sequence from startpos to end of sequence
-    start_to_end_length = seq_length - startpos
-    return startpos, start_to_end_length
+def get_start_pos(startpos_percent, seq_length, trim_length):
+    if startpos_percent is None:
+        startpos = random.randint(0, (seq_length - trim_length))   # Stay inside array boundaries 
+        return startpos
+        
+    else:
+        startpos = (startpos_percent / 100) * seq_length
+        # Determine length of sequence from startpos to end of sequence
+        start_to_end_length = seq_length - startpos
+        if trim_length > start_to_end_length:
+            raise ValueError(
+                f"Starting position of {startpos_percent}% too high for trimmed length of {trim_length}. Lower starting position"
+            )
+        return startpos
     
 # def 
 
@@ -155,26 +162,28 @@ def main():
     
     # Calculate minimal length of sequence(s) and validate single/multi IO
     count_seqs, min_seq_length = get_seq_len(snp_filenames, args.concat)
-    print(count_seqs)
-    print(min_seq_length)
 
-
-
-    # Positive trim length
+    # Trim_length pos-int + vs. seq_len checker
     if args.length <= 0:
         raise ValueError("Length of trimmed sequence must be greather than 0.")
-    # elif args.length < 
+    elif args.length > min_seq_length:
+        raise ValueError(f"Trim length {args.length} bp is greather than smallest fasta length {min_seq_length}")
+    
+    # Get startpos for trimmed sequence
+    start_pos = get_start_pos(
+        startpos_percent=args.startpos, 
+        seq_length=min_seq_length,
+        trim_length=args.length
+    )  
+    end_pos = start_pos + args.length
     
     if args.startpos is None:
-        start_random = True    # For random seed in trim function
-
-    
-    # x = get_default_fasta_dir()
-    
+        print(f"Trimming {args.length} bp starting from a random position of {start_pos} bp up to {end_pos} bp...")
+    else:
+        print(f"Trimming {args.length} bp from the {args.startpos}th% of the full sequence ({start_pos} bp) up to {end_pos} bp...")
     print(args)
 
 
-    #TODO VALIDATION CHECKS FOR ARGS
 
 config, SNP_DIR, SNP_TRIM_DIR = get_default_fasta_dir()
 
