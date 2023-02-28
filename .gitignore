@@ -8,3 +8,6 @@ scripts/test.ipynb
 
 # editable package dev-mode
 *.egg-info
+
+# Trimmed fasta files
+data/genetic/gbs_trimmed/*
