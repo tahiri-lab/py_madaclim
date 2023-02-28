@@ -44,19 +44,23 @@ def get_seq_len(fasta_files, concat=False):
     # Parse multiple single sequence fasta files
     if not concat:
         count_seq = len(fasta_files)
+        
+        length_seq = []
         for fasta_file in fasta_files:
-            length_seq = []
             with open(fasta_file, "r") as f:
                 for title, seq in SimpleFastaParser(f):
                     length_seq.append(len(seq))
-            min_seq_length = min(length_seq)
+        min_seq_length = min(length_seq)
+        print(length_seq)
             
-            return count_seq, min_seq_length
+        return count_seq, min_seq_length
     
     # Parse a single multifasta
     else:
         if len(fasta_files) != 1:
             raise IOError(f"More than a single multi fasta file in the in_dir : {fasta_files}")
+        count_seq = 0
+        length_seq = []
         with open(fasta_files[0], "r") as f:
             for title, seq in SimpleFastaParser(f):
                 count_seq += 1
@@ -148,13 +152,12 @@ def main():
 
     # All SNP containing files in in_indir
     snp_filenames = [file for file in args.in_dir.iterdir() if file.is_file() and ".fasta" in file.suffixes]
-
-    print(snp_filenames)
     
-    # Calculate minimal length of sequence(s)
+    # Calculate minimal length of sequence(s) and validate single/multi IO
     count_seqs, min_seq_length = get_seq_len(snp_filenames, args.concat)
     print(count_seqs)
     print(min_seq_length)
+
 
 
     # Positive trim length
