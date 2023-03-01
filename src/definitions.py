@@ -24,6 +24,7 @@ SNP_TRIM_DIR = GENETIC_DIR / config["genetic"]["dir"]["gbs_trimmed"]
 GEOCLIM_DIR = DATA_DIR / config["geoclim"]["dir"]["main"]
 GEOSPATIAL_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["gps_data"]
 CLIMATE_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["climate_data"]
+ENVIRO_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["environment_data"]
 
 # Modules path
 GENETIC_MOD = ROOT_DIR.joinpath("src", "genetic")
@@ -34,6 +35,7 @@ METADATA_RAW = config["geoclim"]["files"]["raw_table"]
 GPS_ALL = config["geoclim"]["files"]["gps_all"]
 GPS_GBS_ONLY = config["geoclim"]["files"]["gbs_filtered"]
 MADACLIM_CURRENT_TIF = config["geoclim"]["files"]["madaclim_current"]
+ENVIRO_TIF = config["geoclim"]["files"]["madaclim_enviro"]
 
 # Madaclim climate variables
 class MadaclimLayers:
