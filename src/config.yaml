@@ -4,6 +4,7 @@ geoclim:
     main: geoclim
     gps_data: geospatial
     climate_data: climate
+    environment_data: enviro
   files:
     raw_table: coff_madag_species_summary.xlsx
     gps_all: species_locations_all_positions.csv
