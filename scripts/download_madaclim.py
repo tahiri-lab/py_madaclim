@@ -1,11 +1,11 @@
 import yaml
 from pathlib import Path
 import subprocess
+import requests
+import argparse
 
-# Get ROOT_DIR (as in definitions.py)
 ROOT_DIR = Path(__file__).parents[1]
 
-# Get dir paths + filenames for I/O
 with open(ROOT_DIR.joinpath("config.yaml"), "r") as yaml_file:
     config = yaml.safe_load(yaml_file)
 
@@ -30,19 +30,26 @@ def runcmd(cmd, verbose = False, *args, **kwargs):
     if verbose:
         print(std_out.strip(), std_err)
 
+def download_file(url, local_filename):
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return local_filename
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Download Madaclim data.')
+    parser.add_argument('--wget', action='store_true', help='Use wget to download the file')
+    args = parser.parse_args()
+
     if not CLIM_DATA_DIR.exists():
         CLIM_DATA_DIR.mkdir()
-        # Current climate db download
     if not (CLIM_DATA_DIR / current_madaclim_tif).is_file():
-        runcmd(f"wget -P {CLIM_DATA_DIR} -O {current_madaclim_tif} {current_madaclim_url}", verbose=True)
+        if args.wget:
+            runcmd(f"wget -P {CLIM_DATA_DIR} -O {current_madaclim_tif} {current_madaclim_url}", verbose=True)
+        else:
+            download_file(current_madaclim_url, CLIM_DATA_DIR / current_madaclim_tif)
     else:
         print(f"{current_madaclim_tif} file already exists.")
-    
-    # Environment db download
-    #TODO IMPLEMENT PURE PYTHON DOWNLOAD
-    # if not (CLIM_DATA_DIR / enviro_madaclim_tif).is_file():
-    #     runcmd(f"wget -P {CLIM_DATA_DIR} -O {enviro_madaclim_tif} {enviro_madaclim_url}", verbose=True)
-    # else:
-    #     print(f"{enviro_madaclim_tif} file already exists.")
+
