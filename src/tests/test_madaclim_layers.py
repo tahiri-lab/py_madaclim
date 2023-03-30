@@ -1,13 +1,12 @@
 import unittest
-from geospatial.madaclim import MadaClimLayers
+from geoclim.madaclim_layers import MadaclimLayers
 
 class TestMadaclimLayers(unittest.TestCase):
     
-    def test_get_clim_layers(self):
-        madalayers = MadaClimLayers()
-        other = "test"
-        self.assertEqual(madalayers.get_clim_layers(), other)
+    def test_empty_instantiation(self):
+        madalayers = MadaclimLayers()
+        empty_dict = {}
+        self.assertEqual(madalayers.madaclim_layers, empty_dict)
 
 if __name__ == "__main__":
-    mada_test = MadaClimLayers()
-    print(mada_test.get_clim_layers())
+    unittest.main()
