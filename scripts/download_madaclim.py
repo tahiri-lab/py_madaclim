@@ -12,8 +12,8 @@ with open(SRC_DIR / "config.yaml", "r") as yaml_file:
 
 # Madaclim current climate and environmental data
 CLIM_DATA_DIR = ROOT_DIR.joinpath("data") / config["geoclim"]["dir"]["main"] / config["geoclim"]["dir"]["climate_data"]
-current_madaclim_url = config["URLs"]["madaclim_current"]
-enviro_madaclim_url = config["URLs"]["environment"]
+current_madaclim_url = config["urls"]["madaclim_current"]
+enviro_madaclim_url = config["urls"]["environment"]
 current_madaclim_tif = config["geoclim"]["files"]["madaclim_current"]
 enviro_madaclim_tif = config["geoclim"]["files"]["madaclim_enviro"]
 
