@@ -7,6 +7,12 @@ from numpy import random
 
 
 def get_default_fasta_dir():
+    """Returns the default directories for genetic data based on the configuration file.
+    
+    Returns:
+        tuple: A tuple containing the configuration dictionary, SNP directory path and SNP trimmed directory path.
+    """
+
     # Get ROOT path
     root_dir = Path(__file__).parents[1]
 
@@ -25,6 +31,17 @@ def get_default_fasta_dir():
     return config, snp_dir, snp_trim_dir
 
 def indir_path(in_path):
+    """Validates if the given input path is a directory.
+    
+    Args:
+        in_path (str): The input path to be validated.
+    
+    Returns:
+        Path: The input directory path if it is valid.
+    
+    Raises:
+        argparse.ArgumentTypeError: If the input path is not a valid directory.
+    """
     in_dir = Path(in_path)
     if in_dir.is_dir():
         return in_dir
@@ -32,7 +49,16 @@ def indir_path(in_path):
         raise argparse.ArgumentTypeError(f"{in_dir} is not a valid path")
     
 def outdir_path(out_path):
+    """Creates the output directory if it does not exist.
+    
+    Args:
+        out_path (str): The output path to be created if it does not exist.
+    
+    Returns:
+        Path: The output directory path.
+    """
     out_dir = Path(out_path)
+    
     # Create out_dir if needed
     if not out_dir.exists():
         out_dir.mkdir()
@@ -41,6 +67,18 @@ def outdir_path(out_path):
         return out_dir
     
 def get_seq_len(fasta_files, concat=False): 
+    """Returns the number of sequences and the minimum sequence length from a list of fasta files.
+    
+    Args:
+        fasta_files (list): A list of fasta file paths.
+        concat (bool): If True, parses a single multi-fasta file. If False, parses multiple single sequence fasta files.
+    
+    Returns:
+        tuple: A tuple containing the number of sequences and the minimum sequence length.
+    
+    Raises:
+        IOError: If more than one multi-fasta file is provided when concat is True.
+    """
     # Parse multiple single sequence fasta files
     if not concat:
         count_seq = len(fasta_files)
@@ -68,6 +106,19 @@ def get_seq_len(fasta_files, concat=False):
 
 
 def get_start_pos(startpos_percent, seq_length, trim_length):
+    """Returns the starting position of a sequence based on the given percentage or a random position.
+    
+    Args:
+        startpos_percent (float): The percentage of the sequence length to use as the starting position. If None, a random position is used.
+        seq_length (int): The length of the sequence.
+        trim_length (int): The length of the trimmed sequence.
+    
+    Returns:
+        int: The starting position of the sequence.
+    
+    Raises:
+        ValueError: If the starting position is too high for the trimmed length.
+    """
     if startpos_percent is None:
         startpos = random.randint(0, (seq_length - trim_length))   # Stay inside array boundaries 
         return startpos
@@ -83,6 +134,21 @@ def get_start_pos(startpos_percent, seq_length, trim_length):
         return startpos
     
 def concatenate_fasta_files(in_dir, fasta_files, out_dir, concat_filename):
+    """Concatenates multiple fasta files into a single file.
+    
+    Args:
+        in_dir (Path): The input directory containing the fasta files.
+        fasta_files (list): A list of fasta file paths to be concatenated.
+        out_dir (Path): The output directory to save the concatenated file.
+        concat_filename (str): The name of the concatenated file.
+    
+    Returns:
+        int: The number of sequences in the concatenated file.
+    
+    Raises:
+        ValueError: If less than two fasta files are provided.
+        NotADirectoryError: If the input directory is not a valid directory.
+    """
     if len(fasta_files) < 2:
         raise ValueError(
             """
@@ -116,6 +182,23 @@ def concatenate_fasta_files(in_dir, fasta_files, out_dir, concat_filename):
             raise NotADirectoryError
 
 def trim_fasta(in_dir, fasta_files, startpos, trim_length, out_dir, out_concat_trim_fasta, from_concat):
+    """Trims multiple fasta files to a specified length and saves the trimmed sequences to a new directory.
+    
+    Args:
+        in_dir (Path): The input directory containing the fasta files.
+        fasta_files (list): A list of fasta file paths to be trimmed.
+        startpos (int): The starting position of the sequence to be trimmed.
+        trim_length (int): The length of the trimmed sequence.
+        out_dir (Path): The output directory to save the trimmed files.
+        out_concat_trim_fasta (str): The name of the concatenated trimmed file.
+        from_concat (bool): If True, trims a single multi-fasta file. If False, trims multiple single sequence fasta files.
+    
+    Raises:
+        NotADirectoryError: If the input directory is not a valid directory.
+        FileNotFoundError: If a fasta file is not found.
+        ValueError: If more than one multi-fasta file is provided when from_concat is True.
+    """
+    
     if not out_dir.exists():    # Second check for outdir
         out_dir.mkdir() 
     if not in_dir.is_dir():    # Third check for indir
@@ -146,8 +229,6 @@ def trim_fasta(in_dir, fasta_files, startpos, trim_length, out_dir, out_concat_t
         print(f"Finished trimming all {count_seq} fasta files and saved to {out_dir}/ directoy")
         
         # Create a concatenation of trimmed fasta files in seperate dir
-        # out_dir_trimmed_concat = out_dir / "trimmed_concat"
-        # out_dir_trimmed_concat.mkdir(exist_ok=True)
         trimmed_fastas = [file for file in out_dir.iterdir() if file.is_file() and ".fasta" in file.suffixes]
         concatenate_fasta_files(in_dir=out_dir, out_dir="trimmed_concat", fasta_files=trimmed_fastas, concat_filename="trimmed_fasta_concat.fasta")
 
@@ -181,6 +262,16 @@ def trim_fasta(in_dir, fasta_files, startpos, trim_length, out_dir, out_concat_t
         print(f"Finished trimming all {count_seq} fasta sequences from and to a single file : {out_concat_trimmed}")
 
 def _build_arg_parser(config, snp_dir, snp_trim_dir):
+    """Builds and returns an argument parser for the script.
+    
+    Args:
+        config (dict): The configuration dictionary.
+        snp_dir (Path): The SNP directory path.
+        snp_trim_dir (Path): The SNP trimmed directory path.
+    
+    Returns:
+        ArgumentParser: The argument parser for the script.
+    """
 
     parser = argparse.ArgumentParser(
     description = 
@@ -240,6 +331,11 @@ def _build_arg_parser(config, snp_dir, snp_trim_dir):
     return parser
 
 def main():
+    """The main function of the script.
+    
+    Parses the command line arguments and performs the trimming and concatenation of fasta files.
+    """
+    
     # Construct the arguments object
     config, snp_dir, snp_trim_dir = get_default_fasta_dir()
     parser = _build_arg_parser(config, snp_dir, snp_trim_dir)
