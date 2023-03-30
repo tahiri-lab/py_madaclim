@@ -30,7 +30,7 @@ genetic:
     trimmed_concat_fasta: coffea_gbs_trimmed.fasta
 
 # URLs for data
-URLs:
+urls:
   madaclim_current: http://madaclim.cirad.fr/climate/current.tif
   environment: http://madaclim.cirad.fr/environ/environ.tif
   clim_methods: https://madaclim.cirad.fr/methods-climate/
