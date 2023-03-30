@@ -11,6 +11,8 @@ geoclim:
     gbs_filtered: species_locations_gbs_only.csv
     madaclim_current: madaclim_current.tif
     madaclim_enviro: madaclim_enviro.tif
+    clim_metadata: clim_metadata.csv
+    env_metadata: enviro_metadata.csv
 
 # Dir and file names for genetic data
 genetic:
