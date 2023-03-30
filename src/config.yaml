@@ -1,3 +1,8 @@
+# Outside package directories
+outside_dirs:
+  data: data
+  scripts: scripts
+
 # dir and file names for geoclimatic data
 geoclim:
   dir:
