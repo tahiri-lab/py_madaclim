@@ -1,7 +1,10 @@
-import yaml
-import pandas as pd
+import pathlib
 from pathlib import Path
+import json 
+import yaml
 from typing import List
+
+import pandas as pd
 
 # Get main project and package directory
 ROOT_DIR = Path(__file__).parents[1]
@@ -48,6 +51,28 @@ def get_metadata_tables(url: str) -> List[pd.DataFrame]:
     
     return tables
 
+def save_to_json(tables: List[pd.DataFrame], outdir: pathlib.PosixPath, filename: str):
+    """Saves a list of DataFrames to a single JSON file.
+
+    Args:
+        tables (List[pd.DataFrame]): A list of DataFrames to save.
+        outdir (pathlib.PosixPath): The directory to save the JSON file in.
+        filename (str): The name of the JSON file.
+
+    """
+    
+    # Initialize dict
+    data = {}
+
+    # Save each table in dict as json
+    for i, table in enumerate(tables):
+        data[f"table{i}_{table.columns[0]}"] = table.to_json()
+    
+    # Dump to single output file
+    with open(outdir / filename, "w") as jsonfile:
+        json.dump(obj=data, fp=jsonfile, indent=4)
+
 
 if __name__ == "__main__":
-    get_metadata(url_clim)
+    clim_tables = get_metadata_tables(url_clim)
+    save_to_json(clim_tables, CLIMATE_DIR, "test.json")
