@@ -26,6 +26,10 @@ GEOSPATIAL_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["gps_data"]
 CLIMATE_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["climate_data"]
 ENVIRO_DIR = GEOCLIM_DIR / config["geoclim"]["dir"]["environment_data"]
 
+# Madaclim metadata for layers
+CLIM_METADATA = CLIMATE_DIR / config["geoclim"]["files"]["clim_metadata"]
+ENV_METADATA = ENVIRO_DIR / config["geoclim"]["files"]["env_metadata"]
+
 # Modules path
 GENETIC_MOD = ROOT_DIR.joinpath("src", "genetic")
 GEOCLIM_MOD = ROOT_DIR.joinpath("src", "climate")
