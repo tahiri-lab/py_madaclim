@@ -33,6 +33,8 @@ genetic:
 URLs:
   madaclim_current: http://madaclim.cirad.fr/climate/current.tif
   environment: http://madaclim.cirad.fr/environ/environ.tif
+  clim_methods: https://madaclim.cirad.fr/methods-climate/
+  env_methods: https://madaclim.cirad.fr/methods-environ-data/
   
 # Bioclimatic variables definition
 bioclim_defs:
