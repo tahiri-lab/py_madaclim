@@ -72,7 +72,7 @@ def save_to_json(tables: List[pd.DataFrame], outdir: pathlib.PosixPath, filename
 
     # Save each table in dict as json
     for i, table in enumerate(tables):
-        data[f"table_{i}}"] = table.to_json()
+        data[f"table_{i}"] = table.to_json()
     
     # Dump to single output file
     with open(outdir / filename, "w") as jsonfile:
