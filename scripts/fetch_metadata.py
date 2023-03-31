@@ -55,8 +55,6 @@ def get_data_tables(url: str) -> List[pd.DataFrame]:
         raise WebPageError(f"Failed to read HTML tables from {url} \nError output: {e}")
     
     print(f"Retrieved {len(tables)} table(s) from {url}")
-    # print("Displaying first table retrieved...")
-    # print(tables[0])
     
     return tables
 
@@ -74,7 +72,7 @@ def save_to_json(tables: List[pd.DataFrame], outdir: pathlib.PosixPath, filename
 
     # Save each table in dict as json
     for i, table in enumerate(tables):
-        data[f"table{i}_{table.columns[0]}"] = table.to_json()
+        data[f"table_{i}}"] = table.to_json()
     
     # Dump to single output file
     with open(outdir / filename, "w") as jsonfile:
