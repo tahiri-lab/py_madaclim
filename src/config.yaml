@@ -35,6 +35,8 @@ urls:
   environment: http://madaclim.cirad.fr/environ/environ.tif
   clim_methods: https://madaclim.cirad.fr/methods-climate/
   env_methods: https://madaclim.cirad.fr/methods-environ-data/
+  clim_data_format: https://madaclim.cirad.fr/climate-data-format/
+  env_data_format: https://madaclim.cirad.fr/environ-data-format/
   
 # Bioclimatic variables definition
 bioclim_defs:
