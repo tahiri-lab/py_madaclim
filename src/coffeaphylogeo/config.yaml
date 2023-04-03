@@ -27,6 +27,8 @@ genetic:
     main: genetic
     gbs_full : gbs_full
     gbs_trimmed: gbs_trimmed
+    gbs_full_concat: full_concat
+    gbs_trimmed_concat: trimmed_concat
   files:
     full_concat_fasta: coffea_gbs.fasta
     trimmed_concat_fasta: coffea_gbs_trimmed.fasta
