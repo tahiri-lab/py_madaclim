@@ -108,6 +108,53 @@ class Definitions:
             return nested_dicts[most_upstream_key]
         else:
                 return nested_dicts[most_upstream_key][single_key_value]
+        
+    def get_geoclim_path(self, subdirectory: pathlib.Path) -> pathlib.Path:
+        """
+        Get the path to the desired subdirectory within the geoclim datasets
+
+        Args:
+            subdirectory (pathlib.Path): The name of the subdirectory to retrieve.
+
+        Raises:
+            ValueError: If the specified subdirectory is not a valid geoclim subdirectory.
+
+        Returns:
+            pathlib.Path: Path to the specified geoclim subdirectory.
+        """
+        # Validate directory walk for geoclim-related data
+        possible_subdirectories = [key for key in self.geoclim_dirs.keys() if key != "main"]
+        if subdirectory not in possible_subdirectories:
+            raise ValueError(f"Datatype directory must be one of {possible_subdirectories}")
+        
+        return self.root_dir / self.data_dir / self.geoclim_dirs["main"] / self.geoclim_dirs[subdirectory]
+    
+    def get_genetic_path(self, subdirectory: pathlib.Path, concat: bool=False) -> pathlib.Path:
+        """
+        Get the path to the desired subdirectory within the genetic datasets
+        
+        Args:
+            subdirectory (pathlib.Path): The name of the subdirectory to retrieve.
+            concat (bool): If True, retrieve the concatenated files subdirectory. Defaults to False.
+        
+        Returns:
+            pathlib.Path: The path to the specified genetic subdirectory.
+        
+        Raises:
+            ValueError: If the specified subdirectory is not a valid genetic subdirectory.
+        """
+        # Validate directory walk for genetic-related data
+        possible_subdirectories = [key for key in self.genetic_dirs.keys() if key != "main" and not key.endswith("_concat")]
+        if subdirectory not in possible_subdirectories:
+            raise ValueError(f"Datatype directory must be one of {possible_subdirectories}")
+        
+        # Retrieve concatened files subdirectory (lower depth)
+        if concat:
+            return self.root_dir / self.data_dir / self.genetic_dirs["main"] / self.genetic_dirs[subdirectory] / self.genetic_dirs[subdirectory + "_concat"]
+        # Retrieve subdirectory
+        else:
+            return self.root_dir / self.data_dir / self.genetic_dirs["main"] / self.genetic_dirs[subdirectory]
+
 
     @property
     def config_filename(self):
@@ -131,11 +178,3 @@ class Definitions:
 
         # Update the config attribute
         self.config = self.read_config(self.package_dir, self._config_filename)
-
-
-if __name__ == "__main__":
-    defs = Definitions()
-    print(defs.genetic_dirs)
-    print(defs.params)
-    defs.params["bp_to_keep"] = 500
-    print(defs.params)
