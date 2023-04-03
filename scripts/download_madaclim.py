@@ -5,7 +5,8 @@ import requests
 import argparse
 
 ROOT_DIR = Path(__file__).parents[1]
-SRC_DIR = ROOT_DIR / "src"
+PACKAGE_DIR = ROOT_DIR / "coffeaphylogeo"
+SRC_DIR = PACKAGE_DIR / "src"
 
 with open(SRC_DIR / "config.yaml", "r") as yaml_file:
     config = yaml.safe_load(yaml_file)
