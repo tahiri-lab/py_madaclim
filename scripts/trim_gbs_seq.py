@@ -16,11 +16,14 @@ def get_default_fasta_dir():
     # Get ROOT path
     root_dir = Path(__file__).parents[1]
 
-    # Package src dir
+    # Get src dir
     src_dir = root_dir / "src"
 
+    # Get package dir path
+    package_dir = src_dir / "coffeaphylogeo"
+
     # Names based on config file
-    with open(src_dir.joinpath("config.yaml"), "r") as yaml_file:
+    with open(package_dir / "config.yaml", "r") as yaml_file:
         config = yaml.safe_load(yaml_file)
         
     # Genetic data dirs

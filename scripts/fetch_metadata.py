@@ -9,8 +9,9 @@ import pandas as pd
 # Get main project and package directory
 ROOT_DIR = Path(__file__).parents[1]
 SRC_DIR = ROOT_DIR / "src"
+PACKAGE_DIR = SRC_DIR / "coffeaphylogeo"
 
-with open(SRC_DIR.joinpath("config.yaml"), "r") as yaml_file:
+with open(PACKAGE_DIR / "config.yaml", "r") as yaml_file:
     config = yaml.safe_load(yaml_file)
 
 # Setup main data and target directories
