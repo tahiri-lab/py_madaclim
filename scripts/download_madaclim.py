@@ -11,10 +11,13 @@ PACKAGE_DIR = SRC_DIR / "coffeaphylogeo"
 with open(PACKAGE_DIR / "config.yaml", "r") as yaml_file:
     config = yaml.safe_load(yaml_file)
 
-# Madaclim current climate and environmental data
+# Madaclim current climate and environmental data dirs/urls/names
 CLIM_DATA_DIR = ROOT_DIR.joinpath("data") / config["geoclim"]["dir"]["main"] / config["geoclim"]["dir"]["climate_data"]
+ENVIRO_DATA_DIR = ROOT_DIR / "data" / config["geoclim"]["dir"]["main"] / config["geoclim"]["dir"]["environment_data"]
+
 current_madaclim_url = config["urls"]["madaclim_current"]
 enviro_madaclim_url = config["urls"]["environment"]
+
 current_madaclim_tif = config["geoclim"]["files"]["madaclim_current"]
 enviro_madaclim_tif = config["geoclim"]["files"]["madaclim_enviro"]
 
@@ -51,7 +54,19 @@ if __name__ == "__main__":
         if args.wget:
             runcmd(f"wget -P {CLIM_DATA_DIR} -O {current_madaclim_tif} {current_madaclim_url}", verbose=True)
         else:
+            print(f"Downloading {current_madaclim_tif}...")
             download_file(current_madaclim_url, CLIM_DATA_DIR / current_madaclim_tif)
+            print("Done")
     else:
         print(f"{current_madaclim_tif} file already exists.")
+
+    if not (ENVIRO_DATA_DIR / enviro_madaclim_tif).is_file():
+        if args.wget:
+            runcmd(f"wget -P {ENVIRO_DATA_DIR} -O {enviro_madaclim_tif} {enviro_madaclim_url}", verbose=True)
+        else:
+            print(f"Downloading {enviro_madaclim_tif}...")
+            download_file(enviro_madaclim_url, ENVIRO_DATA_DIR / enviro_madaclim_tif)
+            print("Done")
+    else:
+        print(f"{enviro_madaclim_tif} file already exists.")
 
