@@ -33,8 +33,8 @@ genetic:
 
 # URLs for data
 urls:
-  madaclim_current: http://madaclim.cirad.fr/climate/current.tif
-  environment: http://madaclim.cirad.fr/environ/environ.tif
+  madaclim_current_raster: http://madaclim.cirad.fr/climate/current.tif
+  environment_raster: http://madaclim.cirad.fr/environ/environ.tif
   clim_methods: https://madaclim.cirad.fr/methods-climate/
   env_methods: https://madaclim.cirad.fr/methods-environ-data/
   clim_data_format: https://madaclim.cirad.fr/climate-data-format/
