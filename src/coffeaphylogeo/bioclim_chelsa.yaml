@@ -1,0 +1,97 @@
+# Bioclimatic variables definition
+bioclim_defs:
+  bio1:
+    name: "bio1"
+    longname: "Annual Mean Temperature"
+    unit: "Celcius"
+    explanation: "The mean of all the weekly mean temperatures. Each weekly mean temperature is the mean of the weekly maximum and minimum temperatures over the whole year."
+  bio2:
+    name: "bio2"
+    longname: "Mean Diurnal Range(Mean(period max-min)"
+    unit: "Celcius"
+    explanation: "The mean over the whole year of the weekly diurnal temperature ranges. Each weekly diurnal range is the difference between that week's maximum and minimum temperature. "
+  bio3:
+    name: "bio3"
+    longname: "Isothermality (bio2/bio7)"
+    unit: "Celcius"
+    explanation: "The mean diurnal range (parameter bio2) divided by the Annual Temperature Range (parameter bio7)."
+  bio4:
+    name: "bio4"
+    longname: "Temperature Seasonality (C of V)"
+    unit: "Celcius/100"
+    explanation : "The temperature Coefficient of Variation (C of V) is the standard deviation of the weekly mean temperatures expressed as a percentage of the mean of those temperatures. For this calculation, the mean in degrees Kelvin is used. This avoids the possibility o f having to divide by zero, but it does mean that the values are usually quite small."
+  bio5:
+    name: "bio5"
+    longname: "Max Temperature of Warmest Period"
+    unit: "Celcius"
+    explanation : "The highest maximum temperature in all weeks of the year."
+  bio6:
+    name: "bio6"
+    longname: "Min Temperature of Coldest Period"
+    unit: "Celcius"
+    explanation : "The lowest minimum temperature in all weeks of the year."
+  bio7:
+    name: "bio7"
+    longname: "Temperature Annual Range (5-6)"
+    unit: "Celcius"
+    explanation : "The difference between the Max Temperature of Warmest Period and the Min Temperature of Coldest Period."
+  bio8:
+    name: "bio8"
+    longname: "Mean Temperature of Wettest Quarter"
+    unit: "Celcius"
+    explanation : "The wettest quarter of the year is determined (to the nearest week), and the mean temperature of this period is calculated. "
+  bio9:
+    name: "bio9"
+    longname: "Mean Temperature of Driest Quarter"
+    unit: "Celcius"
+    explanation : "The driest quarter of the year is determined (to the nearest week), and the mean temperature of this period is calculated."
+  bio10:
+    name: "bio10"
+    longname: "Mean Temperature of Warmest Quarter"
+    unit: "Celcius"
+    explanation : "The warmest quarter of the year is determined (to the nearest week), and the mean temperature of this period is calculated."
+  bio11:
+    name: "bio11"
+    longname: "Mean Temperature of Coldest Quarter"  
+    unit: "Celcius"
+    explanation : "The coldest quarter of the year is determined (to the nearest week), and the mean temperature of this period is calculated."
+  bio12:
+    name: "bio12"
+    longname: "Annual Precipitation"
+    unit: "kg / m**2 / year"
+    explanation : "The sum of all 12 monthly precipitation estimates."
+  bio13:
+    name: "bio13"
+    longname: "Precipitation of Wettest Period"
+    unit: "kg / m**2 / month"
+    explanation : "The precipitation of the wettest week or month, depending on the time step."
+  bio14:
+    name: "bio14"
+    longname: "Precipitation of Driest Period"
+    unit: "kg / m**2 / month"
+    explanation : "The precipitation of the driest week or month, depending on the time step."
+  bio15:
+    name: "bio15"
+    longname: "Precipitation Seasonality(C of V)"
+    unit: "kg / m**2"
+    explanation : "The Coefficient of Variation (C of V) is the standard deviation of the weekly precipitation estimates expressed as a percentage of the mean of those estimates."
+  bio16:
+    name: "bio16"
+    longname: "Precipitation of Wettest Quarter"
+    unit: "kg / m**2 / month"
+    explanation : "The wettest quarter of the year is determined (to the nearest week), and the total precipitation over this period is calculated."
+  bio17:
+    name: "bio17"
+    longname: "Precipitation of Driest Quarter"
+    unit: "kg / m**2 / month"
+    explanation : "The driest quarter of the year is determined (to the nearest week), and the total precipitation over this period is calculated."
+  bio18:
+    name: "bio18"
+    longname: "Precipitation of Warmest Quarter"
+    unit: "kg / m**2 / month"
+    explanation : "The warmest quarter of the year is determined (to the nearest week), and the total precipitation over this period is calculated."
+  bio19:
+    name: "bio19"
+    longname: "Precipitation of Coldest Quarter"
+    unit: "kg / m**2 / month"
+    explanation : "The coldest quarter of the year is determined (to the nearest week), and the total precipitation over this period is calculated."
