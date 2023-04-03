@@ -116,18 +116,25 @@ class Definitions:
         Args:
             subdirectory (pathlib.Path): The name of the subdirectory to retrieve.
 
-        Raises:
-            ValueError: If the specified subdirectory is not a valid geoclim subdirectory.
-
         Returns:
             pathlib.Path: Path to the specified geoclim subdirectory.
+            
+        Raises:
+            ValueError: If the specified subdirectory is not a valid geoclim subdirectory.
+            FileNotFoundError: If the generated path does not exists.
         """
         # Validate directory walk for geoclim-related data
         possible_subdirectories = [key for key in self.geoclim_dirs.keys() if key != "main"]
         if subdirectory not in possible_subdirectories:
             raise ValueError(f"Datatype directory must be one of {possible_subdirectories}")
         
-        return self.root_dir / self.data_dir / self.geoclim_dirs["main"] / self.geoclim_dirs[subdirectory]
+        # Check if generated path is valid
+        path = self.root_dir / self.data_dir / self.geoclim_dirs["main"] / self.geoclim_dirs[subdirectory]
+
+        if path.exists():
+            return path
+        else:
+            FileNotFoundError(f"{path} does not exists.")
     
     def get_genetic_path(self, subdirectory: pathlib.Path, concat: bool=False) -> pathlib.Path:
         """
@@ -142,6 +149,7 @@ class Definitions:
         
         Raises:
             ValueError: If the specified subdirectory is not a valid genetic subdirectory.
+            FileNotFoundError: If the generated path does not exist.
         """
         # Validate directory walk for genetic-related data
         possible_subdirectories = [key for key in self.genetic_dirs.keys() if key != "main" and not key.endswith("_concat")]
@@ -150,10 +158,19 @@ class Definitions:
         
         # Retrieve concatened files subdirectory (lower depth)
         if concat:
-            return self.root_dir / self.data_dir / self.genetic_dirs["main"] / self.genetic_dirs[subdirectory] / self.genetic_dirs[subdirectory + "_concat"]
+            path = self.root_dir / self.data_dir / self.genetic_dirs["main"] / self.genetic_dirs[subdirectory] / self.genetic_dirs[subdirectory + "_concat"]
+            
+            if path.exists():
+                return path
+            else:
+                raise FileNotFoundError(f"{path} does not exists.")
         # Retrieve subdirectory
         else:
-            return self.root_dir / self.data_dir / self.genetic_dirs["main"] / self.genetic_dirs[subdirectory]
+            path = self.root_dir / self.data_dir / self.genetic_dirs["main"] / self.genetic_dirs[subdirectory]
+            if path.exists():
+                return path
+            else:
+                raise FileNotFoundError(f"{path} does not exists.")
 
 
     @property
