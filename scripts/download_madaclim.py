@@ -18,8 +18,8 @@ ENVIRO_DATA_DIR = ROOT_DIR / "data" / config["geoclim"]["dir"]["main"] / config[
 current_madaclim_url = config["urls"]["madaclim_current"]
 enviro_madaclim_url = config["urls"]["environment"]
 
-current_madaclim_tif = config["geoclim"]["files"]["madaclim_current"]
-enviro_madaclim_tif = config["geoclim"]["files"]["madaclim_enviro"]
+current_madaclim_tif = config["geoclim"]["files"]["madaclim_current_raster"]
+enviro_madaclim_tif = config["geoclim"]["files"]["madaclim_enviro_raster"]
 
 # wget with subprocess
 def runcmd(cmd, verbose = False, *args, **kwargs):
