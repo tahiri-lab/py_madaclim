@@ -437,11 +437,3 @@ class MadaclimLayers:
         
         else:
             self._env_meta_file = value
-        
-
-if __name__ == "__main__":
-    
-    test = MadaclimLayers()
-
-    print(test)
-    
