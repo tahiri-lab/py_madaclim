@@ -36,7 +36,7 @@ class MadaclimLayers:
         # self.all_layers = self._get_madaclim()
         # self.geology_raster_vars = {}
 
-    def _get_madaclim(self, climate_dir, enviro_dir, clim_data_file, clim_meta_file, env_data_file, env_meta_file) -> pd.DataFrame :
+    def _get_madaclim_layers(self, climate_dir, enviro_dir, clim_data_file, clim_meta_file, env_data_file, env_meta_file) -> pd.DataFrame :
         
         def split_layers(row, layers_col_name: str):
             """
