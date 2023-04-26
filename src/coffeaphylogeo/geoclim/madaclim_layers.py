@@ -45,6 +45,14 @@ class MadaclimLayers:
             clim_meta = json.load(f)
         with open(enviro_dir / env_data_file, "r") as f:
             env_format = json.load(f)
+        with open(enviro_dir / env_meta_file, "r") as f:
+            env_meta = json.load(f)
+
+        # Extract climate data and format it using the metadata
+        df_clim = pd.read_json(clim_format["table_0"])
+        df_clim["data_type"] = "clim"    # Tag for latter merge
+
+        
         
 
 
@@ -58,10 +66,19 @@ class MadaclimLayers:
 
     @property
     def climate_dir(self):
+        """Path: The directory path for climate data."""
         return self._climate_dir
     
     @climate_dir.setter
     def climate_dir(self, value):
+        """Sets the directory path for climate data.
+
+        Args:
+            value (Path): The directory path for climate data.
+
+        Raises:
+            ValueError: If the provided value is not a valid directory path.
+        """
         if not value.is_dir():
             raise ValueError(f"{value} is not a valid directory path.")
         
@@ -69,10 +86,19 @@ class MadaclimLayers:
         
     @property
     def enviro_dir(self):
+        """Path: The directory path for environmental data."""
         return self._enviro_dir
     
     @enviro_dir.setter
     def enviro_dir(self, value):
+        """Sets the directory path for environmental data.
+
+        Args:
+            value (Path): The directory path for environmental data.
+
+        Raises:
+            ValueError: If the provided value is not a valid directory path.
+        """
         if not value.is_dir():
             raise ValueError(f"{value} is not a valid directory path.")
         
@@ -80,10 +106,20 @@ class MadaclimLayers:
 
     @property
     def clim_data_file(self):
+        """str: The file name of the climate data file."""
         return self._clim_data_file
     
     @clim_data_file.setter
     def clim_data_file(self, value):
+        """Sets the file name of the climate data file.
+
+        Args:
+            value (str): The file name of the climate data file.
+
+        Raises:
+            TypeError: If the provided value is not a string.
+            ValueError: If the provided file does not exist in the climate data directory.
+        """
         # Validate type
         if not isinstance(value, str):
             raise TypeError("clim_data_file attribute nust be a string.")
@@ -98,10 +134,20 @@ class MadaclimLayers:
 
     @property
     def clim_meta_file(self):
+        """str: The file name of the climate metadata file."""
         return self._clim_meta_file
     
     @clim_meta_file.setter
     def clim_meta_file(self, value):
+        """Sets the file name of the climate metadata file.
+
+        Args:
+            value (str): The file name of the climate metadata file.
+
+        Raises:
+            TypeError: If the provided value is not a string.
+            ValueError: If the provided file does not exist in the climate data directory.
+        """
         # Validate type
         if not isinstance(value, str):
             raise TypeError("clim_meta_file attribute nust be a string.")
@@ -116,10 +162,20 @@ class MadaclimLayers:
     
     @property
     def env_data_file(self):
+        """str: The file name of the environmental data file."""
         return self._env_data_file
     
     @env_data_file.setter
     def env_data_file(self, value):
+        """Sets the file name of the environmental data file.
+
+        Args:
+            value (str): The file name of the environmental data file.
+
+        Raises:
+            TypeError: If the provided value is not a string.
+            ValueError: If the provided file does not exist in the environmental data directory.
+        """
         # Validate type
         if not isinstance(value, str):
             raise TypeError("env_data_file attribute nust be a string.")
@@ -134,10 +190,20 @@ class MadaclimLayers:
 
     @property
     def env_meta_file(self):
+        """str: The file name of the environmental metadata file."""
         return self._env_meta_file
     
     @env_meta_file.setter
     def env_meta_file(self, value):
+        """Sets the file name of the environmental metadata file.
+
+        Args:
+            value (str): The file name of the environmental metadata file.
+
+        Raises:
+            TypeError: If the provided value is not a string.
+            ValueError: If the provided file does not exist in the environmental data directory.
+        """
         # Validate type
         if not isinstance(value, str):
             raise TypeError("env_meta_file attribute nust be a string.")
