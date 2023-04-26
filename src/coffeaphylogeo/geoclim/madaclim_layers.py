@@ -431,5 +431,30 @@ class MadaclimLayers:
         df = pd.concat([df_clim, df_env])
 
         return df
+    
+    def select_geoclim_type_layers(self, geoclim_type: str) -> pd.DataFrame:
+        """Method that selects the desired geoclimatic type layers as a dataframe.
 
+        Args:
+            geoclim_type (str): The desired geoclimatic layers type to extract.
+
+        Returns:
+            pd.DataFrame: A slice of the all_layers dataframe containing the desired geoclimatic type layers.
+
+        Raises:
+            TypeError: If geoclim_type is not a string.
+            ValueError: If geoclim_type does not corresponds to a valid geoclim type.
+        """
+        # Validate geoclim_type
+        if not isinstance(geoclim_type, str):
+            raise TypeError("geoclim_type must be a string.")
+        
+        possible_geoclim_types = ["clim", "env"]
+        if geoclim_type not in possible_geoclim_types:
+            raise ValueError(f"geoclim_type must be one of {possible_geoclim_types}")
+        
+        all_layers_df = self.all_layers
+        select_df = all_layers_df[all_layers_df["geoclim_type"] == geoclim_type]
+
+        return select_df
     
