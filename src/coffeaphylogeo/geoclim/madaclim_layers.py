@@ -12,9 +12,7 @@ from coffeaphylogeo.definitions import Definitions
 defs = Definitions()
 
 class MadaclimLayers:
-    """
-    A class that represents all of the information and data from the climate and environmental variable layers that can be found 
-    from the rasters of the Madaclim database.
+    """A class that represents all of the information and data from the climate and environmental variable layers that can be found from the rasters of the Madaclim database.
     
     Attributes:
         climate_dir (Path): The directory path for climate-related data.
@@ -31,6 +29,24 @@ class MadaclimLayers:
 
         This constructor sets the directory paths and file names for climate and environment data,
         and generates a DataFrame containing all Madaclim layers.
+        
+        Examples:
+            >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
+            >>> madaclim_info = MadaclimLayers()
+            >>> # Save the all layers df
+            >>> all_layers_df = madaclim_info.all_layers
+            >>> all_layers_df.info()
+            <class 'pandas.core.frame.DataFrame'>
+            Int64Index: 79 entries, 0 to 8
+            Data columns (total 5 columns):
+            #   Column             Non-Null Count  Dtype 
+            ---  ------             --------------  ----- 
+            0   layer_number       79 non-null     int64 
+            1   geoclim_feature    79 non-null     object
+            2   geoclim_type       79 non-null     object
+            3   layer_name         79 non-null     object
+            4   layer_description  71 non-null     object
+            dtypes: int64(1), object(4)
         """
         self.climate_dir = defs.get_geoclim_path("climate_data")    # Path dir for clim-related data
         self.enviro_dir = defs.get_geoclim_path("environment_data")    # Path dir for env-related data
@@ -204,9 +220,7 @@ class MadaclimLayers:
             self._env_meta_file = value
 
     def _get_madaclim_layers(self, climate_dir, enviro_dir, clim_data_file, clim_meta_file, env_data_file, env_meta_file) -> pd.DataFrame :
-        """
-        Private method that will generate the all_layers attributes based on the climate/enviro dirs and all the data and metada
-        files found by accessing their corresponding attriubtes.
+        """Private method that will generate the all_layers attributes based on the climate/enviro dirs and all the data and metada files found by accessing their corresponding attriubtes.
 
         Args:
             climate_dir (Path): The directory path for climate-related data.
@@ -221,8 +235,7 @@ class MadaclimLayers:
         """
         
         def split_layers(row, layers_col_name: str):
-            """
-            Split "Layers" column and create new rows
+            """Split "Layers" column and create new rows
 
             Args:
                 row (pd.Series): Row of data from a DataFrame
@@ -444,6 +457,19 @@ class MadaclimLayers:
         Raises:
             TypeError: If geoclim_type is not a string.
             ValueError: If geoclim_type does not corresponds to a valid geoclim type.
+        
+        Examples:
+        >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
+        >>> madaclim_info = MadaclimLayers()
+        >>> clim_df = madaclim_info.select_geoclim_type_layers(geoclim_type="clim")
+        >>> clim_df.head()
+        layer_number                        geoclim_feature geoclim_type layer_name                                 layer_description
+        0             1  Monthly minimum temperature (°C x 10)         clim      tmin1   Monthly minimum temperature (°C x 10) - January
+        1             2  Monthly minimum temperature (°C x 10)         clim      tmin2  Monthly minimum temperature (°C x 10) - February
+        2             3  Monthly minimum temperature (°C x 10)         clim      tmin3     Monthly minimum temperature (°C x 10) - March
+        3             4  Monthly minimum temperature (°C x 10)         clim      tmin4     Monthly minimum temperature (°C x 10) - April
+        4             5  Monthly minimum temperature (°C x 10)         clim      tmin5       Monthly minimum temperature (°C x 10) - May
+
         """
         # Validate geoclim_type
         if not isinstance(geoclim_type, str):
@@ -457,4 +483,51 @@ class MadaclimLayers:
         select_df = all_layers_df[all_layers_df["geoclim_type"] == geoclim_type]
 
         return select_df
+    
+    def unique_labels_layers(self, geoclim_type: str="all") -> dict:
+        """Extract unique combinations from all available layers in the Madaclim db as a dictionary of unique keys and values for each layer.
+
+        This method takes an optional `geoclim_type` argument that specifies the type of geoclimatic layers to include in the result. If `geoclim_type` is not provided, all layers are included by default.
+
+        Args:
+            geoclim_type (str, optional): The desired geoclimatic layers type to extract Defaults to "all".
+
+        Returns:
+            dict: A dictionary containing unique labels for each layer of the Madaclim db.
+        
+        Raises:
+            TypeError: If geoclim_type is not a string.
+            ValueError: If geoclim_type does not corresponds to a valid geoclim type.
+            ValueError: If values for "layer_number", "layer_name" are not unique for each entry of the all_layers dataframe.
+
+        Example:
+            >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
+            >>> madaclim_info = MadaclimLayers()
+            >>> >>> madaclim_info.unique_labels_layers(geoclim_type="env")
+            {'layer_71': 'env_altitude', 'layer_72': 'env_slope', 'layer_73': 'env_aspect', 'layer_74': 'env_solar', 'layer_75': 'env_geology', 'layer_76': 'env_soil', 'layer_77': 'env_vegetation', 'layer_78': 'env_watersheds', 'layer_79': 'env_forestcover'}
+        """
+        # Validate geoclim_type
+        if not isinstance(geoclim_type, str):
+            raise TypeError("geoclim_type must be a string.")
+        
+        possible_geoclim_types = ["clim", "env", "all"]
+        if geoclim_type not in possible_geoclim_types:
+            raise ValueError(f"geoclim_type must be one of {possible_geoclim_types}")
+        
+        # Validate unique entries
+        all_layers_df = self.all_layers
+        if len(all_layers_df) != len(all_layers_df["layer_number"].unique()) != len(all_layers_df["layer_name"].unique()):
+            raise ValueError("'layer_number' and 'layer_name' columns in the all_layers dataframe have non-unique entries.")
+        
+        # Get dict for unique labels according to geoclim_type selection
+        if geoclim_type != "all":
+            select_df = all_layers_df[all_layers_df["geoclim_type"] == geoclim_type]
+        else: 
+            select_df = all_layers_df
+            
+        unique_labels = {f"layer_{num}": f"{geoclim}_{name}" for num, geoclim, name in  list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"]))}
+        return unique_labels
+        
+
+        
     
