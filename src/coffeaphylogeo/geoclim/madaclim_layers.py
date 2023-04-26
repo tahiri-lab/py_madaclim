@@ -1,10 +1,11 @@
 import json
 import re
 import pathlib
+import pandas as pd
+
+from calendar import month_name
 from pathlib import Path
 from typing import List
-
-import pandas as pd
 
 from coffeaphylogeo.definitions import Definitions
 
@@ -12,18 +13,24 @@ defs = Definitions()
 
 class MadaclimLayers:
     """
-    A class that represents all the names of the climate and environmental variable layers that can be found from the rasters of the Madaclim database.
-
-    This class provides methods to generate the layers name, select subsets of layers and manipulate their formatting.
+    A class that represents all of the information and data from the climate and environmental variable layers that can be found 
+    from the rasters of the Madaclim database.
+    
+    Attributes:
+        climate_dir (Path): The directory path for climate-related data.
+        enviro_dir (Path): The directory path for environment-related data.
+        clim_data_file (str): The file name of the climate data format file.
+        clim_meta_file (str): The file name of the climate metadata file.
+        env_data_file (str): The file name of the environment data format file.
+        env_meta_file (str): The file name of the environment metadata file.
+        all_layers (pd.DataFrame): A DataFrame containing a complete and formatted version of all Madaclim layers.
+    
     """
-    # Assign format and metadata dirs
-    
-    
     def __init__(self):
-        """
-        Initializes a new instance of the MadaclimLayers class.
+        """Initializes a new instance of the MadaclimLayers class.
 
-        This constructor #TODO FINISH DOCSTRING
+        This constructor sets the directory paths and file names for climate and environment data,
+        and generates a DataFrame containing all Madaclim layers.
         """
         self.climate_dir = defs.get_geoclim_path("climate_data")    # Path dir for clim-related data
         self.enviro_dir = defs.get_geoclim_path("environment_data")    # Path dir for env-related data
@@ -33,10 +40,33 @@ class MadaclimLayers:
         self.env_data_file = defs.geoclim_files["env_data_format"]
         self.env_meta_file = defs.geoclim_files["env_metadata"]
         
-        # self.all_layers = self._get_madaclim()
+        self.all_layers = self._get_madaclim_layers(
+            climate_dir=self.climate_dir,
+            enviro_dir=self.enviro_dir,
+            clim_data_file=self.clim_data_file,
+            clim_meta_file=self.clim_meta_file,
+            env_data_file=self.env_data_file,
+            env_meta_file=self.env_meta_file
+        )
+
         # self.geology_raster_vars = {}
 
     def _get_madaclim_layers(self, climate_dir, enviro_dir, clim_data_file, clim_meta_file, env_data_file, env_meta_file) -> pd.DataFrame :
+        """
+        Private method that will generate the all_layers attributes based on the climate/enviro dirs and all the data and metada
+        files found by accessing their corresponding attriubtes.
+
+        Args:
+            climate_dir (Path): The directory path for climate-related data.
+            enviro_dir (Path): The directory path for environment-related data.
+            clim_data_file (str): The file name of the climate data format file.
+            clim_meta_file (str): The file name of the climate metadata file.
+            env_data_file (str): The file name of the environment data format file.
+            env_meta_file (str): The file name of the environment metadata file.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing a complete and formatted version of all Madaclim layers.
+        """
         
         def split_layers(row, layers_col_name: str):
             """
@@ -74,10 +104,9 @@ class MadaclimLayers:
             return pd.DataFrame(data, index=index)
         
         def split_repeating_vars(row: pd.Series, col_to_split: str, col_to_keep: str) -> pd.DataFrame:
-            """
-            Split a column containing repeating values into separate rows.
+            """Split a column containing repeating values into separate rows.
 
-            This function takes a row of data from a DataFrame and splits the value in the column specified by `col_to_split` if it contains a hyphen. The function returns a new DataFrame with rows for each value in the specified range and with values from the column specified by `col_to_keep`.
+            This function takes a row of data from a DataFrame and splits the value in the column specified by `col_to_split` if it contains a hyphen. The function returns a new DataFrame with rows for each value in the specified range and with values from the column specified by `col_to_keep`. The month name is appended to the `col_to_keep` values.
 
             Args:
                 row (pd.Series): A row of data from a DataFrame.
@@ -86,17 +115,6 @@ class MadaclimLayers:
 
             Returns:
                 pd.DataFrame: A DataFrame with split rows.
-
-            Examples:
-                >>> df = pd.DataFrame({"A": ["x1-3", "y4"], "B": ["foo", "bar"]})
-                >>> result = df.apply(split_repeating_vars, axis=1, col_to_split="A", col_to_keep="B")
-                >>> df_result = pd.concat(result.tolist(), axis=0).reset_index(drop=True)
-                >>> print(df_result)
-                    A    B
-                0   x1  foo
-                1   x2  foo
-                2   x3  foo
-                3   y4  bar
             """
             
             # Extract the range and layername to a new smaller df of len(range(start, end))
@@ -107,7 +125,7 @@ class MadaclimLayers:
                         
                 # Create a DataFrame with the split values and the description column
                 df = pd.DataFrame({col_to_split: [f"{name}{month}" for month in range(start, end+1)],
-                                col_to_keep: row[col_to_keep]})
+                                col_to_keep: [f"{row[col_to_keep]} - {month_name[month]}" for month in range(start, end+1)]})
                 return df
             
             # When no changes to changes to row
@@ -138,7 +156,7 @@ class MadaclimLayers:
             for layer_name in categories_layer_name:
                 
                 # Extract common base layer name
-                category_feature_val = df[df["layer_name"].str.contains(layer_name)]["layer_description"].unique()[0]
+                category_feature_val = df[df["layer_name"].str.contains(layer_name)]["layer_description"].str.split(" - ").str[0].unique()[0]
                 monthly_features[f"{layer_name}_cat_feature"] = category_feature_val
                 
                 # Get df associated with common category
@@ -146,7 +164,7 @@ class MadaclimLayers:
                 monthly_features[f"{layer_name}_df"] = category_feature_df
 
                 # Assign layer number according to current category
-                df.loc[df["layer_description"] == category_feature_val, "layer_number"] = range(current_start_layer, current_start_layer + len(category_feature_df))
+                df.loc[df["layer_name"].str.contains(layer_name), "layer_number"] = range(current_start_layer, current_start_layer + len(category_feature_df))
                 current_start_layer += len(category_feature_df)
 
             df["layer_number"] = df["layer_number"].astype(int)
@@ -186,13 +204,81 @@ class MadaclimLayers:
 
         # Extract climate data and format it using the metadata
         df_clim = pd.read_json(clim_format["table_0"])
-        df_clim["data_type"] = "clim"    # Tag for latter merge
+        df_clim["data_type"] = "clim"    # Tag for latter id in merge
 
+        # Split the layers to get initial layer_num for all clim-related layers
+        df_clim = pd.concat((df_clim.apply(split_layers, args=("Layers", ), axis=1)).to_list()).reset_index()
+        df_clim.columns = ["layer_number", "geoclim_feature", "geoclim_type"]
+
+        # Formatting + add layers to the monthly bioclim metadata
+        bio_monthly_feats = pd.read_json(clim_meta["table_0"])
+        bio_monthly_feats.columns = ["layer_name", "layer_description"]
         
+        bio_monthly_feats = pd.concat(    # Split according to range
+            bio_monthly_feats.apply(split_repeating_vars, axis=1, args=("layer_name", "layer_description", )).to_list(),
+            ignore_index=True
+        )
+        bio_monthly_feats = add_layer_numbers_bio_monthly(bio_monthly_feats)    # Append layer numbers
+
+        # Formatting + add layers to the other bioclim metadata (non-monthly)
+        bioclim_feats = pd.read_json(clim_meta["table_1"])
+        bioclim_feats.columns = ["layer_name", "layer_description"]
+
+        current_start_layer = len(bio_monthly_feats) + 1    # Save the current state of the layer number for clim_df
+        bioclim_feats["layer_number"] = range(current_start_layer, current_start_layer + len(bioclim_feats))
+
+        # Formatting + add layers to monthly and annual evapotranspiration metadata
+        evap_feats = pd.read_json(clim_meta["table_2"])
+        evap_feats.columns = ["layer_name", "layer_description"]
         
+        evap_feats = pd.concat(    # Split monthly evapo data
+            evap_feats.apply(split_repeating_vars, axis=1, args=("layer_name", "layer_description", )).to_list(),
+            ignore_index=True
+        )
+        current_start_layer = max(bioclim_feats["layer_number"]) + 1    # Save the current state of the layer number for clim_df
+        evap_feats["layer_number"] = range(current_start_layer, current_start_layer + len(evap_feats))
+
+        # Formatting + add layers to the bioclim water-related metadata
+        biowater_feats = pd.read_json(clim_meta["table_3"])
+        biowater_feats.columns = ["layer_name", "layer_description"]
+        
+        current_start_layer = max(evap_feats["layer_number"]) + 1    # Save the current state of the layer number for clim_df
+        biowater_feats["layer_number"] = range(current_start_layer, current_start_layer + len(biowater_feats))
+
+        # Merge meta_dfs with original clim_df for class attribute
+        meta_dfs = [bio_monthly_feats, bioclim_feats, evap_feats, biowater_feats]
+        df_clim = meta_merge_clim_df(df_clim, meta_dfs)
 
 
-        
+        # Extract environmental data and format it using its related metadata
+        df_env = pd.read_json(env_format["table_0"])
+        df_env.columns = ["layer_number", "geoclim_feature"]
+        df_env["geoclim_type"] = "env"    # Tag for latter id in merge
+
+        current_start_layer = max(df_clim["layer_number"]) + 1    # Save the current state of the layer number according to the final clim_df
+        df_env["layer_number"] = range(current_start_layer, current_start_layer + len(df_env))
+
+        # Generate layer_name since absent from metadata
+        df_env["layer_name"] = df_env["geoclim_feature"].str.split(" ").str[0].str.lower()
+        df_env.loc[df_env["layer_number"] == 79, "layer_name"] = "forestcover"    # Fix first word with more informative info
+        df_env["layer_description"] = None
+
+        # Assign dummy var information for geology layer to layer_description
+        geology_description = {}
+    
+        env_meta_str = env_meta["table_0"]
+        env_meta_data = json.loads(env_meta_str)
+
+        for i, val in env_meta_data["Raster value"].items():
+            rock_type = env_meta_data["Rock type"][i]
+            geology_description[val] = rock_type
+
+        df_env.loc[df_env["layer_name"] == "geology", "layer_description"] = [geology_description]    # Single-item list since dict unsupported
+
+        # Concat both clim and env final dfs
+        df = pd.concat([df_clim, df_env])
+
+        return df
     
     # def __str__(self):
     #     all_layers = ""
