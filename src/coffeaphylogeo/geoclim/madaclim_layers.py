@@ -2,10 +2,12 @@ import json
 import re
 import pathlib
 import pandas as pd
+import requests
+import time
 
 from calendar import month_name
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Optional
 
 from coffeaphylogeo.definitions import Definitions
 
@@ -612,8 +614,102 @@ class MadaclimLayers:
         
         else:    # Save whole row of df
             select_df = self.all_layers[self.all_layers["layer_number"].isin(layer_numbers)]
-            return select_df    
+            return select_df
 
-            
+    def download_data(self, save_dir: Optional[pathlib.Path]=None):
+        """Downloads climate and environment data from the Madaclim website.
 
-    
+        This method downloads the climate and environment raster data from the Madaclim website
+        and saves them to the specified directory. If no directory is specified, the data is saved
+        to the default directory.
+
+        Args:
+            save_dir (Optional[pathlib.Path]): The directory where the data should be saved. If not specified,
+                the data is saved to the default directory.
+
+        Raises:
+            ValueError: If save_dir is not a directory.
+        """
+        
+        def download_single_file(url: str, dir_savepath: pathlib.Path, filename: str)-> pathlib.Path:
+            """Downloads a single file from a URL and saves it to the specified directory.
+
+            This function downloads a file from the specified URL and saves it to the specified directory
+            with the specified filename. The download progress is printed to the console.
+
+            Args:
+                url (str): The URL of the file to download.
+                dir_savepath (pathlib.Path): The directory where the file should be saved.
+                filename (str): The name of the file to save.
+
+            Returns:
+                pathlib.Path: The path of the downloaded file.
+
+            """
+            try :
+                response = requests.get(url, stream=True)
+                print("\n####   Trying get request to Madaclim website...   ####")
+                
+                # Calculate file size in MB
+                total_size = (float(response.headers['Content-Length']))/1000000
+                print(f"{filename} is {total_size:.1f} MB")
+                
+                # Download in chunks of 1 MB and save to disk
+                if response.status_code == 200 : 
+                    print(f"Server response OK from {url.split('/')[2]}, starting to download {filename}")
+                    with open(dir_savepath / filename, 'wb') as f :
+                        chunksize = 1024 * 1000
+                        start_time = time.time()
+                        for n, chunk in enumerate(response.iter_content(chunk_size=chunksize)) :
+                            percent = (n * chunksize / (total_size*1000000)) * 100
+                            now_time = time.time()
+                            current_speed = (n * chunksize) / (now_time - start_time) / 1000000
+                            print(
+                                f"Progress for {filename} : {percent:.2f} % completed of {total_size:.1f} MB downloaded [ current speed of  {current_speed:.1f} MB/s ]",
+                                end="\r"
+                            )
+                            time.sleep(0.1)
+                            f.write(chunk)
+                        end_time = time.time()
+                        print(
+                            f"Progress for {filename} : 100.00 % completed of {total_size:.1f} MB downloaded [ average speed of  {total_size/(end_time-start_time):.1f} MB/s ]",
+                            end="\r"
+                        )
+                        print()
+                    print(f"Done downloading {filename} in {end_time-start_time:.2f} seconds !")
+                            
+            except :
+                print(f"File {filename} cannot be downloaded. Status code : {response.status_code}")
+            return dir_savepath / filename
+        
+        # Validate save_dir when specified
+        if save_dir is not None:
+            if not save_dir.is_dir():
+                raise ValueError("save_dir is not a directory.")
+        
+        # Download rasters with default save_dir
+        if save_dir is None:
+            download_single_file(    # Climate raster
+                url=defs.urls["madaclim_current_raster"],
+                dir_savepath=defs.get_geoclim_path("climate_data"),
+                filename=defs.geoclim_files["madaclim_current"]
+            )
+
+            download_single_file(
+                url=defs.urls["environment_raster"],
+                dir_savepath=defs.get_geoclim_path("environment_data"),
+                filename=defs.geoclim_files["madaclim_enviro"]
+            )
+        # Download to specified path
+        else:
+            download_single_file(    # Climate raster
+                url=defs.urls["madaclim_current_raster"],
+                dir_savepath=save_dir,
+                filename=defs.geoclim_files["madaclim_current"]
+            )
+
+            download_single_file(
+                url=defs.urls["environment_raster"],
+                dir_savepath=save_dir,
+                filename=defs.geoclim_files["madaclim_enviro"]
+            )
