@@ -5,7 +5,7 @@ import pandas as pd
 
 from calendar import month_name
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from coffeaphylogeo.definitions import Definitions
 
@@ -479,8 +479,7 @@ class MadaclimLayers:
         if geoclim_type not in possible_geoclim_types:
             raise ValueError(f"geoclim_type must be one of {possible_geoclim_types}")
         
-        all_layers_df = self.all_layers
-        select_df = all_layers_df[all_layers_df["geoclim_type"] == geoclim_type]
+        select_df = self.all_layers[self.all_layers["geoclim_type"] == geoclim_type]
 
         return select_df
     
@@ -515,19 +514,106 @@ class MadaclimLayers:
             raise ValueError(f"geoclim_type must be one of {possible_geoclim_types}")
         
         # Validate unique entries
-        all_layers_df = self.all_layers
-        if len(all_layers_df) != len(all_layers_df["layer_number"].unique()) != len(all_layers_df["layer_name"].unique()):
+        if len(self.all_layers) != len(self.all_layers["layer_number"].unique()) != len(self.all_layers["layer_name"].unique()):
             raise ValueError("'layer_number' and 'layer_name' columns in the all_layers dataframe have non-unique entries.")
         
         # Get dict for unique labels according to geoclim_type selection
         if geoclim_type != "all":
-            select_df = all_layers_df[all_layers_df["geoclim_type"] == geoclim_type]
+            select_df = self.all_layers[self.all_layers["geoclim_type"] == geoclim_type]
         else: 
-            select_df = all_layers_df
+            select_df = self.all_layers
             
         unique_labels = {f"layer_{num}": f"{geoclim}_{name}" for num, geoclim, name in  list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"]))}
         return unique_labels
         
 
+    def fetch_specific_layers(self, layer_numbers: Union[int, str, List[Union[int, str]]], from_unique_labels: bool=False, description_only: bool=False) -> Union[dict, pd.DataFrame]:
+        """Fetches specific layers from the all_layers DataFrame.
+
+        Args:
+            layer_numbers (Union[int, str, List[Union[int, str]]]): The layer number(s) to fetch. Can be a single int or str value or a list of int or str values.
+            from_unique_labels (bool): If True, layer_numbers are treated as keys from the unique_labels method output. Defaults to False.
+            description_only (bool): If True, only the layer description is returned. Defaults to False.
+
+        Returns:
+            Union[dict, pd.DataFrame]: If description_only is True, returns a dictionary with the layer descriptions. Otherwise, returns a DataFrame with the specified layers.
+
+        Raises:
+            ValueError: If from_unique_labels is True and any value in layer_numbers is not a valid key from the unique_labels method output.
+            TypeError: If any value in layer_numbers cannot be converted to an int.
+
+        Examples:
+        >>> # From a single list of ints
+        >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
+        >>> madaclim_info = MadaclimLayers()
+        >>> madaclim_info.fetch_specific_layers([1, 15, 55])
+            layer_number                        geoclim_feature geoclim_type layer_name                                layer_description
+        0              1  Monthly minimum temperature (°C x 10)         clim      tmin1  Monthly minimum temperature (°C x 10) - January
+        14            15  Monthly maximum temperature (°C x 10)         clim      tmax3    Monthly maximum temperature (°C x 10) - March
+        54            55        Bioclimatic variables (bioclim)         clim      bio19                 Precipitation of coldest quarter
         
+        >>> # From a unique label set
+        >>> unique_env_labels = list(madaclim_info.unique_labels_layers(geoclim_type="env").keys())
+        >>> madaclim_info.fetch_specific_layers(unique_env_labels, from_unique_labels=True)
+        layer_number                                    geoclim_feature  ...   layer_name                                  layer_description
+        0            71                                       Altitude (m)  ...     altitude                                               None
+        1            72                                  Slope (in degree)  ...        slope                                               None
+        2            73           Aspect (clockwise from North, in degree)  ...       aspect                                               None
+        3            74                     Solar radiation (Wh.m-2.day-1)  ...        solar                                               None
+        4            75               Geology (Kew Botanical Garden, 1997)  ...      geology  {1: 'Alluvial & Lake deposits', 2: 'Unconsolid...
+        5            76                             Soil (Pelletier, 1981)  ...         soil                                               None
+        6            77            Vegetation (Kew Botanical Garden, 2007)  ...   vegetation                                               None
+        7            78                         Watersheds (Pearson, 2009)  ...   watersheds                                               None
+        8            79  Percentage of forest cover for the year 2010 (%).  ...  forestcover                                               None
+
+        [9 rows x 5 columns]
+        >>> # Fetch the description only
+        >>> madaclim_info.fetch_specific_layers(layer_numbers="55", description_only=True)
+        {'layer_55': 'Precipitation of coldest quarter'}
+        
+        """
+        # Validate layer_numbers
+        if isinstance(layer_numbers, list):
+            if from_unique_labels:    # layer_numbers same as keys from unique_labels method output
+                possible_unique_labels = [f"layer_{num}" for num in self.all_layers["layer_number"].to_list()]
+                for layer_number in layer_numbers:
+                    if layer_number not in possible_unique_labels:
+                        raise ValueError(f"{layer_number} not one of {possible_unique_labels[:3]}...{possible_unique_labels[:-3]}")
+                # Save as list of ints after check
+                layer_numbers = [int(layer.split("_")[1]) for layer in layer_numbers]
+
+            # layer_numbers as list of ints
+            else:
+                try:
+                    layer_numbers = [int(layer) for layer in layer_numbers]
+                except (ValueError, TypeError):
+                    raise TypeError("layer_numbers must be either a single int value or a string that can be converted to an int, or a list of int values or strings that can be converted to int values")
+        # Single layer_numbers type check 
+        else:
+            try:
+                layer_numbers = [int(layer_numbers)]
+            except (ValueError, TypeError):
+                raise TypeError("layer_numbers must be either a single int value or a string that can be converted to an int, or a list of int values or strings that can be converted to int values")
+            
+        # Validate layer number range for layer_numbers as int(s)
+        min_layer = min(self.all_layers["layer_number"])
+        max_layer = max(self.all_layers["layer_number"])
+
+        for layer_number in layer_numbers:
+            if not min_layer <= layer_number <= max_layer:
+                raise ValueError(f"layer_number must fall between {min_layer} and {max_layer} (You entered {layer_number=}).")
+            
+        # Fetch rows according to layer selection
+        if description_only:
+            description = {}
+            for layer_number in layer_numbers:
+                description[f"layer_{layer_number}"] = self.all_layers[self.all_layers["layer_number"] == layer_number]["layer_description"].values[0]
+            return description
+        
+        else:    # Save whole row of df
+            select_df = self.all_layers[self.all_layers["layer_number"].isin(layer_numbers)]
+            return select_df    
+
+            
+
     
