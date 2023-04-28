@@ -94,7 +94,6 @@ class MadaclimLayers:
             raise ValueError(f"{value} is not a valid directory path.")
         
         self._climate_dir = value
-        self.update_all_layers()
         
     @property
     def enviro_dir(self):
@@ -115,7 +114,6 @@ class MadaclimLayers:
             raise ValueError(f"{value} is not a valid directory path.")
         
         self._enviro_dir = value
-        self.update_all_layers()
 
     @property
     def clim_data_filename(self):
@@ -144,7 +142,6 @@ class MadaclimLayers:
         
         else:
             self._clim_data_filename = value
-            self.update_all_layers()
 
     @property
     def clim_meta_filename(self):
@@ -173,7 +170,6 @@ class MadaclimLayers:
         
         else:
             self._clim_meta_filename = value
-            self.update_all_layers()
     
     @property
     def env_data_filename(self):
@@ -202,7 +198,6 @@ class MadaclimLayers:
         
         else:
             self._env_data_filename = value
-            self.update_all_layers()
 
     @property
     def env_meta_filename(self):
@@ -231,9 +226,76 @@ class MadaclimLayers:
         
         else:
             self._env_meta_filename = value
-            self.update_all_layers()
+
+    @property
+    def clim_raster_filename(self):
+        """str: The file name of the current_climate raster file."""
+        return self._clim_raster_filename
+    
+    @clim_raster_filename.setter
+    def clim_raster_filename(self, value):
+        """Sets the file name of the current_climate raster file.
+
+        Args:
+            value (str): The file name of the current_climate raster file.
+
+        Raises:
+            TypeError: If the provided value is not a string.
+            ValueError: If the provided file does not exist in the climate data directory.
+        """
+        # Validate type
+        if not isinstance(value, str):
+            raise TypeError("env_meta_filename attribute nust be a string.")
+        
+        # Validate path and file
+        test_raster_file = self.climate_dir / value
+        if not test_raster_file.exists():
+            raise ValueError(f"{test_raster_file} does not exists")
+        
+        else:
+            self._clim_raster_filename = value
+
+    @property
+    def env_raster_filename(self):
+        """str: The file name of the environmental raster file."""
+        return self._env_raster_filename
+    
+    @env_raster_filename.setter
+    def env_raster_filename(self, value):
+        """Sets the file name of the environmental raster file.
+
+        Args:
+            value (str): The file name of the environmental raster file.
+
+        Raises:
+            TypeError: If the provided value is not a string.
+            ValueError: If the provided file does not exist in the environmental data directory.
+        """
+        # Validate type
+        if not isinstance(value, str):
+            raise TypeError("env_meta_filename attribute nust be a string.")
+        
+        # Validate path and file
+        test_raster_file = self.enviro_dir / value
+        if not test_raster_file.exists():
+            raise ValueError(f"{test_raster_file} does not exists")
+        
+        else:
+            self._env_raster_filename = value
 
     def update_all_layers(self):
+        """Updates the all_layers attribute with the current values of the instance attributes.
+
+        This method calls the _get_madaclim_layers method with the current values of the climate_dir,
+        enviro_dir, clim_data_filename, clim_meta_filename, env_data_filename, and env_meta_filename
+        attributes and assigns its return value to the all_layers attribute.
+
+        Args:
+            self (MadaclimLayers): The instance of the MadaclimLayers class.
+
+        Returns:
+            None
+        """
         self.all_layers = self._get_madaclim_layers(
             climate_dir=self.climate_dir,
             enviro_dir=self.enviro_dir,
