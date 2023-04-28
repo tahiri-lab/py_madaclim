@@ -1,14 +1,17 @@
 import json
 import re
 import pathlib
-import pandas as pd
 import requests
 import time
 import inspect
-
 from calendar import month_name
 from pathlib import Path
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Tuple
+
+import pandas as pd
+import geopandas as gpd
+import numpy as np
+from shapely.geometry import Point
 
 from coffeaphylogeo.definitions import Definitions
 
@@ -88,6 +91,7 @@ class MadaclimLayers:
             raise ValueError(f"{value} is not a valid directory path.")
         
         self._climate_dir = value
+        self.update_all_layers()
         
     @property
     def enviro_dir(self):
@@ -108,6 +112,7 @@ class MadaclimLayers:
             raise ValueError(f"{value} is not a valid directory path.")
         
         self._enviro_dir = value
+        self.update_all_layers()
 
     @property
     def clim_data_file(self):
@@ -136,6 +141,7 @@ class MadaclimLayers:
         
         else:
             self._clim_data_file = value
+            self.update_all_layers()
 
     @property
     def clim_meta_file(self):
@@ -164,6 +170,7 @@ class MadaclimLayers:
         
         else:
             self._clim_meta_file = value
+            self.update_all_layers()
     
     @property
     def env_data_file(self):
@@ -192,6 +199,7 @@ class MadaclimLayers:
         
         else:
             self._env_data_file = value
+            self.update_all_layers()
 
     @property
     def env_meta_file(self):
@@ -220,6 +228,17 @@ class MadaclimLayers:
         
         else:
             self._env_meta_file = value
+            self.update_all_layers()
+
+    def update_all_layers(self):
+        self.all_layers = self._get_madaclim_layers(
+            climate_dir=self.climate_dir,
+            enviro_dir=self.enviro_dir,
+            clim_data_file=self.clim_data_file,
+            clim_meta_file=self.clim_meta_file,
+            env_data_file=self.env_data_file,
+            env_meta_file=self.env_meta_file
+        )
 
     def _get_madaclim_layers(self, climate_dir, enviro_dir, clim_data_file, clim_meta_file, env_data_file, env_meta_file) -> pd.DataFrame :
         """Private method that will generate the all_layers attributes based on the climate/enviro dirs and all the data and metada files found by accessing their corresponding attriubtes.
@@ -718,6 +737,10 @@ class MadaclimLayers:
                 filename=defs.geoclim_files["madaclim_enviro"]
             )
 
+    # def sample_from_rasters(self, gdf: gpd.GeoDataFrame, geometry_col_name: str)->Tuple[gpd.GeoDataFrame, np.ndarray]:
+    #     raster_clim = self.climate_dir
+    #     print(raster_clim)
+
     def __str__(self) -> str:
         # Get instance attributes
         attribute_keys = list(self.__dict__.keys())
@@ -727,3 +750,4 @@ class MadaclimLayers:
         custom_methods = [method[0] for method in extract_methods if not method[0] == "__init__"]
 
         return f"Instance attributes:\n{attribute_keys}\n\nCustom methods:\n{custom_methods}\n"
+    
