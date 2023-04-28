@@ -4,6 +4,7 @@ import pathlib
 import pandas as pd
 import requests
 import time
+import inspect
 
 from calendar import month_name
 from pathlib import Path
@@ -67,7 +68,6 @@ class MadaclimLayers:
             env_meta_file=self.env_meta_file
         )
 
-        # self.geology_raster_vars = {}
 
     @property
     def climate_dir(self):
@@ -713,3 +713,13 @@ class MadaclimLayers:
                 dir_savepath=save_dir,
                 filename=defs.geoclim_files["madaclim_enviro"]
             )
+
+    def __str__(self) -> str:
+        # Get instance attributes
+        attribute_keys = list(self.__dict__.keys())
+        
+        # Extract custom methods
+        extract_methods = inspect.getmembers(self, predicate=inspect.ismethod)
+        custom_methods = [method[0] for method in extract_methods if not method[0] == "__init__"]
+
+        return f"Instance attributes:\n{attribute_keys}\n\nCustom methods:\n{custom_methods}\n"
