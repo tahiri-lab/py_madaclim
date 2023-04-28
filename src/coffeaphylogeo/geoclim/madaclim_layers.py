@@ -525,7 +525,7 @@ class MadaclimLayers:
         else: 
             select_df = self.all_layers
             
-        unique_labels = {f"layer_{num}": f"{geoclim}_{name}" for num, geoclim, name in  list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"]))}
+        unique_labels = {f"layer_{num}": f"{geoclim}_{name}" for num, geoclim, name in list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"]))}
         return unique_labels
         
 
@@ -607,9 +607,13 @@ class MadaclimLayers:
             
         # Fetch rows according to layer selection
         if description_only:
-            description = {}
-            for layer_number in layer_numbers:
-                description[f"layer_{layer_number}"] = self.all_layers[self.all_layers["layer_number"] == layer_number]["layer_description"].values[0]
+            # Save subset df with selected layers
+            select_df = self.all_layers[self.all_layers["layer_number"].isin(layer_numbers)]
+            sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
+
+            # Generate dict with key as layer_num and values containing layer information
+            description = {f"layer_{num}": f"{geotype}_{num}_{name} ({desc})" for num, geotype, name, desc in sub_selection}
+            
             return description
         
         else:    # Save whole row of df
