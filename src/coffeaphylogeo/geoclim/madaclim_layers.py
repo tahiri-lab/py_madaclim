@@ -890,10 +890,10 @@ class MadaclimLayers:
 
         # Extract layer_info to use as col name when transposing raster samples to geodataframe
         clim_number_layers = self.select_geoclim_type_layers("clim")["layer_number"].to_list()
-        clim_layers_info = self.fetch_specific_layers(layer_numbers=clim_number_layers, description_only=True)
+        clim_layers_info = self.fetch_specific_layers(layer_numbers=clim_number_layers, as_descriptive_labels=True)
 
         env_number_layers = self.select_geoclim_type_layers("env")["layer_number"].to_list()
-        env_layers_info = self.fetch_specific_layers(layer_numbers=env_number_layers, description_only=True)
+        env_layers_info = self.fetch_specific_layers(layer_numbers=env_number_layers, as_descriptive_labels=True)
 
         # Append sampled data to geodataframe
         for index, (k, v) in enumerate(clim_layers_info.items()):
