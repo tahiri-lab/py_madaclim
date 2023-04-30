@@ -6,11 +6,12 @@ import time
 import inspect
 from calendar import month_name
 from pathlib import Path
-from typing import List, Union, Optional, Tuple
+from typing import List, Union, Optional, Tuple, Dict
 
 import pandas as pd
 import geopandas as gpd
 import numpy as np
+import rasterio
 from shapely.geometry import Point
 
 from coffeaphylogeo.definitions import Definitions
@@ -61,7 +62,6 @@ class MadaclimLayers:
         self.clim_meta_filename = defs.geoclim_files["clim_metadata"]
         self.env_data_filename = defs.geoclim_files["env_data_format"]
         self.env_meta_filename = defs.geoclim_files["env_metadata"]
-
         self.clim_raster_filename = defs.geoclim_files["madaclim_current"]
         self.env_raster_filename = defs.geoclim_files["madaclim_enviro"]
         
@@ -802,10 +802,114 @@ class MadaclimLayers:
                 filename=defs.geoclim_files["madaclim_enviro"]
             )
 
-    def sample_from_rasters(self, gdf: gpd.GeoDataFrame, geometry_col_name: str)->Tuple[gpd.GeoDataFrame, np.ndarray]:
+    def sample_rasters_from_gdf(self, gdf: gpd.GeoDataFrame, geometry_col_name: str="geometry", as_descriptive_labels: bool=True)->Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]:
+        """Samples raster values from a GeoDataFrame containing Point geometries.
+
+        Args:
+            gdf (gpd.GeoDataFrame): The GeoDataFrame containing the Point geometries to sample from.
+            geometry_col_name (str, optional): The name of the column in the GeoDataFrame that contains the Point geometries. Defaults to "geometry".
+            as_descriptive_labels (bool, optional): Whether to return descriptive labels for the raster values. Defaults to True.
+
+        Raises:
+            ValueError: If the geometry column in the GeoDataFrame is not a Point geometry or if it contains empty Point objects.
+            ValueError: If the raster projections are on different coordinate reference systems (CRS).
+
+        Returns:
+            Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]: A tuple containing a copy of the input GeoDataFrame with additional columns for the raster values and a dictionary containing the raster values for each filename.
+        """
+        # Make a copy of the geodf
+        gdf_copy = gdf.copy()
+
+        # Get the geometry column from the GeoDataFrame
+        geom_data = gdf_copy[geometry_col_name]
+
+        # Check if the geometry column is a Point geometry
+        if geom_data.dtype != 'geometry' or geom_data.geom_type.unique()[0] != 'Point':
+            raise ValueError(f"The '{geometry_col_name}' column in the GeoDataFrame is not a Point geometry.")
+        
+        # Check if geodataframe contains empty Point objects
+        empty_points = (geom_data.is_empty).sum()
+        if empty_points > 0:
+            raise ValueError("Empty Point objects cannot be sampled. To remove them use:\ngpd.GeoDataFrame(gdf.loc[gdf[geometry].is_empty == False])")
 
         # Define rasters path
-        pass
+        raster_clim = rasterio.open(self.climate_dir / self.clim_raster_filename)
+        raster_env = rasterio.open(self.enviro_dir / self.env_raster_filename)
+
+        # Sanity check for rasters
+        if raster_clim.crs != raster_env.crs:
+            raise ValueError("Raster projections are on different coordinate reference system (CRS).")
+
+        # Validate the CRS from the geodataframe to both rasters
+        if gdf_copy.crs != raster_clim.crs or gdf_copy.crs!= raster_env.crs:
+            try:
+                print(f"Reprojecting gdf[geometry] Point objects from {gdf_copy.crs} to the rasters' {raster_clim.crs}...\n")
+                gdf_copy = gdf_copy.to_crs(raster_clim.crs)
+            except Exception as e:
+                raise(f"Error {e}: Could not convert GeoDataFrame to the raster's CRS.")
+
+        # Extract nodata value for each rasters
+        nodata_clim = raster_clim.nodata
+        nodata_env = raster_env.nodata
+
+        # Get geometry points coordinates
+        coord_list = [(x,y) for x,y in zip(gdf_copy[geometry_col_name].x, gdf_copy[geometry_col_name].y)]
+
+        # Sample rasters from Point objects
+        raster_samples = {}
+        raster_samples[self.clim_raster_filename] = [x for x in raster_clim.sample(coord_list)]    # Climate raster sampling        
+        print(f"Extracted {len(raster_samples[self.clim_raster_filename])} specimens from {self.clim_raster_filename}")
+
+        raster_samples[self.env_raster_filename] = [x for x in raster_env.sample(coord_list)]    # Environmental raster sampling
+        print(f"Extracted {len(raster_samples[self.env_raster_filename])} specimens from {self.env_raster_filename}\n")
+
+        # Catch specimens with nodata values
+        if nodata_clim is None:    # Climate nodata samples 
+            print(f"Raster {self.clim_raster_filename} does not contain nodata values")
+        else:
+            num_nodata_clim = sum([nodata_clim in val for val in raster_samples[self.clim_raster_filename]])
+            if num_nodata_clim > 0 :
+                print(f"BEWARE! {num_nodata_clim} specimens contains 'nodata' values when extracting from {self.clim_raster_filename}:")
+                print(f"Index of specimen(s) with at least 1 'nodata' point: {[i for i, val in enumerate(raster_samples[self.clim_raster_filename]) if nodata_clim in val]}\n")
+            else:
+                print(f"0 specimen containing nodata values in any of the {len(raster_clim.indexes)} variables from {self.clim_raster_filename}\n")
+        
+        if nodata_env is None:    # Environmental nodata samples
+            print(f"Raster {self.env_raster_filename} does not contain nodata values")
+        else:
+            num_nodata_env = sum([nodata_env in val for val in raster_samples[self.env_raster_filename]])    
+            if num_nodata_env > 0 :
+                print(f"BEWARE! {num_nodata_env} specimens contains 'nodata' values when extracting from {self.env_raster_filename}:")
+                print(f"Index of specimen(s) with at least 1 'nodata' point: {[i for i, val in enumerate(raster_samples[self.env_raster_filename]) if nodata_env in val]}\n")
+            else:
+                print(f"0 specimen containing nodata values in any of the {len(raster_env.indexes)} variables from {self.env_raster_filename}\n")
+        
+        # Assign a new column with the list arrays sampled
+        gdf_copy[f"raster_samples[{self.clim_raster_filename}]"] = raster_samples[self.clim_raster_filename]
+        gdf_copy[f"raster_samples[{self.env_raster_filename}]"] = raster_samples[self.env_raster_filename]
+
+        # Extract layer_info to use as col name when transposing raster samples to geodataframe
+        clim_number_layers = self.select_geoclim_type_layers("clim")["layer_number"].to_list()
+        clim_layers_info = self.fetch_specific_layers(layer_numbers=clim_number_layers, description_only=True)
+
+        env_number_layers = self.select_geoclim_type_layers("env")["layer_number"].to_list()
+        env_layers_info = self.fetch_specific_layers(layer_numbers=env_number_layers, description_only=True)
+
+        # Append sampled data to geodataframe
+        for index, (k, v) in enumerate(clim_layers_info.items()):
+            for val, specimen_index in zip(raster_samples[self.clim_raster_filename], gdf_copy.index.to_list()):
+                col_layer_name = v if as_descriptive_labels else k    # layer num as col names or more descriptive
+                gdf_copy.loc[specimen_index, col_layer_name] = val[index]
+        
+        for index, (k, v) in enumerate(env_layers_info.items()):
+            for val, specimen_index in zip(raster_samples[self.env_raster_filename], gdf_copy.index.to_list()):
+                col_layer_name = v if as_descriptive_labels else k    # layer num as col names or more descriptive
+                gdf_copy.loc[specimen_index, col_layer_name] = val[index]
+
+        # Close rasters and return geodataframe + sampled raster values
+        raster_clim.close()
+        raster_env.close()
+        return gdf_copy, raster_samples
 
 
     def __str__(self) -> str:
