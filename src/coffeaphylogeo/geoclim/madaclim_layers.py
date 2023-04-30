@@ -588,6 +588,7 @@ class MadaclimLayers:
         Example:
             >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
+            #TODO REDO OUTPUT EXAMPLE
             >>> >>> madaclim_info.unique_labels_layers(geoclim_type="env")
             {'layer_71': 'env_altitude', 'layer_72': 'env_slope', 'layer_73': 'env_aspect', 'layer_74': 'env_solar', 'layer_75': 'env_geology', 'layer_76': 'env_soil', 'layer_77': 'env_vegetation', 'layer_78': 'env_watersheds', 'layer_79': 'env_forestcover'}
         """
@@ -613,16 +614,16 @@ class MadaclimLayers:
         return unique_labels
         
 
-    def fetch_specific_layers(self, layer_numbers: Union[int, str, List[Union[int, str]]], from_unique_labels: bool=False, description_only: bool=False) -> Union[dict, pd.DataFrame]:
+    def fetch_specific_layers(self, layer_numbers: Union[int, str, List[Union[int, str]]], from_unique_labels: bool=False, as_descriptive_labels: bool=False) -> Union[dict, pd.DataFrame]:
         """Fetches specific layers from the all_layers DataFrame.
 
         Args:
             layer_numbers (Union[int, str, List[Union[int, str]]]): The layer number(s) to fetch. Can be a single int or str value or a list of int or str values.
             from_unique_labels (bool): If True, layer_numbers are treated as keys from the unique_labels method output. Defaults to False.
-            description_only (bool): If True, only the layer description is returned. Defaults to False.
+            as_descriptive_labels (bool): If True, only the layer description is returned. Defaults to False.
 
         Returns:
-            Union[dict, pd.DataFrame]: If description_only is True, returns a dictionary with the layer descriptions. Otherwise, returns a DataFrame with the specified layers.
+            Union[dict, pd.DataFrame]: If as_descriptive_labels is True, returns a dictionary with the layer descriptions. Otherwise, returns a DataFrame with the specified layers.
 
         Raises:
             ValueError: If from_unique_labels is True and any value in layer_numbers is not a valid key from the unique_labels method output.
@@ -653,9 +654,7 @@ class MadaclimLayers:
         8            79  Percentage of forest cover for the year 2010 (%).  ...  forestcover                                               None
 
         [9 rows x 5 columns]
-        >>> # Fetch the description only
-        >>> madaclim_info.fetch_specific_layers(layer_numbers="55", description_only=True)
-        {'layer_55': 'Precipitation of coldest quarter'}
+        #TODO REDO EXAMPLE FOR AS_DESCRIPTIVE
         
         """
         # Validate layer_numbers
@@ -690,7 +689,7 @@ class MadaclimLayers:
                 raise ValueError(f"layer_number must fall between {min_layer} and {max_layer} (You entered {layer_number=}).")
             
         # Fetch rows according to layer selection
-        if description_only:
+        if as_descriptive_labels:
             # Save subset df with selected layers
             select_df = self.all_layers[self.all_layers["layer_number"].isin(layer_numbers)]
             sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
@@ -816,6 +815,7 @@ class MadaclimLayers:
 
         Returns:
             Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]: A tuple containing a copy of the input GeoDataFrame with additional columns for the raster values and a dictionary containing the raster values for each filename.
+        #TODO ADD EXAMPLES!
         """
         # Make a copy of the geodf
         gdf_copy = gdf.copy()
@@ -910,6 +910,8 @@ class MadaclimLayers:
         raster_clim.close()
         raster_env.close()
         return gdf_copy, raster_samples
+    
+    #TODO DEF SAMPLE_FROM_SINGLE_POINT()
 
 
     def __str__(self) -> str:
