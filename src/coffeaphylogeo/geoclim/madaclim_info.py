@@ -24,9 +24,9 @@ class MadaclimLayers:
     Attributes:
         climate_dir (Path): The directory path for climate-related data.
         enviro_dir (Path): The directory path for environment-related data.
-        clim_data_filename (str): The file name of the climate data format file.
+        clim_dataformat_filename (str): The file name of the climate data format file.
         clim_meta_filename (str): The file name of the climate metadata file.
-        env_data_filename (str): The file name of the environment data format file.
+        env_dataformat_filename (str): The file name of the environment data format file.
         env_meta_filename (str): The file name of the environment metadata file.
         all_layers (pd.DataFrame): A DataFrame containing a complete and formatted version of all Madaclim layers.
     
@@ -58,9 +58,9 @@ class MadaclimLayers:
         self.climate_dir = defs.get_geoclim_path("climate_data")    # Path dir for clim-related data
         self.enviro_dir = defs.get_geoclim_path("environment_data")    # Path dir for env-related data
         
-        self.clim_data_filename = defs.geoclim_files["clim_data_format"]
+        self.clim_dataformat_filename = defs.geoclim_files["clim_data_format"]
         self.clim_meta_filename = defs.geoclim_files["clim_metadata"]
-        self.env_data_filename = defs.geoclim_files["env_data_format"]
+        self.env_dataformat_filename = defs.geoclim_files["env_data_format"]
         self.env_meta_filename = defs.geoclim_files["env_metadata"]
         self.clim_raster_filename = defs.geoclim_files["madaclim_current"]
         self.env_raster_filename = defs.geoclim_files["madaclim_enviro"]
@@ -68,9 +68,9 @@ class MadaclimLayers:
         self.all_layers = self._get_madaclim_layers(
             climate_dir=self.climate_dir,
             enviro_dir=self.enviro_dir,
-            clim_data_filename=self.clim_data_filename,
+            clim_dataformat_filename=self.clim_dataformat_filename,
             clim_meta_filename=self.clim_meta_filename,
-            env_data_filename=self.env_data_filename,
+            env_dataformat_filename=self.env_dataformat_filename,
             env_meta_filename=self.env_meta_filename
         )
 
@@ -116,12 +116,12 @@ class MadaclimLayers:
         self._enviro_dir = value
 
     @property
-    def clim_data_filename(self):
+    def clim_dataformat_filename(self):
         """str: The file name of the climate data file."""
-        return self._clim_data_filename
+        return self._clim_dataformat_filename
     
-    @clim_data_filename.setter
-    def clim_data_filename(self, value):
+    @clim_dataformat_filename.setter
+    def clim_dataformat_filename(self, value):
         """Sets the file name of the climate data file.
 
         Args:
@@ -133,7 +133,7 @@ class MadaclimLayers:
         """
         # Validate type
         if not isinstance(value, str):
-            raise TypeError("clim_data_filename attribute nust be a string.")
+            raise TypeError("clim_dataformat_filename attribute nust be a string.")
         
         # Validate path and file
         valid_file = self.climate_dir / value
@@ -141,7 +141,7 @@ class MadaclimLayers:
             raise ValueError(f"{valid_file} does not exists")
         
         else:
-            self._clim_data_filename = value
+            self._clim_dataformat_filename = value
 
     @property
     def clim_meta_filename(self):
@@ -172,12 +172,12 @@ class MadaclimLayers:
             self._clim_meta_filename = value
     
     @property
-    def env_data_filename(self):
+    def env_dataformat_filename(self):
         """str: The file name of the environmental data file."""
-        return self._env_data_filename
+        return self._env_dataformat_filename
     
-    @env_data_filename.setter
-    def env_data_filename(self, value):
+    @env_dataformat_filename.setter
+    def env_dataformat_filename(self, value):
         """Sets the file name of the environmental data file.
 
         Args:
@@ -189,7 +189,7 @@ class MadaclimLayers:
         """
         # Validate type
         if not isinstance(value, str):
-            raise TypeError("env_data_filename attribute nust be a string.")
+            raise TypeError("env_dataformat_filename attribute nust be a string.")
         
         # Validate path and file
         valid_file = self.enviro_dir / value
@@ -197,7 +197,7 @@ class MadaclimLayers:
             raise ValueError(f"{valid_file} does not exists")
         
         else:
-            self._env_data_filename = value
+            self._env_dataformat_filename = value
 
     @property
     def env_meta_filename(self):
@@ -287,7 +287,7 @@ class MadaclimLayers:
         """Updates the all_layers attribute with the current values of the instance attributes.
 
         This method calls the _get_madaclim_layers method with the current values of the climate_dir,
-        enviro_dir, clim_data_filename, clim_meta_filename, env_data_filename, and env_meta_filename
+        enviro_dir, clim_dataformat_filename, clim_meta_filename, env_dataformat_filename, and env_meta_filename
         attributes and assigns its return value to the all_layers attribute.
 
         Args:
@@ -299,21 +299,21 @@ class MadaclimLayers:
         self.all_layers = self._get_madaclim_layers(
             climate_dir=self.climate_dir,
             enviro_dir=self.enviro_dir,
-            clim_data_filename=self.clim_data_filename,
+            clim_dataformat_filename=self.clim_dataformat_filename,
             clim_meta_filename=self.clim_meta_filename,
-            env_data_filename=self.env_data_filename,
+            env_dataformat_filename=self.env_dataformat_filename,
             env_meta_filename=self.env_meta_filename
         )
 
-    def _get_madaclim_layers(self, climate_dir, enviro_dir, clim_data_filename, clim_meta_filename, env_data_filename, env_meta_filename) -> pd.DataFrame :
+    def _get_madaclim_layers(self, climate_dir, enviro_dir, clim_dataformat_filename, clim_meta_filename, env_dataformat_filename, env_meta_filename) -> pd.DataFrame :
         """Private method that will generate the all_layers attributes based on the climate/enviro dirs and all the data and metada files found by accessing their corresponding attriubtes.
 
         Args:
             climate_dir (Path): The directory path for climate-related data.
             enviro_dir (Path): The directory path for environment-related data.
-            clim_data_filename (str): The file name of the climate data format file.
+            clim_dataformat_filename (str): The file name of the climate data format file.
             clim_meta_filename (str): The file name of the climate metadata file.
-            env_data_filename (str): The file name of the environment data format file.
+            env_dataformat_filename (str): The file name of the environment data format file.
             env_meta_filename (str): The file name of the environment metadata file.
 
         Returns:
@@ -444,11 +444,11 @@ class MadaclimLayers:
         
         
         # Open data and metadata tables
-        with open(climate_dir / clim_data_filename, "r") as f:
+        with open(climate_dir / clim_dataformat_filename, "r") as f:
             clim_format = json.load(f)
         with open(climate_dir /  clim_meta_filename,"r") as f:
             clim_meta = json.load(f)
-        with open(enviro_dir / env_data_filename, "r") as f:
+        with open(enviro_dir / env_dataformat_filename, "r") as f:
             env_format = json.load(f)
         with open(enviro_dir / env_meta_filename, "r") as f:
             env_meta = json.load(f)
