@@ -778,27 +778,27 @@ class MadaclimLayers:
         if save_dir is None:
             download_single_file(    # Climate raster
                 url=defs.urls["madaclim_current_raster"],
-                dir_savepath=defs.get_geoclim_path("climate_data"),
-                filename=defs.geoclim_files["madaclim_current"]
+                dir_savepath=self.climate_dir,
+                filename=self.clim_raster_filename
             )
 
             download_single_file(
                 url=defs.urls["environment_raster"],
-                dir_savepath=defs.get_geoclim_path("environment_data"),
-                filename=defs.geoclim_files["madaclim_enviro"]
+                dir_savepath=self.enviro_dir,
+                filename=self.env_raster_filename
             )
         # Download to specified path
         else:
             download_single_file(    # Climate raster
                 url=defs.urls["madaclim_current_raster"],
                 dir_savepath=save_dir,
-                filename=defs.geoclim_files["madaclim_current"]
+                filename=self.clim_raster_filename
             )
 
             download_single_file(
                 url=defs.urls["environment_raster"],
                 dir_savepath=save_dir,
-                filename=defs.geoclim_files["madaclim_enviro"]
+                filename=self.env_raster_filename
             )
 
     def sample_rasters_from_gdf(self, gdf: gpd.GeoDataFrame, geometry_col_name: str="geometry", as_descriptive_labels: bool=True)->Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]:
