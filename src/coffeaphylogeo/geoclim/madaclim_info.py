@@ -625,7 +625,7 @@ class MadaclimLayers:
         return unique_labels
         
 
-    def fetch_specific_layers(self, layers_labels: Union[int, str, List[Union[int, str]]], as_descriptive_labels: bool=False) -> Union[dict, pd.DataFrame]:
+    def fetch_specific_layers(self, layers_labels: Union[int, str, List[Union[int, str]]], as_descriptive_labels: bool=False, return_list: Optional[bool]=False) -> Union[dict, pd.DataFrame, list]:
         """
         Fetches specific layers from the all_layers DataFrame based on the given input.
 
@@ -710,7 +710,10 @@ class MadaclimLayers:
             sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
             layers_description = {f"layer_{num}": f"{geoclim}_{num}_{name} ({desc})" for num, geoclim, name, desc in sub_selection}
             
-            return layers_description
+            if return_list:
+                return list(layers_description.values())
+            else:
+                return layers_description
         
         else:    # Save whole row of df
             return select_df
