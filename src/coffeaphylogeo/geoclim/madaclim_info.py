@@ -283,6 +283,32 @@ class MadaclimLayers:
         else:
             self._env_raster_filename = value
 
+    @property
+    def clim_crs(self):
+        """rasterio.crs.CRS: The CRS' epsg code from the Madaclim climate raster."""
+        
+        # Validate raster IO path + integrity
+        self._check_rasters()
+        
+        # Get epsg from clim_raster
+        clim_raster_path = self.climate_dir / self.clim_raster_filename
+        with rasterio.open(clim_raster_path) as clim_raster:
+            clim_epsg = clim_raster.crs
+        return clim_epsg
+
+    @property
+    def env_crs(self):
+        """rasterio.crs.CRS: The CRS' epsg code from the Madaclim environmental raster."""
+        
+        # Validate raster IO path + integrity
+        self._check_rasters()
+        
+        # Get epsg from env_raster
+        env_raster_path = self.enviro_dir / self.env_raster_filename
+        with rasterio.open(env_raster_path) as env_raster:
+            env_epsg = env_raster.crs
+        return env_epsg
+
     def update_all_layers(self):
         """Updates the all_layers attribute with the current values of the instance attributes.
 
@@ -815,6 +841,34 @@ class MadaclimLayers:
                 dir_savepath=save_dir,
                 filename=self.env_raster_filename
             )
+
+    def _check_rasters(self):
+        # Define rasters path + validate file
+        clim_raster_path = self.climate_dir / self.clim_raster_filename
+        env_raster_path = self.enviro_dir / self.env_raster_filename
+
+        # Check if both files exist
+        if not clim_raster_path.is_file() and not env_raster_path.is_file():
+            raise FileExistsError(f"Could not find both {clim_raster_path} and {env_raster_path} raster files.")
+        # Check if climate raster file exists
+        elif not clim_raster_path.is_file():
+            raise FileExistsError(f"Could not find climate raster file: {clim_raster_path}.")
+        # Check if environmental raster file exists
+        elif not env_raster_path.is_file():
+            raise FileExistsError(f"Could not find environmental raster file: {env_raster_path}.")
+        
+        # Catch any IO errors
+        try:
+            with rasterio.open(clim_raster_path) as clim_raster:
+                pass
+        except rasterio.errors.RasterioIOError as e:
+            raise IOError(f"Could not open {clim_raster_path}: {e}")
+
+        try:
+            with rasterio.open(env_raster_path) as env_raster:
+                pass
+        except rasterio.errors.RasterioIOError as e:
+            raise IOError(f"Could not open {env_raster_path}: {e}")
 
     def sample_rasters_from_gdf(self, gdf: gpd.GeoDataFrame, geometry_col_name: str="geometry", as_descriptive_labels: bool=True)->Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]:
         """Samples raster values from a GeoDataFrame containing Point geometries.
