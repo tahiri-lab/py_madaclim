@@ -27,15 +27,15 @@ madaclim_crs = pyproj.CRS.from_epsg(32738)    # Madaclim climate and environment
 class MadaclimPoint:
     
     #TODO DOCSTRING
-    def __init__(self, specimen_id: str, latitude: float, longitude: float, crs: pyproj.crs.crs.CRS=pyproj.CRS.from_epsg(4326), **kwargs) -> None:
+    def __init__(self, specimen_id: str, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS=pyproj.CRS.from_epsg(4326), **kwargs) -> None:
         self.specimen_id = specimen_id
-        self.crs = self.validate_crs(crs)
-        self.latitude = self.validate_lat(latitude, crs=self.crs)
-        self.longitude = self.validate_lon(longitude, crs=self.crs)
+        self.source_crs = self.validate_crs(source_crs)
+        self.latitude = self.validate_lat(latitude, crs=self.source_crs)
+        self.longitude = self.validate_lon(longitude, crs=self.source_crs)
         self.mada_geom_point = self._construct_point(
             latitude=self.latitude, 
             longitude=self.longitude,
-            source_crs=self.crs
+            source_crs=self.source_crs
         )
         
         # Store any additional keyword arguments as instance attributes
@@ -56,7 +56,7 @@ class MadaclimPoint:
     
     @latitude.setter
     def latitude(self, value):
-        value = self.validate_lat(value, crs=self.crs)
+        value = self.validate_lat(value, crs=self.source_crs)
         self._latitude = value
         # Update mada_geom_point when latitude is updated
         self._update_mada_geom_point()
@@ -67,19 +67,19 @@ class MadaclimPoint:
     
     @longitude.setter
     def longitude(self, value):
-        value = self.validate_lon(value, crs=self.crs)
+        value = self.validate_lon(value, crs=self.source_crs)
         self._longitude = value
         # Update mada_geom_point when longitude is updated
         self._update_mada_geom_point()
     
     @property
-    def crs(self):
-        return self._crs
+    def source_crs(self):
+        return self._source_crs
     
-    @crs.setter
-    def crs(self, value):
+    @source_crs.setter
+    def source_crs(self, value):
         value = self.validate_crs(value)
-        self._crs = value
+        self._source_crs = value
         
         # Update mada_geom_point when crs is updated
         self._update_mada_geom_point()
@@ -145,19 +145,19 @@ class MadaclimPoint:
             self.mada_geom_point = self._construct_point(
                 latitude=self.latitude,
                 longitude=self.longitude,
-                source_crs=self.crs
+                source_crs=self.source_crs
             )
-            
+
     def __str__(self) -> str:
         madapoint_obj = (
-            f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tlatitude = {self.latitude},\n\t"
-            f"longitude = {self.longitude},\n\tcrs = EPSG:{self.crs.to_epsg()},\n\tmada_geom_point = {self.mada_geom_point}\n)"
+            f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tsource_crs = EPSG:{self.source_crs.to_epsg()},\n\t"
+            f"latitude = {self.latitude},\n\tlongitude = {self.longitude},\n\tmada_geom_point = {self.mada_geom_point}\n)"
         )
         return madapoint_obj
 
     def __repr__(self) -> str:
         madapoint_obj = (
-            f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tlatitude = {self.latitude},\n\t"
-            f"longitude = {self.longitude},\n\tcrs = EPSG:{self.crs.to_epsg()},\n\tmada_geom_point = {self.mada_geom_point}\n)"
+            f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tsource_crs = EPSG:{self.source_crs.to_epsg()},\n\t"
+            f"latitude = {self.latitude},\n\tlongitude = {self.longitude},\n\tmada_geom_point = {self.mada_geom_point}\n)"
         )
         return madapoint_obj
