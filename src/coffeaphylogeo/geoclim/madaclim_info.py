@@ -12,6 +12,7 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 import rasterio
+import pyproj
 from shapely.geometry import Point
 
 from coffeaphylogeo.definitions import Definitions
@@ -285,7 +286,7 @@ class MadaclimLayers:
 
     @property
     def clim_crs(self):
-        """rasterio.crs.CRS: The CRS' epsg code from the Madaclim climate raster."""
+        """pyproj.crs.CRS: The CRS from the Madaclim climate raster."""
         
         # Validate raster IO path + integrity
         self._check_rasters()
@@ -293,12 +294,13 @@ class MadaclimLayers:
         # Get epsg from clim_raster
         clim_raster_path = self.climate_dir / self.clim_raster_filename
         with rasterio.open(clim_raster_path) as clim_raster:
-            clim_epsg = clim_raster.crs
-        return clim_epsg
+            clim_epsg = clim_raster.crs.to_epsg()  # Get the EPSG code of the CRS
+            clim_crs = pyproj.CRS.from_epsg(clim_epsg)  # Create a pyproj CRS object
+        return clim_crs
 
     @property
     def env_crs(self):
-        """rasterio.crs.CRS: The CRS' epsg code from the Madaclim environmental raster."""
+        """pyproj.crs.CRS: The CRS from the Madaclim environmental raster."""
         
         # Validate raster IO path + integrity
         self._check_rasters()
@@ -306,8 +308,9 @@ class MadaclimLayers:
         # Get epsg from env_raster
         env_raster_path = self.enviro_dir / self.env_raster_filename
         with rasterio.open(env_raster_path) as env_raster:
-            env_epsg = env_raster.crs
-        return env_epsg
+            env_epsg = env_raster.crs.to_epsg()  # Get the EPSG code of the CRS
+            env_crs = pyproj.CRS.from_epsg(env_epsg)  # Create a pyproj CRS object
+        return env_crs
 
     def update_all_layers(self):
         """Updates the all_layers attribute with the current values of the instance attributes.
