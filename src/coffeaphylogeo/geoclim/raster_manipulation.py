@@ -15,11 +15,11 @@ defs = Definitions()
 
 climate_dir = defs.get_geoclim_path("climate_data")
 clim_raster_filename = defs.geoclim_files["madaclim_current"]
-clim_raster_path = climate_dir / clim_raster_filename
+default_clim_raster_path = climate_dir / clim_raster_filename
 
 enviro_dir = defs.get_geoclim_path("environment_data") 
 env_raster_filename = defs.geoclim_files["madaclim_enviro"]
-env_raster_path = enviro_dir / env_raster_filename
+default_env_raster_path = enviro_dir / env_raster_filename
 
 
 class MadaclimPoint:
@@ -155,6 +155,120 @@ class MadaclimPoint:
                 source_crs=self.source_crs
             )
 
+    
+    def sample_from_rasters(self, layers_to_sample: Union[int, str, List[Union[int, str]]]="all", layer_info: bool=True, clim_raster_path: Optional[pathlib.Path]=None, env_raster_path: Optional[pathlib.Path]=None):
+        
+        # Create a MadaclimLayers instance to get layers labels and validate layers to sample
+        madaclim_info = MadaclimLayers()
+        all_layers_df = madaclim_info.all_layers
+        
+        # Validate layers to sample
+        possible_layers_num_format = [f"layer_{num}" for num in all_layers_df["layer_number"].to_list()]
+
+        if isinstance(layers_to_sample, list):
+            # Check if all elements are in layer_<num> format
+            layers_num_format = all([layer_label in possible_layers_num_format for layer_label in layers_to_sample])
+            
+            if layers_num_format:
+                # Save as list of ints after check
+                layers_numbers = [int(layer_label.split("_")[1]) for layer_label in layers_to_sample]
+
+            # layers_to_sample as list of ints
+            else:
+                try:
+                    layers_numbers = [int(layer) for layer in layers_to_sample]
+                except (ValueError, TypeError):
+                    raise TypeError("layers_to_sample must be either a single int value or a string that can be converted to an int, or a list of int values or strings that can be converted to int values")
+        
+        # Single layers_to_sample type check 
+        else:
+            if layers_to_sample == "all":    # Get all layers as default
+                layers_numbers = all_layers_df["layer_number"].to_list()
+            
+            elif layers_to_sample in possible_layers_num_format:    # Check layer_<num> str format
+                layers_numbers = [int(layers_to_sample.split("_")[1])]
+            else:
+                try:
+                    layers_numbers = [int(layers_to_sample)]    # As single item int list
+                except (ValueError, TypeError):
+                    raise TypeError("layers_to_sample must be either a single int value or a string that can be converted to an int")
+  
+        # Validate layer number range for layer_numbers as in
+        min_layer = min(all_layers_df["layer_number"])
+        max_layer = max(all_layers_df["layer_number"])
+
+        for layer_number in layers_numbers:
+            if not min_layer <= layer_number <= max_layer:
+                raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_number=} is not valid.")
+            
+        # Get possible layer numbers for each raster
+        geoclim_types = ["clim", "env"]
+        geoclim_layer_ranges = {geoclim_type: madaclim_info.select_geoclim_type_layers(geoclim_type)["layer_number"].to_list() for geoclim_type in geoclim_types}
+
+        clim_raster_layers_to_sample = [layer_num for layer_num in layers_numbers if layer_num in geoclim_layer_ranges["clim"]]
+        env_raster_layers_to_sample = [layer_num for layer_num in layers_numbers if layer_num in geoclim_layer_ranges["env"]]
+
+        # # Validate if mada_geom_point attribute is of Point geom and not empty
+        if not isinstance(self.mada_geom_point, shapely.geometry.point.Point):
+            raise TypeError("The 'mada_geom_point' attribute must be a shapely.geometry.point.Point object.")
+        
+        if self.mada_geom_point.is_empty:
+            raise ValueError("The 'mada_geom_point' object cannot be empty.")
+        
+        # Sample climate and env raster on demand
+        sampled_data = {}
+
+        if clim_raster_layers_to_sample:
+            with rasterio.open(clim_raster_path or default_clim_raster_path) as clim_raster:
+                nodata_clim = clim_raster.nodata
+                
+                # Sample selected layers according to the coordinate
+                for layer_num in clim_raster_layers_to_sample:
+                    band = madaclim_info.get_band_from_layer_number(layer_num, "clim")
+                    
+                    # Sample using the self.mada_geom_point attributes coordinates for the current layer
+                    data = list(clim_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band))[0]
+                    
+                    # Save with layer info
+                    if layer_info:
+                        layer_name = madaclim_info.fetch_specific_layers(
+                            layers_labels=layer_num, 
+                            as_descriptive_labels=True, 
+                            return_list=True
+                        )[0]
+                    else:
+                        layer_name = f"layer_{layer_num}"
+
+                    sampled_data[layer_name] = data[0]
+
+        #TODO ADD PRINT STATEMENTS FOR STATUS IN LARGE FETCHES
+        if env_raster_layers_to_sample:
+            with rasterio.open(env_raster_path or default_env_raster_path) as env_raster:
+                
+                # Sample selected layers according to the coordinate
+                for layer_num in env_raster_layers_to_sample:
+                    band = madaclim_info.get_band_from_layer_number(layer_num, "env")
+                    
+                    # Sample using the self.mada_geom_point attributes coordinates for the current layer
+                    data = list(env_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band))[0]
+                    
+                    # Save with layer info
+                    if layer_info:
+                        layer_name = madaclim_info.fetch_specific_layers(
+                            layers_labels=layer_num, 
+                            as_descriptive_labels=True, 
+                            return_list=True
+                        )[0]
+                    else:
+                        layer_name = f"layer_{layer_num}"
+                    
+                    sampled_data[layer_name] = data[0]
+
+        #? SAVE DATA TO ATTRIBUTE MAYBE
+        return sampled_data
+    
+    
+    
     def __str__(self) -> str:
         madapoint_obj = (
             f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tsource_crs = EPSG:{self.source_crs.to_epsg()},\n\t"
