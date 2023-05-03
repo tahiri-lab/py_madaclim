@@ -928,6 +928,54 @@ class MadaclimLayers:
     
     #TODO DEF SAMPLE_FROM_SINGLE_POINT()
 
+    def get_band_from_layer_number(self, layer_number: Union[str, int], geoclim_type: str)->int:
+        """Get the band number in a raster file corresponding to a given layer number and geoclim type.
+
+        Args:
+            layer_number (Union[str, int]): The layer number to find the corresponding band number for.
+            geoclim_type (str): The geoclim type, either "clim" or "env".
+
+        Raises:
+            TypeError: If geoclim_type is not a string.
+            ValueError: If geoclim_type is not one of the possible geoclim types ("clim" or "env").
+            ValueError: If layer_number is out of range for the selected geoclim raster.
+            ValueError: If the band number could not be retrieved for the given layer number.
+
+        Returns:
+            int: The band number in the raster file corresponding to the given layer number and geoclim type.
+        """
+        
+        # Validate geoclim_type
+        if not isinstance(geoclim_type, str):
+            raise TypeError("geoclim_type must be a string.")
+        
+        possible_geoclim_types = ["clim", "env"]
+        if geoclim_type not in possible_geoclim_types:
+            raise ValueError(f"geoclim_type must be one of {possible_geoclim_types}")
+        
+        # Validate layer_number according to geoclim type
+        select_geoclim_layers_range = self.select_geoclim_type_layers(geoclim_type)["layer_number"].to_list()
+
+        if layer_number not in select_geoclim_layers_range:
+            raise ValueError(f"{layer_number=} is out of range for the selected geoclim raster of {geoclim_type}. Choose between {min(select_geoclim_layers_range)} and {max(select_geoclim_layers_range)}")
+
+        # Get the number of bands for the selected geoclim_type raster
+        if geoclim_type == "clim":
+            with rasterio.open(self.climate_dir / self.clim_raster_filename) as clim_raster:
+                raster_bands = clim_raster.read().shape[0]
+        
+        if geoclim_type == "env":
+            with rasterio.open(self.enviro_dir / self.env_raster_filename) as env_raster:
+                raster_bands = env_raster.read().shape[0]
+
+        # Return the band number according to the layer number
+        band_number = layer_number - select_geoclim_layers_range[0] + 1
+        
+        if band_number not in range(1, raster_bands + 1):
+            raise ValueError(f"Could not retrieve {band_number=} for {layer_number=}")
+        
+        return band_number
+
 
     def __str__(self) -> str:
         # Get instance attributes
