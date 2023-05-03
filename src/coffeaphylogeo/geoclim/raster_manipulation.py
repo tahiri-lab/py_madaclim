@@ -147,10 +147,17 @@ class MadaclimPoint:
                 longitude=self.longitude,
                 source_crs=self.crs
             )
-        
+            
     def __str__(self) -> str:
-        single_specimen = (
+        madapoint_obj = (
             f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tlatitude = {self.latitude},\n\t"
             f"longitude = {self.longitude},\n\tcrs = EPSG:{self.crs.to_epsg()},\n\tmada_geom_point = {self.mada_geom_point}\n)"
         )
-        return single_specimen
+        return madapoint_obj
+
+    def __repr__(self) -> str:
+        madapoint_obj = (
+            f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tlatitude = {self.latitude},\n\t"
+            f"longitude = {self.longitude},\n\tcrs = EPSG:{self.crs.to_epsg()},\n\tmada_geom_point = {self.mada_geom_point}\n)"
+        )
+        return madapoint_obj
