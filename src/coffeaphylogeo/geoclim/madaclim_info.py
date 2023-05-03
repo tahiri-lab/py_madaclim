@@ -557,6 +557,7 @@ class MadaclimLayers:
         4             5  Monthly minimum temperature (°C x 10)         clim      tmin5       Monthly minimum temperature (°C x 10) - May
 
         """
+        all_layers_df = self.all_layers.copy()
         # Validate geoclim_type
         if not isinstance(geoclim_type, str):
             raise TypeError("geoclim_type must be a string.")
@@ -565,32 +566,33 @@ class MadaclimLayers:
         if geoclim_type not in possible_geoclim_types:
             raise ValueError(f"geoclim_type must be one of {possible_geoclim_types}")
         
-        select_df = self.all_layers[self.all_layers["geoclim_type"] == geoclim_type]
+        select_df = all_layers_df[all_layers_df["geoclim_type"] == geoclim_type]
 
         return select_df
     
-    def unique_labels_layers(self, geoclim_type: str="all") -> dict:
-        """Extract unique combinations from all available layers in the Madaclim db as a dictionary of unique keys and values for each layer.
-
-        This method takes an optional `geoclim_type` argument that specifies the type of geoclimatic layers to include in the result. If `geoclim_type` is not provided, all layers are included by default.
+    def get_layers_labels(self, geoclim_type: str="all", as_descriptive_labels: bool=False) -> list:
+        """
+        Retrieves unique layer labels based on the specified geoclim_type.
 
         Args:
-            geoclim_type (str, optional): The desired geoclimatic layers type to extract Defaults to "all".
+            geoclim_type (str, optional): The type of geoclim to filter by. Can be "clim", "env", or "all". Defaults to "all".
+            as_descriptive_labels (bool, optional): If True, returns the descriptive layer labels. Otherwise, returns the "layer_<num>" format. Defaults to False.
 
         Returns:
-            dict: A dictionary containing unique labels for each layer of the Madaclim db.
-        
+            list: A list of unique layer labels based on the specified geoclim_type.
+
         Raises:
             TypeError: If geoclim_type is not a string.
-            ValueError: If geoclim_type does not corresponds to a valid geoclim type.
-            ValueError: If values for "layer_number", "layer_name" are not unique for each entry of the all_layers dataframe.
+            ValueError: If geoclim_type is not one of ["clim", "env", "all"].
+            ValueError: If 'layer_number' and 'layer_name' columns in the all_layers dataframe have non-unique entries.
 
         Example:
             >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
-            #TODO REDO OUTPUT EXAMPLE
-            >>> >>> madaclim_info.unique_labels_layers(geoclim_type="env")
-            {'layer_71': 'env_altitude', 'layer_72': 'env_slope', 'layer_73': 'env_aspect', 'layer_74': 'env_solar', 'layer_75': 'env_geology', 'layer_76': 'env_soil', 'layer_77': 'env_vegetation', 'layer_78': 'env_watersheds', 'layer_79': 'env_forestcover'}
+            >>> clim_layers_labels = madaclim_info.get_layers_labels(geoclim_type="clim")
+            >>> # Extract more information
+            >>> madaclim_info.get_layers_labels(as_descriptive_labels=True)[36:39]
+            ['clim_37_bio1 (Annual mean temperature)', 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))', 'clim_39_bio3 (Isothermality (BIO2/BIO7) (x 100))']
         """
         # Validate geoclim_type
         if not isinstance(geoclim_type, str):
@@ -605,102 +607,112 @@ class MadaclimLayers:
             raise ValueError("'layer_number' and 'layer_name' columns in the all_layers dataframe have non-unique entries.")
         
         # Get dict for unique labels according to geoclim_type selection
+        all_layers_df = self.all_layers.copy()
         if geoclim_type != "all":
-            select_df = self.all_layers[self.all_layers["geoclim_type"] == geoclim_type]
+            select_df = all_layers_df[all_layers_df["geoclim_type"] == geoclim_type]
         else: 
-            select_df = self.all_layers
-            
-        unique_labels = {f"layer_{num}": f"{geoclim}_{name}" for num, geoclim, name in list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"]))}
+            select_df = all_layers_df
+        
+        # Fetch layer_<num> and descriptive labels
+        sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
+        layers_description = {f"layer_{num}": f"{geoclim}_{num}_{name} ({desc})" for num, geoclim, name, desc in sub_selection}
+        
+        if as_descriptive_labels:
+            unique_labels = list(layers_description.values())
+        else:
+            unique_labels = list(layers_description.keys())
+        
         return unique_labels
         
 
-    def fetch_specific_layers(self, layer_numbers: Union[int, str, List[Union[int, str]]], from_unique_labels: bool=False, as_descriptive_labels: bool=False) -> Union[dict, pd.DataFrame]:
-        """Fetches specific layers from the all_layers DataFrame.
+    def fetch_specific_layers(self, layers_labels: Union[int, str, List[Union[int, str]]], as_descriptive_labels: bool=False) -> Union[dict, pd.DataFrame]:
+        """
+        Fetches specific layers from the all_layers DataFrame based on the given input.
 
         Args:
-            layer_numbers (Union[int, str, List[Union[int, str]]]): The layer number(s) to fetch. Can be a single int or str value or a list of int or str values.
-            from_unique_labels (bool): If True, layer_numbers are treated as keys from the unique_labels method output. Defaults to False.
-            as_descriptive_labels (bool): If True, only the layer description is returned. Defaults to False.
+            layers_labels (Union[int, str, List[Union[int, str]]]): The layer labels to fetch. Can be a single int or str value, or a list of int or str values.
+                The input can also be in the format "layer_<num>".
+            as_descriptive_labels (bool, optional): If True, only the layer descriptions are returned. Defaults to False.
 
         Returns:
-            Union[dict, pd.DataFrame]: If as_descriptive_labels is True, returns a dictionary with the layer descriptions. Otherwise, returns a DataFrame with the specified layers.
+            Union[dict, pd.DataFrame]: If as_descriptive_labels is True, returns a dictionary with the layer descriptions.
+                Otherwise, returns a DataFrame with the specified layers.
 
         Raises:
-            ValueError: If from_unique_labels is True and any value in layer_numbers is not a valid key from the unique_labels method output.
-            TypeError: If any value in layer_numbers cannot be converted to an int.
+            TypeError: If any value in layers_labels cannot be converted to an int or is not in the "layer_<num>" format.
+            ValueError: If any layer_number does not fall between the minimum and maximum layer numbers.
 
-        Examples:
-        >>> # From a single list of ints
-        >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
-        >>> madaclim_info = MadaclimLayers()
-        >>> madaclim_info.fetch_specific_layers([1, 15, 55])
-            layer_number                        geoclim_feature geoclim_type layer_name                                layer_description
-        0              1  Monthly minimum temperature (°C x 10)         clim      tmin1  Monthly minimum temperature (°C x 10) - January
-        14            15  Monthly maximum temperature (°C x 10)         clim      tmax3    Monthly maximum temperature (°C x 10) - March
-        54            55        Bioclimatic variables (bioclim)         clim      bio19                 Precipitation of coldest quarter
-        
-        >>> # From a unique label set
-        >>> unique_env_labels = list(madaclim_info.unique_labels_layers(geoclim_type="env").keys())
-        >>> madaclim_info.fetch_specific_layers(unique_env_labels, from_unique_labels=True)
-        layer_number                                    geoclim_feature  ...   layer_name                                  layer_description
-        0            71                                       Altitude (m)  ...     altitude                                               None
-        1            72                                  Slope (in degree)  ...        slope                                               None
-        2            73           Aspect (clockwise from North, in degree)  ...       aspect                                               None
-        3            74                     Solar radiation (Wh.m-2.day-1)  ...        solar                                               None
-        4            75               Geology (Kew Botanical Garden, 1997)  ...      geology  {1: 'Alluvial & Lake deposits', 2: 'Unconsolid...
-        5            76                             Soil (Pelletier, 1981)  ...         soil                                               None
-        6            77            Vegetation (Kew Botanical Garden, 2007)  ...   vegetation                                               None
-        7            78                         Watersheds (Pearson, 2009)  ...   watersheds                                               None
-        8            79  Percentage of forest cover for the year 2010 (%).  ...  forestcover                                               None
+        Example:
+            >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
+            >>> madaclim_info = MadaclimLayers()
+            >>> madaclim_info.fetch_specific_layers([1, 15, 55, 71])
+                layer_number                        geoclim_feature geoclim_type layer_name                                layer_description
+            0              1  Monthly minimum temperature (°C x 10)         clim      tmin1  Monthly minimum temperature (°C x 10) - January
+            14            15  Monthly maximum temperature (°C x 10)         clim      tmax3    Monthly maximum temperature (°C x 10) - March
+            54            55        Bioclimatic variables (bioclim)         clim      bio19                 Precipitation of coldest quarter
+            0             71                           Altitude (m)          env   altitude                                             None
+            >>> # Using the output from get_layers_labels() method
+            >>> bio1_to_bio5_labels = madaclim_info.get_layers_labels(geoclim_type="clim")[36:41]
+            >>> madaclim_info.fetch_specific_layers(bio1_to_bio5_labels)
+                layer_number                  geoclim_feature geoclim_type layer_name                                  layer_description
+            36            37  Bioclimatic variables (bioclim)         clim       bio1                            Annual mean temperature
+            37            38  Bioclimatic variables (bioclim)         clim       bio2  Mean diurnal range (mean of monthly (max temp ...
+            38            39  Bioclimatic variables (bioclim)         clim       bio3                  Isothermality (BIO2/BIO7) (x 100)
+            39            40  Bioclimatic variables (bioclim)         clim       bio4  Temperature seasonality (standard deviation x ...
+            40            41  Bioclimatic variables (bioclim)         clim       bio5                   Max temperature of warmest month
+            >>> # Fetch description only as dict
+            >>> madaclim_info.fetch_specific_layers(bio1_to_bio5_labels, as_descriptive_labels=True)
+            {'layer_37': 'clim_37_bio1 (Annual mean temperature)', 'layer_38': 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))', 'layer_39': 'clim_39_bio3 (Isothermality (BIO2/BIO7) (x 100))', 'layer_40': 'clim_40_bio4 (Temperature seasonality (standard deviation x 100))', 'layer_41': 'clim_41_bio5 (Max temperature of warmest month)'}
 
-        [9 rows x 5 columns]
-        #TODO REDO EXAMPLE FOR AS_DESCRIPTIVE
-        
         """
-        # Validate layer_numbers
-        if isinstance(layer_numbers, list):
-            if from_unique_labels:    # layer_numbers same as keys from unique_labels method output
-                possible_unique_labels = [f"layer_{num}" for num in self.all_layers["layer_number"].to_list()]
-                for layer_number in layer_numbers:
-                    if layer_number not in possible_unique_labels:
-                        raise ValueError(f"{layer_number} not one of {possible_unique_labels[:3]}...{possible_unique_labels[:-3]}")
-                # Save as list of ints after check
-                layer_numbers = [int(layer.split("_")[1]) for layer in layer_numbers]
+        all_layers_df = self.all_layers.copy()    # Reference to all clim and env metadata df
 
-            # layer_numbers as list of ints
+        # Validate layers_labels
+        possible_layers_num_format = [f"layer_{num}" for num in all_layers_df["layer_number"].to_list()]
+
+        if isinstance(layers_labels, list):
+            # Check if all elements are in unique label format
+            layers_num_format = all([layer_label in possible_layers_num_format for layer_label in layers_labels])
+            
+            if layers_num_format:
+                # Save as list of ints after check
+                layers_numbers = [int(layer_label.split("_")[1]) for layer_label in layers_labels]
+
+            # layers_labels as list of ints
             else:
                 try:
-                    layer_numbers = [int(layer) for layer in layer_numbers]
+                    layers_numbers = [int(layer) for layer in layers_labels]
                 except (ValueError, TypeError):
-                    raise TypeError("layer_numbers must be either a single int value or a string that can be converted to an int, or a list of int values or strings that can be converted to int values")
-        # Single layer_numbers type check 
+                    raise TypeError("layers_labels must be either a single int value or a string that can be converted to an int, or a list of int values or strings that can be converted to int values")
+        
+        # Single layers_labels type check 
         else:
+            if layers_labels in possible_layers_num_format:    # Check layer_<num> str format
+                layers_numbers = [int(layers_labels.split("_")[1])]
             try:
-                layer_numbers = [int(layer_numbers)]
+                layers_numbers = [int(layers_labels)]
             except (ValueError, TypeError):
-                raise TypeError("layer_numbers must be either a single int value or a string that can be converted to an int, or a list of int values or strings that can be converted to int values")
-            
-        # Validate layer number range for layer_numbers as int(s)
-        min_layer = min(self.all_layers["layer_number"])
-        max_layer = max(self.all_layers["layer_number"])
+                raise TypeError("layers_labels must be either a single int value or a string that can be converted to an int")
+  
+        # Validate layer number range for layer_numbers as in
+        min_layer = min(all_layers_df["layer_number"])
+        max_layer = max(all_layers_df["layer_number"])
 
-        for layer_number in layer_numbers:
+        for layer_number in layers_numbers:
             if not min_layer <= layer_number <= max_layer:
-                raise ValueError(f"layer_number must fall between {min_layer} and {max_layer} (You entered {layer_number=}).")
+                raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_number=} is not valid.")
             
         # Fetch rows according to layer selection
-        if as_descriptive_labels:
-            # Save subset df with selected layers
-            select_df = self.all_layers[self.all_layers["layer_number"].isin(layer_numbers)]
-            sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
+        select_df = all_layers_df[all_layers_df["layer_number"].isin(layers_numbers)]
 
-            # Generate dict with key as layer_num and values containing layer information
-            description = {f"layer_{num}": f"{geotype}_{num}_{name} ({desc})" for num, geotype, name, desc in sub_selection}
+        if as_descriptive_labels:
+            # Generate dict with key as layer_<num> and values containing layer information
+            sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
+            layers_description = {f"layer_{num}": f"{geoclim}_{num}_{name} ({desc})" for num, geoclim, name, desc in sub_selection}
             
-            return description
+            return layers_description
         
         else:    # Save whole row of df
-            select_df = self.all_layers[self.all_layers["layer_number"].isin(layer_numbers)]
             return select_df
 
     def download_data(self, save_dir: Optional[pathlib.Path]=None):
