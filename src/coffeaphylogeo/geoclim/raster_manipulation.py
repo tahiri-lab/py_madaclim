@@ -1,14 +1,30 @@
-from typing import Union
+import pathlib
+from typing import Optional, Union, List
 
+from coffeaphylogeo.definitions import Definitions
+from coffeaphylogeo.geoclim.madaclim_info import MadaclimLayers
+
+import rasterio
 import pyproj
-from pyproj import Transformer
 import shapely
+from pyproj import Transformer
 from shapely import Point
 
-epsg_codes = [int(code) for code in pyproj.get_codes("EPSG", "CRS")]
+# Default dir and path for rasters
+defs = Definitions()
 
-class SingleSpecimen:
-    madaclim_crs = pyproj.CRS.from_epsg(32738)
+climate_dir = defs.get_geoclim_path("climate_data")
+clim_raster_filename = defs.geoclim_files["madaclim_current"]
+clim_raster_path = climate_dir / clim_raster_filename
+
+enviro_dir = defs.get_geoclim_path("environment_data") 
+env_raster_filename = defs.geoclim_files["madaclim_enviro"]
+env_raster_path = enviro_dir / env_raster_filename
+
+
+madaclim_crs = pyproj.CRS.from_epsg(32738)    # Madaclim climate and environmental rasters crs
+
+class MadaclimPoint:
     
     #TODO DOCSTRING
     def __init__(self, specimen_id: str, latitude: float, longitude: float, crs: pyproj.crs.crs.CRS=pyproj.CRS.from_epsg(4326), **kwargs) -> None:
@@ -114,12 +130,12 @@ class SingleSpecimen:
 
         # Create a Point object in the source CRS
         point = Point(latitude, longitude)
-        if source_crs == self.madaclim_crs:
+        if source_crs == madaclim_crs:
             return point
 
         # Create a transformer object for converting coordinates between the two CRS
         else:
-            transformer = Transformer.from_crs(source_crs, self.madaclim_crs, always_xy=True)
+            transformer = Transformer.from_crs(source_crs, madaclim_crs, always_xy=True)
             x, y = transformer.transform(point.x, point.y)
             reprojected_point = Point(x, y)
             return reprojected_point
@@ -134,8 +150,7 @@ class SingleSpecimen:
         
     def __str__(self) -> str:
         single_specimen = (
-            f"SingleSpecimen(\n\tspecimen_id = '{self.specimen_id}',\n\tlatitude = {self.latitude},\n\t"
+            f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tlatitude = {self.latitude},\n\t"
             f"longitude = {self.longitude},\n\tcrs = EPSG:{self.crs.to_epsg()},\n\tmada_geom_point = {self.mada_geom_point}\n)"
         )
         return single_specimen
-
