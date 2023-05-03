@@ -22,8 +22,6 @@ env_raster_filename = defs.geoclim_files["madaclim_enviro"]
 env_raster_path = enviro_dir / env_raster_filename
 
 
-madaclim_crs = pyproj.CRS.from_epsg(32738)    # Madaclim climate and environmental rasters crs
-
 class MadaclimPoint:
     
     #TODO DOCSTRING
@@ -128,6 +126,15 @@ class MadaclimPoint:
     
     def _construct_point(self, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS)-> shapely.geometry.point.Point:
 
+        # Get the crs' from both rasters of the Madaclim db
+        madaclim_info = MadaclimLayers()
+        madaclim_crs = madaclim_info.clim_crs if madaclim_info.clim_crs == madaclim_info.env_crs else None
+
+        # Sanity check for crs
+        if madaclim_crs is None:
+            raise ValueError("Beware, the clim and env rasters have different projections/CRS which is unexpected.")
+        
+        
         # Create a Point object in the source CRS
         point = Point(latitude, longitude)
         if source_crs == madaclim_crs:
