@@ -41,7 +41,7 @@ class MadaclimPoint:
 
     def __init__(self, specimen_id: str, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS=pyproj.CRS.from_epsg(4326), **kwargs) -> None:
         """
-        Initialize a MadaclimPoint object with the given specimen_id, latitude, longitude, and source_crs.
+        Initialize a MadaclimPoint object with the given specimen_id, latitude, longitude, and source_crs. The coordinates provided should respect the nature of the given source CRS native units' (i.e. degrees WGS84 or meters for EPSG:3857)
         Optionally, provide additional keyword arguments to store as instance attributes.
         
         Args:
@@ -201,9 +201,15 @@ class MadaclimPoint:
         except:
             raise TypeError(f"Could not convert {latitude} to float. Latitude must be a float.")
         
-        # Validate bounds according to crs
-        bounds = crs.area_of_use.bounds
-        min_lat, max_lat = bounds[0], bounds[2]
+        # Validate max lat according to crs bounds
+        if crs.is_geographic:
+            bounds = crs.area_of_use.bounds
+        else:
+            # Extract bounds in native units of projection
+            transformer = Transformer.from_crs(crs.geodetic_crs, crs, always_xy=True)
+            bounds = transformer.transform_bounds(*crs.area_of_use.bounds)
+        
+        min_lat, max_lat = bounds[1], bounds[3]
         if not min_lat <= latitude <= max_lat:
             raise ValueError(f"{latitude=} is out of bounds for the crs=EPSG:{crs.to_epsg()}. Latitude must be between: {min_lat} and {max_lat}")
         
@@ -230,9 +236,15 @@ class MadaclimPoint:
         except:
             raise TypeError(f"Could not convert {longitude} to float. longitude must be a float.")
         
-        # Validate bounds according to crs
-        bounds = crs.area_of_use.bounds
-        min_lon, max_lon = bounds[1], bounds[3]
+        # Validate max lon according to crs bounds
+        if crs.is_geographic:
+            bounds = crs.area_of_use.bounds
+        else:
+            # Extract bounds in native units of projection
+            transformer = Transformer.from_crs(crs.geodetic_crs, crs, always_xy=True)
+            bounds = transformer.transform_bounds(*crs.area_of_use.bounds)
+
+        min_lon, max_lon = bounds[0], bounds[2]
         if not min_lon <= longitude <= max_lon:
             raise ValueError(f"{longitude=} is out of bounds for the crs=EPSG:{crs.to_epsg()}. Longitude must be between {min_lon} and {max_lon}")
         
@@ -484,4 +496,6 @@ class MadaclimPoint:
             f"latitude = {self.latitude},\n\tlongitude = {self.longitude},\n\tmada_geom_point = {self.mada_geom_point}\n)"
         )
         return madapoint_obj
+    
+
     
