@@ -1,5 +1,7 @@
 import pathlib
 from typing import Optional, Union, List
+import time
+from tqdm import tqdm
 
 from coffeaphylogeo.definitions import Definitions
 from coffeaphylogeo.geoclim.madaclim_info import MadaclimLayers
@@ -136,7 +138,7 @@ class MadaclimPoint:
         
         
         # Create a Point object in the source CRS
-        point = Point(latitude, longitude)
+        point = Point(longitude, latitude)
         if source_crs == madaclim_crs:
             return point
 
@@ -156,7 +158,35 @@ class MadaclimPoint:
             )
 
     
-    def sample_from_rasters(self, layers_to_sample: Union[int, str, List[Union[int, str]]]="all", layer_info: bool=True, clim_raster_path: Optional[pathlib.Path]=None, env_raster_path: Optional[pathlib.Path]=None):
+    def sample_from_rasters(
+            self,
+            layers_to_sample: Union[int, str, List[Union[int, str]]]="all", 
+            layer_info: bool=True,
+            return_nodata_layers: bool=False,
+            clim_raster_path: Optional[pathlib.Path]=None, 
+            env_raster_path: Optional[pathlib.Path]=None
+        ) -> Union[dict, list]:
+        """
+        Samples geoclimatic data from raster files for specified layers at the location of the instances's lat/lon coordinates from the mada_geom_point attribute.
+
+        Args:
+            layers_to_sample (Union[int, str, List[Union[int, str]]], optional): The layer number(s) to sample from the raster files.
+                Can be a single int, a single string in the format 'layer_<num>', or a list of ints or such strings. Defaults to 'all'.
+            layer_info (bool, optional): Whether to use descriptive labels for the returned dictionary keys. Defaults to True.
+            return_nodata_layers (bool, optional): Whether to return a list of layers with nodata values at the specimen location.
+                Defaults to False.
+            clim_raster_path (Optional[pathlib.Path], optional): Path to the climate raster file. Defaults to None.
+            env_raster_path (Optional[pathlib.Path], optional): Path to the environment raster file. Defaults to None.
+
+        Raises:
+            TypeError: If the layers_to_sample is not valid, or if the mada_geom_point attribute is not a Point object.
+            ValueError: If the layer_number is out of range or if the mada_geom_point object is empty.
+
+        Returns:
+            Union[dict, list]: A dictionary containing the sampled data, with keys being layer names or numbers depending
+                on the layer_info parameter. If return_nodata_layers is True, also returns a list of layers with nodata values
+                at the specimen location.
+        """
         
         # Create a MadaclimLayers instance to get layers labels and validate layers to sample
         madaclim_info = MadaclimLayers()
@@ -217,54 +247,98 @@ class MadaclimPoint:
         
         # Sample climate and env raster on demand
         sampled_data = {}
+        nodata_layers = []
 
         if clim_raster_layers_to_sample:
+            start_time = time.perf_counter()
+            total_clim_layers = len(clim_raster_layers_to_sample)
+            
             with rasterio.open(clim_raster_path or default_clim_raster_path) as clim_raster:
+                # Initialize reference and container to check for layers with nodata values
                 nodata_clim = clim_raster.nodata
                 
-                # Sample selected layers according to the coordinate
-                for layer_num in clim_raster_layers_to_sample:
-                    band = madaclim_info.get_band_from_layer_number(layer_num, "clim")
+                # Status bar to display when sampling the raster
+                print(f"Sampling {total_clim_layers} layer(s) from {clim_raster.name.split('/')[-1]}...")
+                with tqdm(
+                    total=total_clim_layers, 
+                    unit="layer",
+                    bar_format="{desc} {percentage:.0f}%|{bar}| layer {n_fmt}/{total_fmt} [Time remaining: {remaining}]",
+                ) as pbar :
                     
-                    # Sample using the self.mada_geom_point attributes coordinates for the current layer
-                    data = list(clim_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band))[0]
-                    
-                    # Save with layer info
-                    if layer_info:
-                        layer_name = madaclim_info.fetch_specific_layers(
-                            layers_labels=layer_num, 
-                            as_descriptive_labels=True, 
-                            return_list=True
-                        )[0]
-                    else:
-                        layer_name = f"layer_{layer_num}"
+                    # Sample selected layers according to the coordinate
+                    for layer_num in clim_raster_layers_to_sample:
+                        # Get layer info for pbar display and label key for sampled_data
+                        layer_name = madaclim_info.fetch_specific_layers(layers_labels=layer_num, as_descriptive_labels=True, return_list=True)[0]
+                        layer_description_display = layer_name.split('_')[-1]
+                        pbar.set_description(f"Extracting layer {layer_num}: {layer_description_display}")
+                        pbar.update()
+                        
+                        # Sample using the self.mada_geom_point attributes coordinates for the current layer
+                        band = madaclim_info.get_band_from_layer_number(layer_num, geoclim_types[0])
+                        data = list(clim_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band))[0]
+                        
+                        # Save extracted data with specified layer info/name
+                        if not layer_info:
+                            layer_name = f"layer_{layer_num}"
+                        sampled_data[layer_name] = data[0]
 
-                    sampled_data[layer_name] = data[0]
-
-        #TODO ADD PRINT STATEMENTS FOR STATUS IN LARGE FETCHES
+                        if data[0] == nodata_clim:    # Save layers where nodata at specimen location
+                            nodata_layers.append(layer_name)
+                                    
+            end_time = time.perf_counter()
+            elapsed_time = end_time - start_time
+            
+            print(f"Finished {geoclim_types[0]} raster sampling operation in {elapsed_time:.2f} seconds\n")
+            
         if env_raster_layers_to_sample:
+            start_time = time.perf_counter()
+            total_env_layers = len(env_raster_layers_to_sample)
+            
             with rasterio.open(env_raster_path or default_env_raster_path) as env_raster:
+                # Initialize reference and container to check for layers with nodata values
+                nodata_env = env_raster.nodata
                 
-                # Sample selected layers according to the coordinate
-                for layer_num in env_raster_layers_to_sample:
-                    band = madaclim_info.get_band_from_layer_number(layer_num, "env")
+                # Status bar to display when sampling the raster
+                print(f"Sampling {total_env_layers} layer(s) from {env_raster.name.split('/')[-1]}...")
+                with tqdm(
+                    total=total_env_layers, 
+                    unit="layer",
+                    bar_format="{desc} {percentage:.0f}%|{bar}| layer {n_fmt}/{total_fmt} [Time remaining: {remaining}]",
+                ) as pbar :
                     
-                    # Sample using the self.mada_geom_point attributes coordinates for the current layer
-                    data = list(env_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band))[0]
-                    
-                    # Save with layer info
-                    if layer_info:
-                        layer_name = madaclim_info.fetch_specific_layers(
-                            layers_labels=layer_num, 
-                            as_descriptive_labels=True, 
-                            return_list=True
-                        )[0]
-                    else:
-                        layer_name = f"layer_{layer_num}"
-                    
-                    sampled_data[layer_name] = data[0]
+                    # Sample selected layers according to the coordinate
+                    for layer_num in env_raster_layers_to_sample:
+                        # Get layer info for pbar display and label key for sampled_data
+                        layer_name = madaclim_info.fetch_specific_layers(layers_labels=layer_num, as_descriptive_labels=True, return_list=True)[0]
+                        layer_description_display = layer_name.split('_')[-1]
+                        pbar.set_description(f"Extracting layer {layer_num}: {layer_description_display}")
+                        pbar.update()
+                        
+                        # Sample using the self.mada_geom_point attributes coordinates for the current layer
+                        band = madaclim_info.get_band_from_layer_number(layer_num, geoclim_types[1])
+                        data = list(env_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band))[0]
+                        
+                        # Save extracted data with specified layer info/name
+                        if not layer_info:
+                            layer_name = f"layer_{layer_num}"
+                        sampled_data[layer_name] = data[0]
 
-        #? SAVE DATA TO ATTRIBUTE MAYBE
+                        if data[0] == nodata_clim:    # Save layers where nodata at specimen location
+                            nodata_layers.append(layer_name)
+                                    
+            end_time = time.perf_counter()
+            elapsed_time = end_time - start_time
+            
+            print(f"Finished {geoclim_types[1]} raster sampling operation in {elapsed_time:.2f} seconds\n")
+
+        if len(nodata_layers) > 0:
+                print(f"BEWARE! {len(nodata_layers)} layer(s) contain a nodata value at the specimen location")
+        else:
+            print("No sampled layers with nodata values.")
+        
+        if return_nodata_layers:
+            return sampled_data, nodata_layers
+        
         return sampled_data
     
     
