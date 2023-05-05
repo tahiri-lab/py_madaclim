@@ -873,6 +873,7 @@ class MadaclimLayers:
         except rasterio.errors.RasterioIOError as e:
             raise IOError(f"Could not open {env_raster_path}: {e}")
 
+    #!DEPRECATED METHOD, TO REMOVE
     def sample_rasters_from_gdf(self, gdf: gpd.GeoDataFrame, geometry_col_name: str="geometry", as_descriptive_labels: bool=True)->Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]:
         """Samples raster values from a GeoDataFrame containing Point geometries.
 
@@ -887,7 +888,6 @@ class MadaclimLayers:
 
         Returns:
             Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]: A tuple containing a copy of the input GeoDataFrame with additional columns for the raster values and a dictionary containing the raster values for each filename.
-        #TODO ADD EXAMPLES!
         """
         # Make a copy of the geodf
         gdf_copy = gdf.copy()
