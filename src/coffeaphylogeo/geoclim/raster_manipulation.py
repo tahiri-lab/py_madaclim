@@ -26,8 +26,32 @@ default_env_raster_path = enviro_dir / env_raster_filename
 
 class MadaclimPoint:
     
-    #TODO DOCSTRING
+    """
+    A class representing a specimen as a geographic point with a specific coordinate reference system (CRS)
+    and additional attributes. The class provides methods for validating the point's coordinates
+    and CRS, as well as sampling values from climate and environmental rasters of the Madaclim database.
+    
+    Attributes:
+        specimen_id (str): An identifier for the point.
+        source_crs (pyproj.crs.crs.CRS): The coordinate reference system of the point.
+        latitude (float): The latitude of the point.
+        longitude (float): The longitude of the point.
+        mada_geom_point (shapely.geometry.point.Point): A Shapely Point object representing the point projected in the Madaclim rasters' CRS.
+    """
+
     def __init__(self, specimen_id: str, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS=pyproj.CRS.from_epsg(4326), **kwargs) -> None:
+        """
+        Initialize a MadaclimPoint object with the given specimen_id, latitude, longitude, and source_crs.
+        Optionally, provide additional keyword arguments to store as instance attributes.
+        
+        Args:
+            specimen_id (str): An identifier for the point.
+            latitude (float): The latitude of the point.
+            longitude (float): The longitude of the point.
+            source_crs (pyproj.crs.crs.CRS, optional): The coordinate reference system of the point. Defaults to WGS84 (EPSG:4326).
+            **kwargs: Additional keyword arguments to store as instance attributes.
+        """
+        
         self.specimen_id = specimen_id
         self.source_crs = self.validate_crs(source_crs)
         self.latitude = self.validate_lat(latitude, crs=self.source_crs)
@@ -44,40 +68,88 @@ class MadaclimPoint:
             setattr(self, key, kwargs[key])
     
     @property
-    def specimen_id(self):
+    def specimen_id(self) -> str:
+        """
+        Get the specimen_id attribute.
+
+        Returns:
+            str: The identifier for the MadaclimPoint.
+        """
         return self._specimen_id
     @specimen_id.setter
-    def specimen_id(self, value):
+    def specimen_id(self, value: str):
+        """
+        Set the specimen_id attribute.
+
+        Args:
+            value (str): The new identifier for the MadaclimPoint.
+        """
         self._specimen_id = value
     
     @property
-    def latitude(self):
+    def latitude(self) -> float:
+        """
+        Get the latitude attribute.
+
+        Returns:
+            float: The latitude of the point.
+        """
         return self._latitude
     
     @latitude.setter
-    def latitude(self, value):
+    def latitude(self, value: float):
+        """
+        Set the latitude attribute after validating the input value.
+
+        Args:
+            value (float): The latitude value for the point.
+        """
         value = self.validate_lat(value, crs=self.source_crs)
         self._latitude = value
         # Update mada_geom_point when latitude is updated
         self._update_mada_geom_point()
     
     @property
-    def longitude(self):
+    def longitude(self) -> float:
+        """
+        Get the longitude attribute.
+
+        Returns:
+            float: The longitude of the point.
+        """
         return self._longitude
     
     @longitude.setter
-    def longitude(self, value):
+    def longitude(self, value: float):
+        """
+        Set the longitude attribute after validating the input value.
+
+        Args:
+            value (float): The longitude value for the point.
+        """
         value = self.validate_lon(value, crs=self.source_crs)
         self._longitude = value
         # Update mada_geom_point when longitude is updated
         self._update_mada_geom_point()
     
     @property
-    def source_crs(self):
+    def source_crs(self) -> pyproj.crs.CRS:
+        """
+        Get the source_crs attribute.
+
+        Returns:
+            pyproj.crs.CRS: The coordinate reference system of the point.
+        """
         return self._source_crs
     
     @source_crs.setter
-    def source_crs(self, value):
+    def source_crs(self, value: pyproj.crs.CRS):
+        """
+        Set the source_crs attribute after validating the input value.
+
+        Args:
+            value (pyproj.crs.CRS): The coordinate reference system for the point.
+        """
         value = self.validate_crs(value)
         self._source_crs = value
         
@@ -85,6 +157,18 @@ class MadaclimPoint:
         self._update_mada_geom_point()
     
     def validate_crs(self, crs):
+        """
+        Validate the input CRS and return a valid CRS object.
+
+        Args:
+            crs (pyproj.crs.CRS): The input CRS to validate.
+
+        Returns:
+            pyproj.crs.CRS: A valid CRS object.
+
+        Raises:
+            ValueError: If the input CRS is invalid.
+        """
         try:
             valid_crs = pyproj.crs.CRS(crs)
         except pyproj.exceptions.CRSError:
@@ -97,6 +181,20 @@ class MadaclimPoint:
         return valid_crs
     
     def validate_lat(self, latitude, crs):
+        """
+        Validate the input latitude value and return a valid latitude.
+
+        Args:
+            latitude (float): The input latitude value.
+            crs (pyproj.crs.CRS): The coordinate reference system of the point.
+
+        Returns:
+            float: A valid latitude value.
+
+        Raises:
+            TypeError: If the input latitude value cannot be converted to a float.
+            ValueError: If the input latitude value is out of bounds for the given CRS.
+        """
         # Validate float type
         try:
             latitude = float(latitude)
@@ -112,6 +210,20 @@ class MadaclimPoint:
         return latitude
     
     def validate_lon(self, longitude, crs):
+        """
+        Validate the input longitude value and return a valid longitude.
+
+        Args:
+            longitude (float): The input longitude value.
+            crs (pyproj.crs.CRS): The coordinate reference system of the point.
+
+        Returns:
+            float: A valid longitude value.
+
+        Raises:
+            TypeError: If the input longitude value cannot be converted to a float.
+            ValueError: If the input longitude value is out of bounds for the given CRS.
+        """
         # Validate float type
         try:
             longitude = float(longitude)
@@ -127,7 +239,20 @@ class MadaclimPoint:
         return longitude
     
     def _construct_point(self, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS)-> shapely.geometry.point.Point:
+        """
+        Construct a Shapely Point object in the given source_crs, reprojecting the point if necessary.
 
+        Args:
+            latitude (float): The latitude of the point.
+            longitude (float): The longitude of the point.
+            source_crs (pyproj.crs.crs.CRS): The coordinate reference system of the point.
+
+        Returns:
+            shapely.geometry.point.Point: A Shapely Point object representing the point in the appropriate CRS.
+
+        Raises:
+            ValueError: If the climate and environmental rasters have different CRS, which is unexpected.
+        """
         # Get the crs' from both rasters of the Madaclim db
         madaclim_info = MadaclimLayers()
         madaclim_crs = madaclim_info.clim_crs if madaclim_info.clim_crs == madaclim_info.env_crs else None
@@ -150,6 +275,9 @@ class MadaclimPoint:
             return reprojected_point
     
     def _update_mada_geom_point(self):
+        """
+        Update the mada_geom_point attribute by reconstructing the point with the current latitude, longitude, and source_crs.
+        """
         if hasattr(self, '_latitude') and hasattr(self, '_longitude'):
             self.mada_geom_point = self._construct_point(
                 latitude=self.latitude,
@@ -356,3 +484,4 @@ class MadaclimPoint:
             f"latitude = {self.latitude},\n\tlongitude = {self.longitude},\n\tmada_geom_point = {self.mada_geom_point}\n)"
         )
         return madapoint_obj
+    
