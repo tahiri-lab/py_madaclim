@@ -497,5 +497,31 @@ class MadaclimPoint:
         )
         return madapoint_obj
     
+class MadaclimCollection:
+    #TODO DOCSTRINGS
+    def __init__(self) -> None:
+        self.all_points = []
 
+    def add_point(self, madaclim_point: MadaclimPoint) -> None:
+        """Adds a single MadaclimPoint object to the collection
+
+        Args:
+            madaclim_point (MadaclimPoint): _description_
+
+        Raises:
+            TypeError: _description_
+        """
+        if not isinstance(madaclim_point, MadaclimPoint):
+            raise TypeError("The given madaclim_point is not a MadaclimPoint object.")
+        
+        self.all_points.append(madaclim_point)
+
+    def __str__(self) -> str:
+        if len(self.all_points) == 0:
+            return "No MadaclimPoint inside the collection yet."
+        else:
+            all_points_short = [
+                f"MadaclimPoint(specimen_id={point.specimen_id}, mada_geom_point={point.mada_geom_point})" for point in self.all_points
+            ]
+            return "MadaclimCollection = [\n" + "\t" + ",\n\t".join(all_points_short) + "\n]"
     
