@@ -1,5 +1,5 @@
 import pathlib
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Optional
 import time
 from tqdm import tqdm
 
@@ -511,10 +511,33 @@ class MadaclimCollection:
         Raises:
             TypeError: _description_
         """
+        # Validate type
         if not isinstance(madaclim_point, MadaclimPoint):
-            raise TypeError("The given madaclim_point is not a MadaclimPoint object.")
+            raise TypeError("The madaclim_point to add is not a MadaclimPoint object.")
+        
+        # Validate if point exists already
+        if madaclim_point in self.all_points:
+            raise ValueError(f"{madaclim_point} already exists in the current MadaclimCollection instance.")
+
         
         self.all_points.append(madaclim_point)
+
+    def remove_point(self, madaclim_point: MadaclimPoint, index: Optional[Union[str, int]]) -> None:
+        """Removes a single MadaclimPoint object to the collection
+
+        Args:
+            madaclim_point (MadaclimPoint): _description_
+        """
+        # Validate type
+        if not isinstance(madaclim_point, MadaclimPoint):
+                raise TypeError("The madaclim_point to remove is not a MadaclimPoint object.")
+        
+        # Validate point existence
+        if not madaclim_point in self.all_points:
+            raise ValueError(f"{madaclim_point} does not belong to the current MadaclimCollection instance.")
+        
+
+
 
     def __str__(self) -> str:
         if len(self.all_points) == 0:
