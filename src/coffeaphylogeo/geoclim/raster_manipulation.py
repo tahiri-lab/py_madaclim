@@ -1,4 +1,6 @@
+import csv
 import pathlib
+from pathlib import Path
 from typing import Optional, Union, List, Optional
 import time
 from tqdm import tqdm
@@ -250,54 +252,6 @@ class MadaclimPoint:
         
         return longitude
     
-    def _construct_point(self, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS)-> shapely.geometry.point.Point:
-        """
-        Construct a Shapely Point object in the given source_crs, reprojecting the point if necessary.
-
-        Args:
-            latitude (float): The latitude of the point.
-            longitude (float): The longitude of the point.
-            source_crs (pyproj.crs.crs.CRS): The coordinate reference system of the point.
-
-        Returns:
-            shapely.geometry.point.Point: A Shapely Point object representing the point in the appropriate CRS.
-
-        Raises:
-            ValueError: If the climate and environmental rasters have different CRS, which is unexpected.
-        """
-        # Get the crs' from both rasters of the Madaclim db
-        madaclim_info = MadaclimLayers()
-        madaclim_crs = madaclim_info.clim_crs if madaclim_info.clim_crs == madaclim_info.env_crs else None
-
-        # Sanity check for crs
-        if madaclim_crs is None:
-            raise ValueError("Beware, the clim and env rasters have different projections/CRS which is unexpected.")
-        
-        
-        # Create a Point object in the source CRS
-        point = Point(longitude, latitude)
-        if source_crs == madaclim_crs:
-            return point
-
-        # Create a transformer object for converting coordinates between the two CRS
-        else:
-            transformer = Transformer.from_crs(source_crs, madaclim_crs, always_xy=True)
-            x, y = transformer.transform(point.x, point.y)
-            reprojected_point = Point(x, y)
-            return reprojected_point
-    
-    def _update_mada_geom_point(self):
-        """
-        Update the mada_geom_point attribute by reconstructing the point with the current latitude, longitude, and source_crs.
-        """
-        if hasattr(self, '_latitude') and hasattr(self, '_longitude'):
-            self.mada_geom_point = self._construct_point(
-                latitude=self.latitude,
-                longitude=self.longitude,
-                source_crs=self.source_crs
-            )
-
-    
     def sample_from_rasters(
             self,
             layers_to_sample: Union[int, str, List[Union[int, str]]]="all", 
@@ -481,7 +435,52 @@ class MadaclimPoint:
         
         return sampled_data
     
+    def _construct_point(self, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS)-> shapely.geometry.point.Point:
+        """
+        Construct a Shapely Point object in the given source_crs, reprojecting the point if necessary.
+
+        Args:
+            latitude (float): The latitude of the point.
+            longitude (float): The longitude of the point.
+            source_crs (pyproj.crs.crs.CRS): The coordinate reference system of the point.
+
+        Returns:
+            shapely.geometry.point.Point: A Shapely Point object representing the point in the appropriate CRS.
+
+        Raises:
+            ValueError: If the climate and environmental rasters have different CRS, which is unexpected.
+        """
+        # Get the crs' from both rasters of the Madaclim db
+        madaclim_info = MadaclimLayers()
+        madaclim_crs = madaclim_info.clim_crs if madaclim_info.clim_crs == madaclim_info.env_crs else None
+
+        # Sanity check for crs
+        if madaclim_crs is None:
+            raise ValueError("Beware, the clim and env rasters have different projections/CRS which is unexpected.")
+        
+        
+        # Create a Point object in the source CRS
+        point = Point(longitude, latitude)
+        if source_crs == madaclim_crs:
+            return point
+
+        # Create a transformer object for converting coordinates between the two CRS
+        else:
+            transformer = Transformer.from_crs(source_crs, madaclim_crs, always_xy=True)
+            x, y = transformer.transform(point.x, point.y)
+            reprojected_point = Point(x, y)
+            return reprojected_point
     
+    def _update_mada_geom_point(self):
+        """
+        Update the mada_geom_point attribute by reconstructing the point with the current latitude, longitude, and source_crs.
+        """
+        if hasattr(self, '_latitude') and hasattr(self, '_longitude'):
+            self.mada_geom_point = self._construct_point(
+                latitude=self.latitude,
+                longitude=self.longitude,
+                source_crs=self.source_crs
+            )
     
     def __str__(self) -> str:
         madapoint_obj = (
@@ -496,6 +495,8 @@ class MadaclimPoint:
 class MadaclimCollection:
     #TODO DOCSTRINGS
     def __init__(self) -> None:
+        """Initialize an empty MadaclimCollection instance.
+        """
         self.__all_points = []
 
     @property
