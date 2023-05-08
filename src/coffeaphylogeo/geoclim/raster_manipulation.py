@@ -500,16 +500,23 @@ class MadaclimCollection:
 
     @property
     def all_points(self):
+        """Get the all_points attribute.
+
+        Returns:
+            list: A list of all the MadaclimPoint objects in the MadaclimCollection.
+        """
         return self.__all_points
     
     def add_points(self, madaclim_points: Union[MadaclimPoint, List[MadaclimPoint]]) -> None:
-        """Adds a single MadaclimPoint object to the collection
+        """
+        Adds one or more MadaclimPoint objects to the MadaclimCollection.
 
         Args:
-            madaclim_point (MadaclimPoint): _description_
+            madaclim_points (Union[MadaclimPoint, List[MadaclimPoint]]): A single MadaclimPoint object or a list of MadaclimPoint objects to be added to the MadaclimCollection.
 
         Raises:
-            TypeError: _description_
+            TypeError: If the input is not a MadaclimPoint object or a list of MadaclimPoint objects.
+            ValueError: If the input MadaclimPoint(s) is/are already in the MadaclimCollection or if their specimen_id(s) are not unique.
         """
         # Add multiple MadaclimPoint objects
         if isinstance(madaclim_points, list):
