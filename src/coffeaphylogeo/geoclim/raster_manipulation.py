@@ -1,7 +1,8 @@
 import csv
 import pathlib
+import inspect
 from pathlib import Path
-from typing import Optional, Union, List, Optional
+from typing import Optional, Union, List, Optional, Tuple
 import time
 from tqdm import tqdm
 
@@ -491,6 +492,33 @@ class MadaclimPoint:
 
     def __repr__(self) -> str:
         return self.__str__()
+    
+    @staticmethod
+    def get_args_names() -> Tuple[list, list]:
+        """Gets the names of the required and default arguments of the MadaclimPoint constructor.
+
+        This method uses the inspect module to introspect the MadaclimPoint constructor and extract the names of its arguments.
+        It then separates these into required arguments (those that don't have default values) and default arguments (those that do).
+
+        Returns:
+            Tuple[list, list]: A tuple containing two lists:
+                - The first list contains the names of the required arguments.
+                - The second list contains the names of the default arguments.
+                
+        Note:
+            - 'self' is excluded from the returned lists.
+        """
+        argspec = inspect.getfullargspec(MadaclimPoint)
+        
+        # Get required args names
+        num_defaults = len(argspec.defaults) if argspec.defaults else 0
+        num_required = len(argspec.args) - num_defaults
+        required_args = argspec.args[1: num_required]    # Exclude self
+
+        # Get defaults args names
+        default_args = argspec.args[-num_defaults] if argspec.defaults else []
+        return required_args, default_args
+
     
 class MadaclimCollection:
     #TODO DOCSTRINGS
