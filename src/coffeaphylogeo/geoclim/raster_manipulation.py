@@ -540,7 +540,27 @@ class MadaclimCollection:
             self.all_points.append(madaclim_points)
 
     def remove_points(self, *, madaclim_points: Optional[Union[MadaclimPoint, List[MadaclimPoint]]]=None, indices: Optional[Union[int, List[int]]]=None, clear:bool=False) -> None:
+        """Removes MadaclimPoint objects from the MadaclimCollection based on specified criteria.
+
+        This method allows removing MadaclimPoint objects from the collection by providing either
+        MadaclimPoint instance(s), index/indices, or by clearing the whole collection.
         
+        Args:
+            madaclim_points (Optional[Union[MadaclimPoint, List[MadaclimPoint]]], optional): A single MadaclimPoint
+                object or a list of MadaclimPoint objects to be removed from the collection. Defaults to None.
+            indices (Optional[Union[int, List[int]]], optional): A single index or a list of indices of the MadaclimPoint
+                objects to be removed from the collection. Defaults to None.
+            clear (bool, optional): If set to True, removes all MadaclimPoint objects from the collection. When using
+                this option, 'madaclim_points' and 'indices' must not be provided. Defaults to False.
+
+        Raises:
+            ValueError: If the MadaclimCollection is empty or if none of the input options are provided.
+            ValueError: If 'madaclim_points' and 'indices' are both provided.
+            ValueError: If 'clear' is set to True and either 'madaclim_points' or 'indices' are provided.
+            TypeError: If an invalid type is provided for 'madaclim_points' or 'indices'.
+            ValueError: If a provided MadaclimPoint object is not in the collection or if an index is out of bounds.
+            IndexError: If an index is out of range.
+        """
         # Handle empty MadaclimCollection
         if not len(self.all_points) > 0:
             raise ValueError("No points to delete since the MadaclimCollection is empty.")
