@@ -491,11 +491,7 @@ class MadaclimPoint:
         return madapoint_obj
 
     def __repr__(self) -> str:
-        madapoint_obj = (
-            f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tsource_crs = EPSG:{self.source_crs.to_epsg()},\n\t"
-            f"latitude = {self.latitude},\n\tlongitude = {self.longitude},\n\tmada_geom_point = {self.mada_geom_point}\n)"
-        )
-        return madapoint_obj
+        return self.__str__()
     
 class MadaclimCollection:
     #TODO DOCSTRINGS
