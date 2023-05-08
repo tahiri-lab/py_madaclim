@@ -502,7 +502,7 @@ class MadaclimCollection:
     def __init__(self) -> None:
         self.all_points = []
 
-    def add_point(self, madaclim_point: MadaclimPoint) -> None:
+    def add_points(self, madaclim_points: Union[MadaclimPoint, List[MadaclimPoint]]) -> None:
         """Adds a single MadaclimPoint object to the collection
 
         Args:
@@ -511,16 +511,27 @@ class MadaclimCollection:
         Raises:
             TypeError: _description_
         """
-        # Validate type
-        if not isinstance(madaclim_point, MadaclimPoint):
-            raise TypeError("The madaclim_point to add is not a MadaclimPoint object.")
-        
-        # Validate if point exists already
-        if madaclim_point in self.all_points:
-            raise ValueError(f"{madaclim_point} already exists in the current MadaclimCollection instance.")
-
-        
-        self.all_points.append(madaclim_point)
+        # Type and presence validations for multiple madaclim_points
+        if isinstance(madaclim_points, list):
+            for point in madaclim_points:
+                
+                if not isinstance(point, MadaclimPoint):
+                    raise TypeError(f"{point} is not a MadaclimPoint object.")
+                
+                if point in self.all_points:
+                    raise ValueError(f"{point} already exists in the current MadaclimCollection instance.")
+                
+                self.all_points.append(point) 
+        else:
+            # Type and presence validations for single madaclim_points
+            if not isinstance(madaclim_points, MadaclimPoint):
+                raise TypeError("The madaclim_point to add is not a MadaclimPoint object.")
+            
+            # Validate if point exists already
+            if madaclim_points in self.all_points:
+                raise ValueError(f"{madaclim_points} already exists in the current MadaclimCollection instance.")
+            
+            self.all_points.append(madaclim_points)
 
     def remove_point(self, madaclim_point: MadaclimPoint, index: Optional[Union[str, int]]) -> None:
         """Removes a single MadaclimPoint object to the collection
