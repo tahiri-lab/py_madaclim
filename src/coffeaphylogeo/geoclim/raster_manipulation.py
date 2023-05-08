@@ -511,44 +511,100 @@ class MadaclimCollection:
         Raises:
             TypeError: _description_
         """
-        # Type and presence validations for multiple madaclim_points
+        # Add multiple MadaclimPoint objects
         if isinstance(madaclim_points, list):
             for point in madaclim_points:
                 
                 if not isinstance(point, MadaclimPoint):
-                    raise TypeError(f"{point} is not a MadaclimPoint object.")
+                    raise TypeError(f"{point} is not a MadaclimPoint object. Accepted types are a single MadaclimPoint and a list of MadaclimPoint objects.")
                 
                 if point in self.all_points:
-                    raise ValueError(f"{point} already exists in the current MadaclimCollection instance.")
+                    raise ValueError(f"{point} is already in the current MadaclimCollection instance.")
+                
+                if point.specimen_id in [mada_pt.specimen_id for mada_pt in self.all_points]:    # specimen_id unique id validation
+                    raise ValueError(f"specimen_id={point.specimen_id} already exists inside current MadaclimCollection. Every MadaclimPoint must have a unique id.")
                 
                 self.all_points.append(point) 
         else:
-            # Type and presence validations for single madaclim_points
+            # Add single MadaclimPoint object
             if not isinstance(madaclim_points, MadaclimPoint):
                 raise TypeError("The madaclim_point to add is not a MadaclimPoint object.")
             
-            # Validate if point exists already
             if madaclim_points in self.all_points:
-                raise ValueError(f"{madaclim_points} already exists in the current MadaclimCollection instance.")
+                raise ValueError(f"{madaclim_points} is already in the current MadaclimCollection instance.")
+            
+            if madaclim_points.specimen_id in [mada_pt.specimen_id for mada_pt in self.all_points]:    # specimen_id unique id validation
+                    raise ValueError(f"specimen_id={madaclim_points.specimen_id} already exists inside current MadaclimCollection. Every MadaclimPoint must have a unique id.")
+                
             
             self.all_points.append(madaclim_points)
 
-    def remove_point(self, madaclim_point: MadaclimPoint, index: Optional[Union[str, int]]) -> None:
-        """Removes a single MadaclimPoint object to the collection
-
-        Args:
-            madaclim_point (MadaclimPoint): _description_
-        """
-        # Validate type
-        if not isinstance(madaclim_point, MadaclimPoint):
-                raise TypeError("The madaclim_point to remove is not a MadaclimPoint object.")
+    def remove_points(self, *, madaclim_points: Optional[Union[MadaclimPoint, List[MadaclimPoint]]]=None, indices: Optional[Union[int, List[int]]]=None, clear:bool=False) -> None:
         
-        # Validate point existence
-        if not madaclim_point in self.all_points:
-            raise ValueError(f"{madaclim_point} does not belong to the current MadaclimCollection instance.")
+        # Handle empty MadaclimCollection
+        if not len(self.all_points) > 0:
+            raise ValueError("No points to delete since the MadaclimCollection is empty.")
         
+        # Drop all points
+        if clear:
+            if madaclim_points is not None or indices is not None:
+                raise ValueError("When using 'clear', do not provide 'madaclim_points' or 'indices'.")
+            else:
+                self.all_points.clear()
+                return
+        if madaclim_points is not None and indices is not None:
+            raise ValueError("Either provide 'madaclim_points' or 'indices', not both.")
+        
+        if madaclim_points is None and indices is None:
+            raise ValueError("At least one of madaclim_points or indices must be provided.")
+        
+        # Remove single/multiple points by MadaclimPoint instance(s)
+        if madaclim_points is not None:
+            if isinstance(madaclim_points, list):    # Multiple objects removal
+                for point in madaclim_points:
+                    
+                    if not isinstance(point, MadaclimPoint):
+                        raise TypeError(f"{point} is not a MadaclimPoint object. Accepted types are a single MadaclimPoint and a list of MadaclimPoint objects.")
+                    
+                    if point not in self.all_points:
+                        raise ValueError(f"{point} does not exists in the current MadaclimCollection instance.")
+                
+                self.all_points = [point for point in self.all_points if point not in madaclim_points]
+            
+            else:    # Single object removal
+                if not isinstance(madaclim_points, MadaclimPoint):
+                    raise TypeError("The madaclim_point to remove is not a MadaclimPoint object.")
+                
+                if madaclim_points not in self.all_points:
+                    raise ValueError(f"{madaclim_points} does not exists in the current MadaclimCollection instance.")
+                
+                self.all_points = [point for point in self.all_points if point != madaclim_points]
+        
+        
+        # Remove multiple points from an indices list
+        if indices is not None:
+            if isinstance(indices, list):
+                try:
+                    indices = [int(index) for index in indices]
+                except:
+                    raise TypeError("Indices should be integers.")
+                for index in indices:
+                    if index < 0 or index >= len(self.all_points):
+                        raise ValueError(f"Index {index} is out of bounds.")
+                self.all_points = [point for i, point in enumerate(self.all_points) if i not in indices]
 
-
+            else:    # Remove single point
+                try:
+                    index = int(indices)
+                except:
+                    raise TypeError("Single index must be an integer.")
+            
+                if index < 0 or index >= len(self.all_points):
+                    raise IndexError("Index out of range.")
+                
+                else:
+                    self.all_points.pop(index)
+            
 
     def __str__(self) -> str:
         if len(self.all_points) == 0:
