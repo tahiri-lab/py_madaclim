@@ -694,6 +694,26 @@ class MadaclimCollection:
     
     @classmethod
     def populate_from_csv(cls, csv_file: Union[str, pathlib.Path]):
+        """Creates a new MadaclimCollection from a CSV file.
+        
+        Each row of the CSV file should represent a MadaclimPoint. The CSV file
+        must have columns that correspond to the arguments of the MadaclimPoint
+        constructor. If a 'source_crs' column is not provided, the method uses
+        the default CRS value.
+
+        Args:
+            csv_file (Union[str, pathlib.Path]): The path to the CSV file.
+
+        Returns:
+            MadaclimCollection: A new MadaclimCollection instance with MadaclimPoint
+            objects created from the rows of the CSV file.
+
+        Raises:
+            TypeError: If 'csv_file' is not a str or pathlib.Path object.
+            FileNotFoundError: If the file specified by 'csv_file' does not exist.
+            ValueError: If the CSV file headers are missing required arguments for
+            constructing MadaclimPoint objects.
+        """
         # Convert str to pathlib.Path
         if isinstance(csv_file, str):
             csv_file = Path(csv_file)
@@ -725,7 +745,7 @@ class MadaclimCollection:
 
             # Initialize MadaclimPoint instances container
             points = []
-            
+
             for row in csv_data:
                 # If source_crs not in row use default val
                 if madapoint_default_crs_arg not in row or not row[madapoint_default_crs_arg]:
