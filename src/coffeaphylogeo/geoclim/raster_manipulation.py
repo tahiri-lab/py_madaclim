@@ -536,11 +536,17 @@ class MadaclimPoint:
 
     
 class MadaclimCollection:
-    #TODO DOCSTRINGS
-    def __init__(self) -> None:
-        """Initialize an empty MadaclimCollection instance.
+
+    def __init__(self, madaclim_points: Optional[Union[MadaclimPoint, List[MadaclimPoint]]]=None) -> None:
+        """Instantiate a collection of MadaclimPoint objects. By default, the MadaclimCollection is empty.
+        It will populate the collection with a single instance or a list of MadaclimPoint instances by calling the add_points method with the given madaclim_points.
+
+        Args:
+            madaclim_points (Optional[Union[MadaclimPoint, List[MadaclimPoint]]], optional): A single MadaclimPoint object or a list of MadaclimPoint objects to be added to the MadaclimCollection. Initialize an empty MadaclimCollection by default (None).
         """
         self.__all_points = []
+        if madaclim_points:
+            self.add_points(madaclim_points)
 
     @property
     def all_points(self):
@@ -717,8 +723,9 @@ class MadaclimCollection:
             if madapoint_default_crs_arg not in col_names:
                 print(f"Warning! No {madapoint_default_crs_arg} column in the CSV. Using the default value of EPSG:{madapoint_default_crs_val}...")
 
-            # print([row for row in csv_data][0])
+            # Initialize MadaclimPoint instances container
             points = []
+            
             for row in csv_data:
                 # If source_crs not in row use default val
                 if madapoint_default_crs_arg not in row or not row[madapoint_default_crs_arg]:
@@ -727,6 +734,6 @@ class MadaclimCollection:
                 # Create a MadaclimPoint using the values of the row
                 point = MadaclimPoint(**row)
                 points.append(point)
-        collection = cls()
-        collection.add_points(points)
-        return collection
+        
+        new_collection = cls(points)
+        return new_collection
