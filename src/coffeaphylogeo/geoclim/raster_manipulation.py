@@ -14,6 +14,8 @@ import pyproj
 import shapely
 from pyproj import Transformer
 from shapely import Point
+import pandas as pd
+
 
 # Default dir and path for rasters
 defs = Definitions()
@@ -693,7 +695,7 @@ class MadaclimCollection:
             return "MadaclimCollection = [\n" + "\t" + ",\n\t".join(all_points_short) + "\n]"
     
     @classmethod
-    def populate_from_csv(cls, csv_file: Union[str, pathlib.Path]):
+    def populate_from_csv(cls, csv_file: Union[str, pathlib.Path]) -> "MadaclimCollection":
         """Creates a new MadaclimCollection from a CSV file.
         
         Each row of the CSV file should represent a MadaclimPoint. The CSV file
@@ -737,13 +739,13 @@ class MadaclimCollection:
             col_names = csv_data.fieldnames
             missing_args = [req_arg for req_arg in madapoint_required_args if req_arg not in col_names]
             if len(missing_args) > 0:
-                raise ValueError(f"CSV file headers are missing the following required args to construct the MadaclimPoint objects:\n{missing_args}")
+                raise ValueError(f"csv file headers are missing the following required args to construct the MadaclimPoint objects:\n{missing_args}")
             
             # Warn for default EPSG if not provided
             if madapoint_default_crs_arg not in col_names:
-                print(f"Warning! No {madapoint_default_crs_arg} column in the CSV. Using the default value of EPSG:{madapoint_default_crs_val}...")
+                print(f"Warning! No {madapoint_default_crs_arg} column in the csv. Using the default value of EPSG:{madapoint_default_crs_val}...")
 
-            # Initialize MadaclimPoint instances container
+            # Initialize MadaclimPoint instances container to fill from csv
             points = []
 
             for row in csv_data:
@@ -752,8 +754,66 @@ class MadaclimCollection:
                     row[madapoint_default_crs_arg] = madapoint_default_crs_val
                 
                 # Create a MadaclimPoint using the values of the row
+                print(f"Creating MadaclimPoint(specimen_id={row['specimen_id']}...)")
                 point = MadaclimPoint(**row)
                 points.append(point)
         
         new_collection = cls(points)
+        print(f"Created new MadaclimCollection with {len(points)} samples.")
         return new_collection
+    
+    @classmethod
+    def populate_from_df(cls, df: pd.DataFrame) -> "MadaclimCollection":
+        """
+        Class method to populate a MadaclimCollection from a pandas DataFrame.
+
+        This method takes a DataFrame where each row represents a MadaclimPoint and its 
+        attributes. If the 'source_crs' column is not provided in the DataFrame, the default 
+        CRS will be used. 
+
+        Args:
+            df (pd.DataFrame): DataFrame where each row represents a MadaclimPoint. Expected
+                            columns are the same as the required arguments for the 
+                            MadaclimPoint constructor.
+
+        Returns:
+            MadaclimCollection: A new MadaclimCollection instance populated with MadaclimPoints
+                                created from the DataFrame.
+
+        Raises:
+            TypeError: If 'df' is not a pd.DataFrame.
+            ValueError: If the DataFrame is missing any of the required arguments to construct 
+                        a MadaclimPoint.
+        """
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError("'df' is not a pd.DataFrame.")
+        
+        # Get the required + default args to use to construct the MadaclimPoint objects
+        madapoint_required_args, madapoint_default_crs_arg = MadaclimPoint.get_args_names()
+        madapoint_default_crs_val = MadaclimPoint.get_default_source_crs()
+
+        # Check for required args present in df
+        missing_args = [req_arg for req_arg in madapoint_required_args if req_arg not in df.columns]
+        if len(missing_args) > 0:
+            raise ValueError(f"df is missing the following required args to construct the MadaclimPoint objects:\n{missing_args}")
+        
+        # Warn for default EPSG if not provided
+        if madapoint_default_crs_arg not in df.columns:
+            print(f"Warning! No {madapoint_default_crs_arg} column in the df. Using the default value of EPSG:{madapoint_default_crs_val}...")
+
+        # Initialize MadaclimPoint instances container to fill from df
+        points = []
+
+        for _, row in df.iterrows():
+            # If source_crs not in row use default val
+            if madapoint_default_crs_arg not in row or not row[madapoint_default_crs_arg]:
+                row[madapoint_default_crs_arg] = madapoint_default_crs_val
+
+            print(f"Creating MadaclimPoint(specimen_id={row['specimen_id']}...)")
+            point = MadaclimPoint(**row)
+            points.append(point)
+        
+        new_collection = cls(points)
+        print(f"Created new MadaclimCollection with {len(points)} samples.")
+        return new_collection
+        
