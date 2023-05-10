@@ -685,4 +685,48 @@ class MadaclimCollection:
                 f"MadaclimPoint(specimen_id={point.specimen_id}, mada_geom_point={point.mada_geom_point})" for point in self.all_points
             ]
             return "MadaclimCollection = [\n" + "\t" + ",\n\t".join(all_points_short) + "\n]"
+    
+    @classmethod
+    def populate_from_csv(cls, csv_file: Union[str, pathlib.Path]):
+        # Convert str to pathlib.Path
+        if isinstance(csv_file, str):
+            csv_file = Path(csv_file)
         
+        # Type and IO validation
+        if not isinstance(csv_file, pathlib.Path):
+            raise TypeError("'csv_file' must be a valid pathlib.Path object.")
+
+        if not csv_file.is_file():
+            raise FileNotFoundError(f"Could not find {csv_file}")
+        
+        # Get the required + default args to use to construct the MadaclimPoint objects
+        madapoint_required_args, madapoint_default_crs_arg = MadaclimPoint.get_args_names()
+        madapoint_default_crs_val = MadaclimPoint.get_default_source_crs()
+
+        # Populate the collection from the input csv
+        with open(csv_file, newline="") as f:
+            csv_data = csv.DictReader(f)
+            
+            # Check if all required_args in csv
+            col_names = csv_data.fieldnames
+            missing_args = [req_arg for req_arg in madapoint_required_args if req_arg not in col_names]
+            if len(missing_args) > 0:
+                raise ValueError(f"CSV file headers are missing the following required args to construct the MadaclimPoint objects:\n{missing_args}")
+            
+            # Warn for default EPSG if not provided
+            if madapoint_default_crs_arg not in col_names:
+                print(f"Warning! No {madapoint_default_crs_arg} column in the CSV. Using the default value of EPSG:{madapoint_default_crs_val}...")
+
+            # print([row for row in csv_data][0])
+            points = []
+            for row in csv_data:
+                # If source_crs not in row use default val
+                if madapoint_default_crs_arg not in row or not row[madapoint_default_crs_arg]:
+                    row[madapoint_default_crs_arg] = madapoint_default_crs_val
+                
+                # Create a MadaclimPoint using the values of the row
+                point = MadaclimPoint(**row)
+                points.append(point)
+        collection = cls()
+        collection.add_points(points)
+        return collection
