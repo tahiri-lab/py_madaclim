@@ -518,6 +518,21 @@ class MadaclimPoint:
         # Get defaults args names
         default_args = argspec.args[-num_defaults] if argspec.defaults else []
         return required_args, default_args
+    
+    @staticmethod
+    def get_default_source_crs(as_epsg: bool=True) -> Union[pyproj.crs.crs.CRS, int]:
+        """Extracts the default value of the source_crs attribute. By default, it will return the crs as the EPSG code.
+
+        Args:
+            as_epsg (bool, optional): The EPSG code of the source_CRS. Defaults to True.
+
+        Returns:
+            Union[pyproj.crs.crs.CRS, int]: The default value for the source_crs attribute. If true, source_crs is returned as the EPSG code of the crs.
+        """
+        source_crs_val = inspect.getfullargspec(MadaclimPoint).defaults[0]    # only 1 default args
+        if as_epsg:
+            source_crs_val = source_crs_val.to_epsg()
+        return source_crs_val
 
     
 class MadaclimCollection:
@@ -670,4 +685,4 @@ class MadaclimCollection:
                 f"MadaclimPoint(specimen_id={point.specimen_id}, mada_geom_point={point.mada_geom_point})" for point in self.all_points
             ]
             return "MadaclimCollection = [\n" + "\t" + ",\n\t".join(all_points_short) + "\n]"
-    
+        
