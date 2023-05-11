@@ -660,7 +660,7 @@ class MadaclimLayers:
 
         Args:
             layers_labels (Union[int, str, List[Union[int, str]]]): The layer labels to fetch. Can be a single int or str value, or a list of int or str values.
-                The input can also be in the format "layer_<num>".
+                The input can also be in the format "layer_{num}" or "{geotype}_{num}_{name}_({description})" (output from .get_layers_labels(as_descriptive_labels=True) method).
             as_descriptive_labels (bool, optional): If True, only the layer descriptions are returned. Defaults to False.
 
         Returns:
@@ -668,7 +668,7 @@ class MadaclimLayers:
                 Otherwise, returns a DataFrame with the specified layers.
 
         Raises:
-            TypeError: If any value in layers_labels cannot be converted to an int or is not in the "layer_<num>" format.
+            TypeError: If any value in layers_labels cannot be converted to an int or is not in the "layer_{num}" format.
             ValueError: If any layer_number does not fall between the minimum and maximum layer numbers.
 
         Example:
@@ -680,6 +680,7 @@ class MadaclimLayers:
             14            15  Monthly maximum temperature (°C x 10)         clim      tmax3    Monthly maximum temperature (°C x 10) - March
             54            55        Bioclimatic variables (bioclim)         clim      bio19                 Precipitation of coldest quarter
             0             71                           Altitude (m)          env   altitude                                             None
+            
             >>> # Using the output from get_layers_labels() method
             >>> bio1_to_bio5_labels = madaclim_info.get_layers_labels(geoclim_type="clim")[36:41]
             >>> madaclim_info.fetch_specific_layers(bio1_to_bio5_labels)
@@ -689,7 +690,21 @@ class MadaclimLayers:
             38            39  Bioclimatic variables (bioclim)         clim       bio3                  Isothermality (BIO2/BIO7) (x 100)
             39            40  Bioclimatic variables (bioclim)         clim       bio4  Temperature seasonality (standard deviation x ...
             40            41  Bioclimatic variables (bioclim)         clim       bio5                   Max temperature of warmest month
-            >>> # Fetch description only as dict
+            
+            >>> # Or from descriptive_labels as well
+            >>> monthly_layers = [layer for layer in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "Monthly" in layer]
+            >>> monthly_layers[:3]
+            ['clim_1_tmin1 (Monthly minimum temperature (°C x 10) - January)', 'clim_2_tmin2 (Monthly minimum temperature (°C x 10) - February)', 'clim_3_tmin3 (Monthly minimum temperature (°C x 10) - March)']
+            >>> madaclim_info.fetch_specific_layers(monthly)[:5]
+            layer_number  ...                                 layer_description
+            0             1  ...   Monthly minimum temperature (°C x 10) - January
+            1             2  ...  Monthly minimum temperature (°C x 10) - February
+            2             3  ...     Monthly minimum temperature (°C x 10) - March
+            3             4  ...     Monthly minimum temperature (°C x 10) - April
+            4             5  ...       Monthly minimum temperature (°C x 10) - May
+
+            
+            >>> # Fetch description only with output as dict
             >>> madaclim_info.fetch_specific_layers(bio1_to_bio5_labels, as_descriptive_labels=True)
             {'layer_37': 'clim_37_bio1 (Annual mean temperature)', 'layer_38': 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))', 'layer_39': 'clim_39_bio3 (Isothermality (BIO2/BIO7) (x 100))', 'layer_40': 'clim_40_bio4 (Temperature seasonality (standard deviation x 100))', 'layer_41': 'clim_41_bio5 (Max temperature of warmest month)'}
 
@@ -698,13 +713,15 @@ class MadaclimLayers:
 
         # Validate layers_labels
         possible_layers_num_format = [f"layer_{num}" for num in all_layers_df["layer_number"].to_list()]
+        possible_layers_desc_format = self.get_layers_labels(as_descriptive_labels=True)
 
         if isinstance(layers_labels, list):
             # Check if all elements are in unique label format
             layers_num_format = all([layer_label in possible_layers_num_format for layer_label in layers_labels])
+            layers_desc_format = all([layer_label in possible_layers_desc_format for layer_label in layers_labels])
             
-            if layers_num_format:
-                # Save as list of ints after check
+            # Save as list of ints for later filtering
+            if layers_num_format or layers_desc_format:
                 layers_numbers = [int(layer_label.split("_")[1]) for layer_label in layers_labels]
 
             # layers_labels as list of ints
