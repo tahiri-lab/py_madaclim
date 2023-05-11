@@ -661,6 +661,30 @@ class MadaclimCollection:
 
         Args:
             madaclim_points (Optional[Union[MadaclimPoint, List[MadaclimPoint]]], optional): A single MadaclimPoint object or a list of MadaclimPoint objects to be added to the MadaclimCollection. Initialize an empty MadaclimCollection by default (None).
+        Examples:
+            >>> from coffeaphylogeo.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
+            >>> specimen_1 = MadaclimPoint(specimen_id="spe1", latitude=-23.574583, longitude=46.419806, source_crs="epsg:4326")
+            >>> specimen_2 = MadaclimPoint(specimen_id="spe2", latitude=-2622095.832726487, longitude=5048512.906023483, source_crs=3857)
+            
+            >>> # Add points to the collection when constructing
+            >>> collection = MadaclimCollection([specimen_1, specimen_2])
+            >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=spe1, mada_geom_point=POINT (644890.8921103649 7392153.658976035)),
+                MadaclimPoint(specimen_id=spe2, mada_geom_point=POINT (536050.6239664567 7465523.013290589))
+            ]
+            >>> # You can also initiliaze an empty collection
+            >>> collection = MadaclimCollection()
+            >>> print(collection)
+            No MadaclimPoint inside the collection yet.
+
+            >>> # Add a single MadaclimPoint
+            >>> collection.add_points(specimen_1)
+            >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=spe1, mada_geom_point=POINT (644890.8921103649 7392153.658976035))
+            ]
+            
         """
         self.__all_points = []
         if madaclim_points:
