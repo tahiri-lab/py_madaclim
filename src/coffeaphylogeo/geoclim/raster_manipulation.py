@@ -60,12 +60,29 @@ class MadaclimPoint:
         Examples:
             >>> from coffeaphylogeo.geoclim.raster_manipulation import MadaclimPoint
             >>> specimen_1 = MadaclimPoint(specimen_id="spe_1", latitude=-18.9333, longitude=48.2)    # Default CRS of EPSG:4326
-            >>> # Also accepts any other kwargs and saves them as attributes
+            
+            >>> # Creates a shapely point object according to the Madaclim CRS' projection when instantiating a new instance. 
+            >>> specimen_1.mada_geom_point
+            <POINT (837072.915 7903496.321)>
+
+            >>> # Also accepts any other kwargs and saves them as attributes with specific typing
             >>> specimen_1 = MadaclimPoint(specimen_id="spe_1", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
             >>> specimen_1.species
             'arenesiana'
             >>> specimen_1.has_sequencing
             True
+            >>> print(specimen_1)
+            MadaclimPoint(
+                genus = Coffea,
+                mada_geom_point = POINT (837072.9150244407 7903496.320897499),
+                source_crs = 4326,
+                specimen_id = spe_1,
+                species = arenesiana,
+                has_sequencing = True,
+                longitude = 48.2,
+                latitude = -18.9333
+            )
+
         """
         
         self.specimen_id = specimen_id
