@@ -59,14 +59,14 @@ class MadaclimPoint:
             **kwargs: Additional keyword arguments to store as instance attributes.
         Examples:
             >>> from coffeaphylogeo.geoclim.raster_manipulation import MadaclimPoint
-            >>> specimen_1 = MadaclimPoint(specimen_id="spe_1", latitude=-18.9333, longitude=48.2)    # Default CRS of EPSG:4326
+            >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2)    # Default CRS of EPSG:4326
             
             >>> # Creates a shapely point object according to the Madaclim CRS' projection when instantiating a new instance. 
             >>> specimen_1.mada_geom_point
             <POINT (837072.915 7903496.321)>
 
             >>> # Also accepts any other kwargs and saves them as attributes with specific typing
-            >>> specimen_1 = MadaclimPoint(specimen_id="spe_1", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
+            >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
             >>> specimen_1.species
             'arenesiana'
             >>> specimen_1.has_sequencing
@@ -76,7 +76,7 @@ class MadaclimPoint:
                 genus = Coffea,
                 mada_geom_point = POINT (837072.9150244407 7903496.320897499),
                 source_crs = 4326,
-                specimen_id = spe_1,
+                specimen_id = spe1_aren,
                 species = arenesiana,
                 has_sequencing = True,
                 longitude = 48.2,
@@ -381,6 +381,57 @@ class MadaclimPoint:
             Union[dict, list]: A dictionary containing the sampled data, with keys being layer names or numbers depending
                 on the layer_info parameter. If return_nodata_layers is True, also returns a list of layers with nodata values
                 at the specimen location.
+        Exmaples:
+            >>> # Fetching bioclim layers from the MadaclimLayers class
+            >>> from coffeaphylogeo.geoclim.madaclim_info import MadaclimLayers
+            >>> madaclim_info = MadaclimLayers()
+            >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
+
+            >>> # Sampling the bioclim layers
+            >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
+            >>> spe1_arenesia_bioclim = specimen_1.sample_from_rasters(bioclim_layers)
+            >>> {layer: val for layer, val in list(spe1_arenesia_bioclim.items())[:2]}
+            {'clim_37_bio1 (Annual mean temperature)': 196, 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))': 112}
+
+            >>> # Sample from both clim and env rasters with just a layer number
+            >>> specimen_1.sample_from_rasters([68, 71])
+
+            ######################################## Extracting data for: spe1_aren ########################################
+
+            Sampling 1 layer(s) from madaclim_current.tif (geoclim_type=clim)...
+            Extracting layer 68: pet (Annual potential evapotranspiration from the Thornthwaite equation (mm)):  1
+
+            Sampling 1 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
+            Extracting layer 71: altitude (None):  100%|███████████████████████| layer 1/1 [Time remaining: 00:00]
+
+            Finished raster sampling operation in 0.44 seconds.
+
+            {'clim_68_pet (Annual potential evapotranspiration from the Thornthwaite equation (mm))': 891, 'env_71_altitude (None)': 899}
+
+            >>> # Sample all layers with less descriptive layer names
+            >>> spe2_all_layers = specimen_2.sample_from_rasters(layer_info=False)
+
+            ######################################## Extracting data for: spe2 ########################################
+
+            Sampling 70 layer(s) from madaclim_current.tif (geoclim_type=clim)...
+            Extracting layer 70: ndm (Number of dry months in the year):  100%|█████████████████████| layer 70/70 [Time remaining: 00:00]
+
+            Sampling 9 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
+            Extracting layer 79: forestcover (None):  100%|███████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
+            BEWARE! 5 layer(s) contain a nodata value at the specimen location
+
+            Finished raster sampling operation in 27.58 seconds.
+            >>> {layer: val for layer, val in list(spe2_all_layers.items())[:5]}
+            {'layer_1': 197, 'layer_2': 218, 'layer_3': 218, 'layer_4': 216, 'layer_5': 207}
+            >>> spe2_all_layers["layer_37"]
+            238
+
+            >>> # We can easily access the nodata layers (still sampled with the method regardless)
+            >>> spe2_all_layers, spe2_nodata_layers = specimen_2.sample_from_rasters("all", return_nodata_layers=True)
+            >>> len(spe2_nodata_layers)
+            5
+            >>> spe2_nodata_layers
+            ['env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))', 'env_76_soil (None)', 'env_77_vegetation (None)', 'env_78_watersheds (None)', 'env_79_forestcover (None)']
         """
         
         # Create a MadaclimLayers instance to get layers labels and validate layers to sample
@@ -389,12 +440,16 @@ class MadaclimPoint:
         
         # Validate layers to sample
         possible_layers_num_format = [f"layer_{num}" for num in all_layers_df["layer_number"].to_list()]
+        possible_layers_desc_format = madaclim_info.get_layers_labels(as_descriptive_labels=True)
+
 
         if isinstance(layers_to_sample, list):
             # Check if all elements are in layer_<num> format
             layers_num_format = all([layer_label in possible_layers_num_format for layer_label in layers_to_sample])
+            layers_desc_format = all([layer_label in possible_layers_desc_format for layer_label in layers_to_sample])
+
             
-            if layers_num_format:
+            if layers_num_format or layers_desc_format:
                 # Save as list of ints after check
                 layers_numbers = [int(layer_label.split("_")[1]) for layer_label in layers_to_sample]
 
