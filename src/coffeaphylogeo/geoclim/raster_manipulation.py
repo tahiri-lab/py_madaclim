@@ -187,10 +187,15 @@ class MadaclimPoint:
 
     def __str__(self) -> str:
         
-        madapoint_obj = (
-            f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tsource_crs = EPSG:{self.source_crs.to_epsg()},\n\t"
-            f"latitude = {self.latitude},\n\tlongitude = {self.longitude},\n\tmada_geom_point = {self.mada_geom_point}\n)"
-        )
+        # Fetch base and additional attributes at construction
+        base_attr = self.base_attr
+        add_attr = self._get_additional_attributes()
+        all_attr = {**base_attr, **add_attr}    # Append attr dictionaries
+        
+        # Pretty format
+        all_attr = ",\n\t".join({f"{k.lstrip('_')} = {v.to_epsg() if k == '_source_crs' else v}" for k, v in all_attr.items()})
+        madapoint_obj = f"MadaclimPoint(\n\t{all_attr}\n)"
+        
         return madapoint_obj
 
     def __repr__(self) -> str:
