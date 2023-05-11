@@ -42,6 +42,8 @@ class MadaclimPoint:
         latitude (float): The latitude of the point.
         longitude (float): The longitude of the point.
         mada_geom_point (shapely.geometry.point.Point): A Shapely Point object representing the point projected in the Madaclim rasters' CRS.
+        ___base_attr (dict): A dictionary containing the base attributes names as keys and their values as values.
+        
     """
 
     def __init__(self, specimen_id: str, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS=pyproj.CRS.from_epsg(4326), **kwargs) -> None:
@@ -55,6 +57,15 @@ class MadaclimPoint:
             longitude (float): The longitude of the point.
             source_crs (pyproj.crs.crs.CRS, optional): The coordinate reference system of the point. Defaults to WGS84 (EPSG:4326).
             **kwargs: Additional keyword arguments to store as instance attributes.
+        Examples:
+            >>> from coffeaphylogeo.geoclim.raster_manipulation import MadaclimPoint
+            >>> specimen_1 = MadaclimPoint(specimen_id="spe_1", latitude=-18.9333, longitude=48.2)    # Default CRS of EPSG:4326
+            >>> # Also accepts any other kwargs and saves them as attributes
+            >>> specimen_1 = MadaclimPoint(specimen_id="spe_1", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
+            >>> specimen_1.species
+            'arenesiana'
+            >>> specimen_1.has_sequencing
+            True
         """
         
         self.specimen_id = specimen_id
@@ -67,8 +78,12 @@ class MadaclimPoint:
             source_crs=self.source_crs
         )
         
+        # Store base attributes names/vals
+        self.__base_attr = {k:v for k,v in self.__dict__.items()}
+
         # Store any additional keyword arguments as instance attributes
-        additional_args = [key for key in kwargs if key not in ["id", "epsg", "x", "y"]]
+        base_args = self.get_args_names()[0] + [self.get_args_names()[1]]
+        additional_args = [key for key in kwargs if key not in base_args]
         for key in additional_args:
             setattr(self, key, kwargs[key])
     
@@ -161,7 +176,17 @@ class MadaclimPoint:
         # Update mada_geom_point when crs is updated
         self._update_mada_geom_point()
 
+    @property
+    def base_attr(self) -> dict:
+        """Get the base attributes when constructing the instance
+
+        Returns:
+            dict: A dictionary containing the base attributes names as keys and their values as values.
+        """
+        return self.__base_attr
+
     def __str__(self) -> str:
+        
         madapoint_obj = (
             f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tsource_crs = EPSG:{self.source_crs.to_epsg()},\n\t"
             f"latitude = {self.latitude},\n\tlongitude = {self.longitude},\n\tmada_geom_point = {self.mada_geom_point}\n)"
@@ -482,6 +507,26 @@ class MadaclimPoint:
             return sampled_data, nodata_layers
         
         return sampled_data
+    
+    def _get_additional_attributes(self) -> dict:
+        """
+        Get additional attributes of the instance.
+
+        This method retrieves any attributes that were added to the instance 
+        after initialization, i.e., attributes that are not part of the base attributes.
+
+        Note: This is a private method, indicated by the underscore prefix. 
+        It's intended for internal use within the class, not for use by external code.
+
+        Returns:
+            dict: A dictionary containing the names and values of the additional attributes.
+                The dictionary keys are attribute names and the dictionary values are attribute values.
+                If there are no additional attributes, an empty dictionary is returned.
+        """
+        current_attributes = {k:v for k,v in self.__dict__.items() if k != "_MadaclimPoint__base_attr"}    # Remove the recursiveness of __base_attr
+        additional_attributes = {k:v for k,v in current_attributes.items() if k not in self.__base_attr.keys()}
+        return additional_attributes
+
     
     def _construct_point(self, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS)-> shapely.geometry.point.Point:
         """
