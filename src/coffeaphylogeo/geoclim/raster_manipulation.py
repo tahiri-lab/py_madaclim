@@ -160,6 +160,57 @@ class MadaclimPoint:
         
         # Update mada_geom_point when crs is updated
         self._update_mada_geom_point()
+
+    def __str__(self) -> str:
+        madapoint_obj = (
+            f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tsource_crs = EPSG:{self.source_crs.to_epsg()},\n\t"
+            f"latitude = {self.latitude},\n\tlongitude = {self.longitude},\n\tmada_geom_point = {self.mada_geom_point}\n)"
+        )
+        return madapoint_obj
+
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    @staticmethod
+    def get_args_names() -> Tuple[list, list]:
+        """Gets the names of the required and default arguments of the MadaclimPoint constructor.
+
+        This method uses the inspect module to introspect the MadaclimPoint constructor and extract the names of its arguments.
+        It then separates these into required arguments (those that don't have default values) and default arguments (those that do).
+
+        Returns:
+            Tuple[list, list]: A tuple containing two lists:
+                - The first list contains the names of the required arguments.
+                - The second list contains the names of the default arguments.
+                
+        Note:
+            - 'self' is excluded from the returned lists.
+        """
+        argspec = inspect.getfullargspec(MadaclimPoint)
+        
+        # Get required args names
+        num_defaults = len(argspec.defaults) if argspec.defaults else 0
+        num_required = len(argspec.args) - num_defaults
+        required_args = argspec.args[1: num_required]    # Exclude self
+
+        # Get defaults args names
+        default_args = argspec.args[-num_defaults] if argspec.defaults else []
+        return required_args, default_args
+    
+    @staticmethod
+    def get_default_source_crs(as_epsg: bool=True) -> Union[pyproj.crs.crs.CRS, int]:
+        """Extracts the default value of the source_crs attribute. By default, it will return the crs as the EPSG code.
+
+        Args:
+            as_epsg (bool, optional): The EPSG code of the source_CRS. Defaults to True.
+
+        Returns:
+            Union[pyproj.crs.crs.CRS, int]: The default value for the source_crs attribute. If true, source_crs is returned as the EPSG code of the crs.
+        """
+        source_crs_val = inspect.getfullargspec(MadaclimPoint).defaults[0]    # only 1 default args
+        if as_epsg:
+            source_crs_val = source_crs_val.to_epsg()
+        return source_crs_val
     
     def validate_crs(self, crs):
         """
@@ -346,6 +397,7 @@ class MadaclimPoint:
         sampled_data = {}
         nodata_layers = []
 
+        print(f"Extracting data from raster(s) for {self.specimen_id}\n")
         if clim_raster_layers_to_sample:
             start_time = time.perf_counter()
             total_clim_layers = len(clim_raster_layers_to_sample)
@@ -430,8 +482,10 @@ class MadaclimPoint:
 
         if len(nodata_layers) > 0:
                 print(f"BEWARE! {len(nodata_layers)} layer(s) contain a nodata value at the specimen location")
+                print("#" * 80)
         else:
             print("No sampled layers with nodata values.")
+            print("#" * 80)
         
         if return_nodata_layers:
             return sampled_data, nodata_layers
@@ -485,57 +539,6 @@ class MadaclimPoint:
                 source_crs=self.source_crs
             )
     
-    def __str__(self) -> str:
-        madapoint_obj = (
-            f"MadaclimPoint(\n\tspecimen_id = '{self.specimen_id}',\n\tsource_crs = EPSG:{self.source_crs.to_epsg()},\n\t"
-            f"latitude = {self.latitude},\n\tlongitude = {self.longitude},\n\tmada_geom_point = {self.mada_geom_point}\n)"
-        )
-        return madapoint_obj
-
-    def __repr__(self) -> str:
-        return self.__str__()
-    
-    @staticmethod
-    def get_args_names() -> Tuple[list, list]:
-        """Gets the names of the required and default arguments of the MadaclimPoint constructor.
-
-        This method uses the inspect module to introspect the MadaclimPoint constructor and extract the names of its arguments.
-        It then separates these into required arguments (those that don't have default values) and default arguments (those that do).
-
-        Returns:
-            Tuple[list, list]: A tuple containing two lists:
-                - The first list contains the names of the required arguments.
-                - The second list contains the names of the default arguments.
-                
-        Note:
-            - 'self' is excluded from the returned lists.
-        """
-        argspec = inspect.getfullargspec(MadaclimPoint)
-        
-        # Get required args names
-        num_defaults = len(argspec.defaults) if argspec.defaults else 0
-        num_required = len(argspec.args) - num_defaults
-        required_args = argspec.args[1: num_required]    # Exclude self
-
-        # Get defaults args names
-        default_args = argspec.args[-num_defaults] if argspec.defaults else []
-        return required_args, default_args
-    
-    @staticmethod
-    def get_default_source_crs(as_epsg: bool=True) -> Union[pyproj.crs.crs.CRS, int]:
-        """Extracts the default value of the source_crs attribute. By default, it will return the crs as the EPSG code.
-
-        Args:
-            as_epsg (bool, optional): The EPSG code of the source_CRS. Defaults to True.
-
-        Returns:
-            Union[pyproj.crs.crs.CRS, int]: The default value for the source_crs attribute. If true, source_crs is returned as the EPSG code of the crs.
-        """
-        source_crs_val = inspect.getfullargspec(MadaclimPoint).defaults[0]    # only 1 default args
-        if as_epsg:
-            source_crs_val = source_crs_val.to_epsg()
-        return source_crs_val
-
     
 class MadaclimCollection:
     #TODO DOCSTRINGS CLS
@@ -583,8 +586,139 @@ class MadaclimCollection:
             Dict[str, Union[str, List[str]]]: A dictionary with MadaclimPoint.specimen_id as keys and values of str or list of str of the layers_name with nodata values.
         """
         return self.__nodata_layers
-
     
+    def __str__(self) -> str:
+        if len(self.__all_points) == 0:
+            return "No MadaclimPoint inside the collection yet."
+        else:
+            all_points_short = [
+                f"MadaclimPoint(specimen_id={point.specimen_id}, mada_geom_point={point.mada_geom_point})" for point in self.all_points
+            ]
+            return "MadaclimCollection = [\n" + "\t" + ",\n\t".join(all_points_short) + "\n]"
+    
+    @classmethod
+    def populate_from_csv(cls, csv_file: Union[str, pathlib.Path]) -> "MadaclimCollection":
+        """Creates a new MadaclimCollection from a CSV file.
+        
+        Each row of the CSV file should represent a MadaclimPoint. The CSV file
+        must have columns that correspond to the arguments of the MadaclimPoint
+        constructor. If a 'source_crs' column is not provided, the method uses
+        the default CRS value.
+
+        Args:
+            csv_file (Union[str, pathlib.Path]): The path to the CSV file.
+
+        Returns:
+            MadaclimCollection: A new MadaclimCollection instance with MadaclimPoint
+            objects created from the rows of the CSV file.
+
+        Raises:
+            TypeError: If 'csv_file' is not a str or pathlib.Path object.
+            FileNotFoundError: If the file specified by 'csv_file' does not exist.
+            ValueError: If the CSV file headers are missing required arguments for
+            constructing MadaclimPoint objects.
+        """
+        # Convert str to pathlib.Path
+        if isinstance(csv_file, str):
+            csv_file = Path(csv_file)
+        
+        # Type and IO validation
+        if not isinstance(csv_file, pathlib.Path):
+            raise TypeError("'csv_file' must be a valid pathlib.Path object.")
+
+        if not csv_file.is_file():
+            raise FileNotFoundError(f"Could not find {csv_file}")
+        
+        # Get the required + default args to use to construct the MadaclimPoint objects
+        madapoint_required_args, madapoint_default_crs_arg = MadaclimPoint.get_args_names()
+        madapoint_default_crs_val = MadaclimPoint.get_default_source_crs()
+
+        # Populate the collection from the input csv
+        with open(csv_file, newline="") as f:
+            csv_data = csv.DictReader(f)
+            
+            # Check if all required_args in csv
+            col_names = csv_data.fieldnames
+            missing_args = [req_arg for req_arg in madapoint_required_args if req_arg not in col_names]
+            if len(missing_args) > 0:
+                raise ValueError(f"csv file headers are missing the following required args to construct the MadaclimPoint objects:\n{missing_args}")
+            
+            # Warn for default EPSG if not provided
+            if madapoint_default_crs_arg not in col_names:
+                print(f"Warning! No {madapoint_default_crs_arg} column in the csv. Using the default value of EPSG:{madapoint_default_crs_val}...")
+
+            # Initialize MadaclimPoint instances container to fill from csv
+            points = []
+
+            for row in csv_data:
+                # If source_crs not in row use default val
+                if madapoint_default_crs_arg not in row or not row[madapoint_default_crs_arg]:
+                    row[madapoint_default_crs_arg] = madapoint_default_crs_val
+                
+                # Create a MadaclimPoint using the values of the row
+                print(f"Creating MadaclimPoint(specimen_id={row['specimen_id']}...)")
+                point = MadaclimPoint(**row)
+                points.append(point)
+        
+        new_collection = cls(points)
+        print(f"Created new MadaclimCollection with {len(points)} samples.")
+        return new_collection
+    
+    @classmethod
+    def populate_from_df(cls, df: pd.DataFrame) -> "MadaclimCollection":
+        """
+        Class method to populate a MadaclimCollection from a pandas DataFrame.
+
+        This method takes a DataFrame where each row represents a MadaclimPoint and its 
+        attributes. If the 'source_crs' column is not provided in the DataFrame, the default 
+        CRS will be used. 
+
+        Args:
+            df (pd.DataFrame): DataFrame where each row represents a MadaclimPoint. Expected
+                            columns are the same as the required arguments for the 
+                            MadaclimPoint constructor.
+
+        Returns:
+            MadaclimCollection: A new MadaclimCollection instance populated with MadaclimPoints
+                                created from the DataFrame.
+
+        Raises:
+            TypeError: If 'df' is not a pd.DataFrame.
+            ValueError: If the DataFrame is missing any of the required arguments to construct 
+                        a MadaclimPoint.
+        """
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError("'df' is not a pd.DataFrame.")
+        
+        # Get the required + default args to use to construct the MadaclimPoint objects
+        madapoint_required_args, madapoint_default_crs_arg = MadaclimPoint.get_args_names()
+        madapoint_default_crs_val = MadaclimPoint.get_default_source_crs()
+
+        # Check for required args present in df
+        missing_args = [req_arg for req_arg in madapoint_required_args if req_arg not in df.columns]
+        if len(missing_args) > 0:
+            raise ValueError(f"df is missing the following required args to construct the MadaclimPoint objects:\n{missing_args}")
+        
+        # Warn for default EPSG if not provided
+        if madapoint_default_crs_arg not in df.columns:
+            print(f"Warning! No {madapoint_default_crs_arg} column in the df. Using the default value of EPSG:{madapoint_default_crs_val}...")
+
+        # Initialize MadaclimPoint instances container to fill from df
+        points = []
+
+        for _, row in df.iterrows():
+            # If source_crs not in row use default val
+            if madapoint_default_crs_arg not in row or not row[madapoint_default_crs_arg]:
+                row[madapoint_default_crs_arg] = madapoint_default_crs_val
+
+            print(f"Creating MadaclimPoint(specimen_id={row['specimen_id']}...)")
+            point = MadaclimPoint(**row)
+            points.append(point)
+        
+        new_collection = cls(points)
+        print(f"Created new MadaclimCollection with {len(points)} samples.")
+        return new_collection
+
     def add_points(self, madaclim_points: Union[MadaclimPoint, List[MadaclimPoint]]) -> None:
         """
         Adds one or more MadaclimPoint objects to the MadaclimCollection.
@@ -777,137 +911,4 @@ class MadaclimCollection:
             return sampled_data, nodata_layers if len(nodata_layers) > 0 else None
         else:
             return sampled_data
-            
-
-    def __str__(self) -> str:
-        if len(self.__all_points) == 0:
-            return "No MadaclimPoint inside the collection yet."
-        else:
-            all_points_short = [
-                f"MadaclimPoint(specimen_id={point.specimen_id}, mada_geom_point={point.mada_geom_point})" for point in self.all_points
-            ]
-            return "MadaclimCollection = [\n" + "\t" + ",\n\t".join(all_points_short) + "\n]"
-    
-    @classmethod
-    def populate_from_csv(cls, csv_file: Union[str, pathlib.Path]) -> "MadaclimCollection":
-        """Creates a new MadaclimCollection from a CSV file.
-        
-        Each row of the CSV file should represent a MadaclimPoint. The CSV file
-        must have columns that correspond to the arguments of the MadaclimPoint
-        constructor. If a 'source_crs' column is not provided, the method uses
-        the default CRS value.
-
-        Args:
-            csv_file (Union[str, pathlib.Path]): The path to the CSV file.
-
-        Returns:
-            MadaclimCollection: A new MadaclimCollection instance with MadaclimPoint
-            objects created from the rows of the CSV file.
-
-        Raises:
-            TypeError: If 'csv_file' is not a str or pathlib.Path object.
-            FileNotFoundError: If the file specified by 'csv_file' does not exist.
-            ValueError: If the CSV file headers are missing required arguments for
-            constructing MadaclimPoint objects.
-        """
-        # Convert str to pathlib.Path
-        if isinstance(csv_file, str):
-            csv_file = Path(csv_file)
-        
-        # Type and IO validation
-        if not isinstance(csv_file, pathlib.Path):
-            raise TypeError("'csv_file' must be a valid pathlib.Path object.")
-
-        if not csv_file.is_file():
-            raise FileNotFoundError(f"Could not find {csv_file}")
-        
-        # Get the required + default args to use to construct the MadaclimPoint objects
-        madapoint_required_args, madapoint_default_crs_arg = MadaclimPoint.get_args_names()
-        madapoint_default_crs_val = MadaclimPoint.get_default_source_crs()
-
-        # Populate the collection from the input csv
-        with open(csv_file, newline="") as f:
-            csv_data = csv.DictReader(f)
-            
-            # Check if all required_args in csv
-            col_names = csv_data.fieldnames
-            missing_args = [req_arg for req_arg in madapoint_required_args if req_arg not in col_names]
-            if len(missing_args) > 0:
-                raise ValueError(f"csv file headers are missing the following required args to construct the MadaclimPoint objects:\n{missing_args}")
-            
-            # Warn for default EPSG if not provided
-            if madapoint_default_crs_arg not in col_names:
-                print(f"Warning! No {madapoint_default_crs_arg} column in the csv. Using the default value of EPSG:{madapoint_default_crs_val}...")
-
-            # Initialize MadaclimPoint instances container to fill from csv
-            points = []
-
-            for row in csv_data:
-                # If source_crs not in row use default val
-                if madapoint_default_crs_arg not in row or not row[madapoint_default_crs_arg]:
-                    row[madapoint_default_crs_arg] = madapoint_default_crs_val
-                
-                # Create a MadaclimPoint using the values of the row
-                print(f"Creating MadaclimPoint(specimen_id={row['specimen_id']}...)")
-                point = MadaclimPoint(**row)
-                points.append(point)
-        
-        new_collection = cls(points)
-        print(f"Created new MadaclimCollection with {len(points)} samples.")
-        return new_collection
-    
-    @classmethod
-    def populate_from_df(cls, df: pd.DataFrame) -> "MadaclimCollection":
-        """
-        Class method to populate a MadaclimCollection from a pandas DataFrame.
-
-        This method takes a DataFrame where each row represents a MadaclimPoint and its 
-        attributes. If the 'source_crs' column is not provided in the DataFrame, the default 
-        CRS will be used. 
-
-        Args:
-            df (pd.DataFrame): DataFrame where each row represents a MadaclimPoint. Expected
-                            columns are the same as the required arguments for the 
-                            MadaclimPoint constructor.
-
-        Returns:
-            MadaclimCollection: A new MadaclimCollection instance populated with MadaclimPoints
-                                created from the DataFrame.
-
-        Raises:
-            TypeError: If 'df' is not a pd.DataFrame.
-            ValueError: If the DataFrame is missing any of the required arguments to construct 
-                        a MadaclimPoint.
-        """
-        if not isinstance(df, pd.DataFrame):
-            raise TypeError("'df' is not a pd.DataFrame.")
-        
-        # Get the required + default args to use to construct the MadaclimPoint objects
-        madapoint_required_args, madapoint_default_crs_arg = MadaclimPoint.get_args_names()
-        madapoint_default_crs_val = MadaclimPoint.get_default_source_crs()
-
-        # Check for required args present in df
-        missing_args = [req_arg for req_arg in madapoint_required_args if req_arg not in df.columns]
-        if len(missing_args) > 0:
-            raise ValueError(f"df is missing the following required args to construct the MadaclimPoint objects:\n{missing_args}")
-        
-        # Warn for default EPSG if not provided
-        if madapoint_default_crs_arg not in df.columns:
-            print(f"Warning! No {madapoint_default_crs_arg} column in the df. Using the default value of EPSG:{madapoint_default_crs_val}...")
-
-        # Initialize MadaclimPoint instances container to fill from df
-        points = []
-
-        for _, row in df.iterrows():
-            # If source_crs not in row use default val
-            if madapoint_default_crs_arg not in row or not row[madapoint_default_crs_arg]:
-                row[madapoint_default_crs_arg] = madapoint_default_crs_val
-
-            print(f"Creating MadaclimPoint(specimen_id={row['specimen_id']}...)")
-            point = MadaclimPoint(**row)
-            points.append(point)
-        
-        new_collection = cls(points)
-        print(f"Created new MadaclimCollection with {len(points)} samples.")
-        return new_collection
         
