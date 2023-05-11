@@ -685,6 +685,23 @@ class MadaclimCollection:
                 MadaclimPoint(specimen_id=spe1, mada_geom_point=POINT (644890.8921103649 7392153.658976035))
             ]
             
+            >>> # Populate the collection from a csv or df
+            >>> collection = MadaclimCollection.populate_from_csv("some_samples.csv")
+            Warning! No source_crs column in the csv. Using the default value of EPSG:4326...
+            Creating MadaclimPoint(specimen_id=sample_A...)
+            \Creating MadaclimPoint(specimen_id=sample_B...)
+            Creating MadaclimPoint(specimen_id=sample_C...)
+            Creating MadaclimPoint(specimen_id=sample_D...)
+            Creating MadaclimPoint(specimen_id=sample_E...)
+            Created new MadaclimCollection with 5 samples.
+            >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=sample_A, mada_geom_point=POINT (837072.9150244407 7903496.320897499)),
+                MadaclimPoint(specimen_id=sample_B, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
+                MadaclimPoint(specimen_id=sample_C, mada_geom_point=POINT (761613.8281386737 7651088.106452912)),
+                MadaclimPoint(specimen_id=sample_D, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
+                MadaclimPoint(specimen_id=sample_E, mada_geom_point=POINT (757247.2175273325 7618631.528869408))
+            ]
         """
         self.__all_points = []
         if madaclim_points:
