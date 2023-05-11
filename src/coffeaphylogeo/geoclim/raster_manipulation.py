@@ -2,7 +2,7 @@ import csv
 import pathlib
 import inspect
 from pathlib import Path
-from typing import Optional, Union, List, Optional, Tuple
+from typing import Optional, Union, List, Optional, Tuple, Dict
 import time
 from tqdm import tqdm
 
@@ -538,7 +538,7 @@ class MadaclimPoint:
 
     
 class MadaclimCollection:
-
+    #TODO DOCSTRINGS CLS
     def __init__(self, madaclim_points: Optional[Union[MadaclimPoint, List[MadaclimPoint]]]=None) -> None:
         """Instantiate a collection of MadaclimPoint objects. By default, the MadaclimCollection is empty.
         It will populate the collection with a single instance or a list of MadaclimPoint instances by calling the add_points method with the given madaclim_points.
@@ -549,15 +549,41 @@ class MadaclimCollection:
         self.__all_points = []
         if madaclim_points:
             self.add_points(madaclim_points)
+        self.__sampled_rasters_data = None
+        self.__nodata_layers = None
 
     @property
-    def all_points(self):
+    def all_points(self) -> list:
         """Get the all_points attribute.
 
         Returns:
             list: A list of all the MadaclimPoint objects in the MadaclimCollection.
         """
         return self.__all_points
+    
+    @property
+    def sampled_rasters_data(self) -> Dict[str, Dict[str, float]]:
+        """Get the sampled_rasters_data attribute.
+
+        This attribute is a nested dictionary. The outer dictionary uses the MadaclimPoint.specimen_id as keys. 
+        The corresponding value for each key is another dictionary, which uses layer_names as keys and sampled values from rasters as values.
+
+        Returns:
+            Dict[str, Dict[str, float]]: A dictionary with MadaclimPoint.specimen_id as keys and a dictionary of layer_names (str) and sampled values (float) as values or "nodata_layers" (str) and names of the layers with nodata values (list) as values. 
+        """
+        return self.__sampled_rasters_data
+
+    @property
+    def nodata_layers(self) -> Dict[str, Union[str, List[str]]]:
+        """Get the nodata_layers attribute.
+
+        This attribute is a dictionary that contains the MadaclimPoint.specimen_id as keys and the values as the 'nodata_layers' as str or list of str.
+        
+        Returns:
+            Dict[str, Union[str, List[str]]]: A dictionary with MadaclimPoint.specimen_id as keys and values of str or list of str of the layers_name with nodata values.
+        """
+        return self.__nodata_layers
+
     
     def add_points(self, madaclim_points: Union[MadaclimPoint, List[MadaclimPoint]]) -> None:
         """
@@ -683,6 +709,74 @@ class MadaclimCollection:
                 
                 else:
                     self.__all_points.pop(index)
+
+    def sample_from_rasters(
+            self,
+            layers_to_sample: Union[int, str, List[Union[int, str]]]="all", 
+            layer_info: bool=True,
+            return_nodata_layers: bool=False,
+            clim_raster_path: Optional[pathlib.Path]=None, 
+            env_raster_path: Optional[pathlib.Path]=None
+        ) -> Union[Dict[str, Dict[str, float]], Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, List[str]]]]]:
+        """
+        Sample the given raster layers for all points in the MadaclimCollection.
+
+        Args:
+            layers_to_sample (Union[int, str, List[Union[int, str]]], optional): The raster layers to sample. Can be an integer (layer index), a string (layer name), or a list of integers or strings. If 'all', all layers are sampled. Defaults to 'all'.
+            layer_info (bool, optional): If True, return detailed information about each layer. Defaults to True.
+            return_nodata_layers (bool, optional): If True, return layers where the sampled value is nodata. Defaults to False.
+            clim_raster_path (Optional[pathlib.Path], optional): Path to the climate raster file. If not provided, the default path is used. Defaults to None.
+            env_raster_path (Optional[pathlib.Path], optional): Path to the environmental raster file. If not provided, the default path is used. Defaults to None.
+
+        Returns:
+            Union[Dict[str, Dict[str, float]], Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, List[str]]]]]: 
+                If return_nodata_layers is False: Returns a dictionary where the keys are specimen_ids and the values are dictionaries of sampled data.
+                If return_nodata_layers is True: Returns a tuple where the first element is the same dictionary as when return_nodata_layers is False, and the second element is a dictionary where the keys are specimen_ids and the values are lists of layers where the sampled value is nodata.
+       
+            
+        Raises:
+            ValueError: If the MadaclimCollection doesn't contain any MadaclimPoints.
+
+        Notes:
+            This method also updates the 'sampled_rasters_data' and 'nodata_layers' attributes of the MadaclimCollection instance.
+        """
+        
+        if not len(self.__all_points) > 0:
+            raise ValueError("Not MadaclimPoint to sample from in the Collection.")
+        
+        # # Initialize containers for sampled data
+        sampled_data = {}
+        nodata_layers = {}
+
+        # Sample rasters for whole collection
+        for point in self.__all_points:
+            point_data = point.sample_from_rasters(
+                layers_to_sample=layers_to_sample,
+                layer_info=layer_info,
+                return_nodata_layers=return_nodata_layers,
+                clim_raster_path=clim_raster_path,
+                env_raster_path=env_raster_path
+            )
+
+            if return_nodata_layers:
+                sampled_data_point, nodata_layers_point = point_data    # Tuple from single sample_from_rasters output
+                
+                sampled_data[point.specimen_id] = sampled_data_point    # Save raster data
+    
+                # Save layers name only when val is nodata
+                if len(nodata_layers_point) > 0:
+                    nodata_layers[point.specimen_id] = nodata_layers_point
+            else:
+                sampled_data[point.specimen_id] = point_data
+        
+        # Update instance attributes
+        self.__sampled_rasters_data = sampled_data
+        self.__nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
+
+        if return_nodata_layers:
+            return sampled_data, nodata_layers if len(nodata_layers) > 0 else None
+        else:
+            return sampled_data
             
 
     def __str__(self) -> str:
