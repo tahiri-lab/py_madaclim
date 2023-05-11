@@ -396,10 +396,11 @@ class MadaclimPoint:
         # Sample climate and env raster on demand
         sampled_data = {}
         nodata_layers = []
-
-        print(f"Extracting data from raster(s) for {self.specimen_id}\n")
+        
+        print("\n" + "#" * 40 + f" \033[1mExtracting data for: {self.specimen_id}\033[0m " +"#" * 40)
+        start_time = time.perf_counter()
+        
         if clim_raster_layers_to_sample:
-            start_time = time.perf_counter()
             total_clim_layers = len(clim_raster_layers_to_sample)
             
             with rasterio.open(clim_raster_path or default_clim_raster_path) as clim_raster:
@@ -407,7 +408,7 @@ class MadaclimPoint:
                 nodata_clim = clim_raster.nodata
                 
                 # Status bar to display when sampling the raster
-                print(f"Sampling {total_clim_layers} layer(s) from {clim_raster.name.split('/')[-1]}...")
+                print(f"\nSampling {total_clim_layers} layer(s) from {clim_raster.name.split('/')[-1]} (geoclim_type={geoclim_types[0]})...")
                 with tqdm(
                     total=total_clim_layers, 
                     unit="layer",
@@ -434,13 +435,7 @@ class MadaclimPoint:
                         if data[0] == nodata_clim:    # Save layers where nodata at specimen location
                             nodata_layers.append(layer_name)
                                     
-            end_time = time.perf_counter()
-            elapsed_time = end_time - start_time
-            
-            print(f"Finished {geoclim_types[0]} raster sampling operation in {elapsed_time:.2f} seconds\n")
-            
         if env_raster_layers_to_sample:
-            start_time = time.perf_counter()
             total_env_layers = len(env_raster_layers_to_sample)
             
             with rasterio.open(env_raster_path or default_env_raster_path) as env_raster:
@@ -448,7 +443,7 @@ class MadaclimPoint:
                 nodata_env = env_raster.nodata
                 
                 # Status bar to display when sampling the raster
-                print(f"Sampling {total_env_layers} layer(s) from {env_raster.name.split('/')[-1]}...")
+                print(f"\nSampling {total_env_layers} layer(s) from {env_raster.name.split('/')[-1]} (geoclim_type={geoclim_types[1]})...")
                 with tqdm(
                     total=total_env_layers, 
                     unit="layer",
@@ -475,17 +470,13 @@ class MadaclimPoint:
                         if data[0] == nodata_clim:    # Save layers where nodata at specimen location
                             nodata_layers.append(layer_name)
                                     
-            end_time = time.perf_counter()
-            elapsed_time = end_time - start_time
-            
-            print(f"Finished {geoclim_types[1]} raster sampling operation in {elapsed_time:.2f} seconds\n")
 
-        if len(nodata_layers) > 0:
-                print(f"BEWARE! {len(nodata_layers)} layer(s) contain a nodata value at the specimen location")
-                print("#" * 80)
-        else:
-            print("No sampled layers with nodata values.")
-            print("#" * 80)
+        if len(nodata_layers) > 0:    # No raising exception, just warning print
+            print(f"BEWARE! {len(nodata_layers)} layer(s) contain a nodata value at the specimen location")
+
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time    # Total raster sampling time
+        print(f"\nFinished raster sampling operation in {elapsed_time:.2f} seconds.\n")
         
         if return_nodata_layers:
             return sampled_data, nodata_layers
