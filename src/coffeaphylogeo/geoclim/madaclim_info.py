@@ -555,7 +555,6 @@ class MadaclimLayers:
             rock_type_categorical = f"{val}={rock_type}"
             geology_description.append(rock_type_categorical)
 
-        print(geology_description)
         df_env.at[(df_env["layer_name"] == "geology").idxmax(), "layer_description"] = geology_description
         
         # Concat both clim and env final dfs
