@@ -544,19 +544,23 @@ class MadaclimLayers:
         df_env["layer_description"] = None
 
         # Assign dummy var information for geology layer to layer_description
-        geology_description = {}
+        geology_description = []
     
         env_meta_str = env_meta["table_0"]
         env_meta_data = json.loads(env_meta_str)
 
         for i, val in env_meta_data["Raster value"].items():
             rock_type = env_meta_data["Rock type"][i]
-            geology_description[val] = rock_type
+            rock_type = "_".join(rock_type.split(" "))
+            rock_type_categorical = f"{val}={rock_type}"
+            geology_description.append(rock_type_categorical)
 
-        df_env.loc[df_env["layer_name"] == "geology", "layer_description"] = [geology_description]    # Single-item list since dict unsupported
-
+        print(geology_description)
+        df_env.at[(df_env["layer_name"] == "geology").idxmax(), "layer_description"] = geology_description
+        
         # Concat both clim and env final dfs
         df = pd.concat([df_clim, df_env])
+        df = df.reset_index().drop(columns="index")
 
         return df
     
@@ -644,7 +648,9 @@ class MadaclimLayers:
         
         # Fetch layer_<num> and descriptive labels
         sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
-        layers_description = {f"layer_{num}": f"{geoclim}_{num}_{name} ({desc})" for num, geoclim, name, desc in sub_selection}
+        layers_description = {
+            f"layer_{num}": f"{geoclim}_{num}_{name} ({', '.join(desc) if type(desc) == list else desc})" for num, geoclim, name, desc in sub_selection
+        }
         
         if as_descriptive_labels:
             unique_labels = list(layers_description.values())
@@ -754,7 +760,9 @@ class MadaclimLayers:
         if as_descriptive_labels:
             # Generate dict with key as layer_<num> and values containing layer information
             sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
-            layers_description = {f"layer_{num}": f"{geoclim}_{num}_{name} ({desc})" for num, geoclim, name, desc in sub_selection}
+            layers_description = {
+                f"layer_{num}": f"{geoclim}_{num}_{name} ({', '.join(desc) if type(desc) == list else desc})" for num, geoclim, name, desc in sub_selection
+            }
             
             if return_list:
                 return list(layers_description.values())
