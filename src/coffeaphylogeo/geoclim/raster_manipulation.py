@@ -796,8 +796,17 @@ class MadaclimCollection:
             ValueError: If the CSV file headers are missing required arguments for
             constructing MadaclimPoint objects.
         Examples:
-            >>> # csv headers must contain the 3 required positional args for MadaclimPoint (specimen_id, lat, lon)
-            >>> # When no source_crs header is found, defaults to EPSG:4326
+            # csv headers must contain the 3 required positional args for MadaclimPoint (specimen_id, lat, lon)
+            # When no source_crs header is found, defaults to EPSG:4326
+
+            # CSV example #1: "some_samples.csv"
+            specimen_id,latitude,longitude
+            sample_A,-18.9333,48.2
+            sample_B,-16.295741,46.826763
+            sample_C,-21.223,47.5204
+            sample_D,-17.9869,49.2966
+            sample_E,-21.5166,47.4833
+
             >>> collection = MadaclimCollection.populate_from_csv("some_samples.csv")
             Warning! No source_crs column in the csv. Using the default value of EPSG:4326...
             Creating MadaclimPoint(specimen_id=sample_A...)
@@ -815,9 +824,15 @@ class MadaclimCollection:
                 MadaclimPoint(specimen_id=sample_E, mada_geom_point=POINT (757247.2175273325 7618631.528869408))
             ]
 
-            >>> #Can accept other non-required data for MadaclimPoint instantiation
+            # Can accept other non-required data for MadaclimPoint instantiation
+            
+            # CSV example #2: "other_samples.csv"
+            specimen_id,latitude,longitude,source_crs,has_sequencing,specie
+            sample_F,-19.9333,47.2,4326,True,bojeri
+            sample_G,-18.295741,45.826763,4326,False,periwinkle
+            sample_H,-21.223,44.5204,4326,False,spectabilis
+            
             >>> other_collection = MadaclimCollection.populate_from_csv("other_samples.csv")
-            Warning! No source_crs column in the csv. Using the default value of EPSG:4326...
             Creating MadaclimPoint(specimen_id=sample_F...)
             Creating MadaclimPoint(specimen_id=sample_G...)
             Creating MadaclimPoint(specimen_id=sample_H...)
@@ -1290,6 +1305,9 @@ class MadaclimCollection:
 
         Notes:
             This method also updates the 'sampled_rasters_data' and 'nodata_layers' attributes of the MadaclimCollection instance.
+
+        Examples:
+
         """
         
         if not len(self.__all_points) > 0:
