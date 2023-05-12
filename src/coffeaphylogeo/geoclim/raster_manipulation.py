@@ -210,8 +210,9 @@ class MadaclimPoint:
         all_attr = {**base_attr, **add_attr}    # Append attr dictionaries
         
         # Pretty format
-        all_attr = ",\n\t".join({f"{k.lstrip('_')} = {v.to_epsg() if k == '_source_crs' else v}" for k, v in all_attr.items()})
-        madapoint_obj = f"MadaclimPoint(\n\t{all_attr}\n)"
+        all_attr_list = [f"{k.lstrip('_')} = {v.to_epsg() if k == '_source_crs' else v}" for k, v in all_attr.items()]
+        all_attr_str = ",\n\t".join(all_attr_list)
+        madapoint_obj = f"MadaclimPoint(\n\t{all_attr_str}\n)"
         
         return madapoint_obj
 
@@ -702,6 +703,16 @@ class MadaclimCollection:
                 MadaclimPoint(specimen_id=sample_D, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
                 MadaclimPoint(specimen_id=sample_E, mada_geom_point=POINT (757247.2175273325 7618631.528869408))
             ]
+
+            >>> # MadaclimPoints are stored in the .all_points attributes in a list
+            >>> collection.all_points[0]
+            MadaclimPoint(
+                specimen_id = sample_A,
+                source_crs = 4326,
+                latitude = -18.9333,
+                longitude = 48.2,
+                mada_geom_point = POINT (837072.9150244407 7903496.320897499)
+            )
         """
         self.__all_points = []
         if madaclim_points:
@@ -715,6 +726,19 @@ class MadaclimCollection:
 
         Returns:
             list: A list of all the MadaclimPoint objects in the MadaclimCollection.
+        Examples:
+            >>> # MadaclimPoints are stored in the .all_points attributes in a list
+            >>> sample_A = MadaclimPoint()
+            >>> collection = MadaclimCollection(sample_A)
+            
+            >>> collection.all_points[0]
+            MadaclimPoint(
+                longitude = 48.2,
+                specimen_id = sample_A,
+                latitude = -18.9333,
+                source_crs = 4326,
+                mada_geom_point = POINT (837072.9150244407 7903496.320897499)
+            )
         """
         return self.__all_points
     
@@ -771,6 +795,64 @@ class MadaclimCollection:
             FileNotFoundError: If the file specified by 'csv_file' does not exist.
             ValueError: If the CSV file headers are missing required arguments for
             constructing MadaclimPoint objects.
+        Examples:
+            >>> # csv headers must contain the 3 required positional args for MadaclimPoint (specimen_id, lat, lon)
+            >>> # When no source_crs header is found, defaults to EPSG:4326
+            >>> collection = MadaclimCollection.populate_from_csv("some_samples.csv")
+            Warning! No source_crs column in the csv. Using the default value of EPSG:4326...
+            Creating MadaclimPoint(specimen_id=sample_A...)
+            \Creating MadaclimPoint(specimen_id=sample_B...)
+            Creating MadaclimPoint(specimen_id=sample_C...)
+            Creating MadaclimPoint(specimen_id=sample_D...)
+            Creating MadaclimPoint(specimen_id=sample_E...)
+            Created new MadaclimCollection with 5 samples.
+            >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=sample_A, mada_geom_point=POINT (837072.9150244407 7903496.320897499)),
+                MadaclimPoint(specimen_id=sample_B, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
+                MadaclimPoint(specimen_id=sample_C, mada_geom_point=POINT (761613.8281386737 7651088.106452912)),
+                MadaclimPoint(specimen_id=sample_D, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
+                MadaclimPoint(specimen_id=sample_E, mada_geom_point=POINT (757247.2175273325 7618631.528869408))
+            ]
+
+            >>> #Can accept other non-required data for MadaclimPoint instantiation
+            >>> other_collection = MadaclimCollection.populate_from_csv("other_samples.csv")
+            Warning! No source_crs column in the csv. Using the default value of EPSG:4326...
+            Creating MadaclimPoint(specimen_id=sample_F...)
+            Creating MadaclimPoint(specimen_id=sample_G...)
+            Creating MadaclimPoint(specimen_id=sample_H...)
+            Created new MadaclimCollection with 3 samples.
+            >>> for point in other_collection.all_points:
+            ...     print(point)
+            ... 
+            MadaclimPoint(
+                specimen_id = sample_F,
+                source_crs = 4326,
+                latitude = -19.9333,
+                longitude = 47.2,
+                mada_geom_point = POINT (730272.0056458472 7794391.966030249),
+                has_sequencing = True,
+                specie = bojeri
+            )
+            MadaclimPoint(
+                specimen_id = sample_G,
+                source_crs = 4326,
+                latitude = -18.295741,
+                longitude = 45.826763,
+                mada_geom_point = POINT (587378.6907481698 7976896.406900212),
+                has_sequencing = False,
+                specie = periwinkle
+            )
+            MadaclimPoint(
+                specimen_id = sample_H,
+                source_crs = 4326,
+                latitude = -21.223,
+                longitude = 44.5204,
+                mada_geom_point = POINT (450229.7195355138 7653096.609718417),
+                has_sequencing = False,
+                specie = spectabilis
+            )
+
         """
         # Convert str to pathlib.Path
         if isinstance(csv_file, str):
