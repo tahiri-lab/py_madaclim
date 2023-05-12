@@ -98,8 +98,8 @@ class MadaclimPoint:
         # Store base attributes names/vals
         self.__base_attr = {k:v for k,v in self.__dict__.items()}
 
-        self.__sampled_data = {}
-        self.__nodata_layers = {}
+        self._sampled_data = None
+        self._nodata_layers = None
 
         # Store any additional keyword arguments as instance attributes
         base_args = self.get_args_names()[0] + [self.get_args_names()[1]]
@@ -772,25 +772,27 @@ class MadaclimCollection:
         return self.__all_points
     
     @property
-    def sampled_raster_data(self) -> Dict[str, Dict[str, float]]:
+    def sampled_raster_data(self) -> Union[None, Dict[str, Dict[str, float]]]:
         """Get the sampled_raster_data attribute.
 
         This attribute is a nested dictionary. The outer dictionary uses the MadaclimPoint.specimen_id as keys. 
         The corresponding value for each key is another dictionary, which uses layer_names as keys and sampled values from rasters as values.
 
         Returns:
-            Dict[str, Dict[str, float]]: A dictionary with MadaclimPoint.specimen_id as keys and a dictionary of layer_names (str) and sampled values (float) as values or "nodata_layers" (str) and names of the layers with nodata values (list) as values. 
+            Union[None, Dict[str, Dict[str, float]]]: A dictionary with MadaclimPoint.specimen_id as keys and a dictionary of layer_names (str) and sampled values (float) as values.
+                None if Collection has not been sampled yet.
         """
         return self.__sampled_raster_data
 
     @property
-    def nodata_layers(self) -> Dict[str, Union[str, List[str]]]:
+    def nodata_layers(self) -> Union[None, Dict[str, Union[str, List[str]]]]:
         """Get the nodata_layers attribute.
 
         This attribute is a dictionary that contains the MadaclimPoint.specimen_id as keys and the values as the 'nodata_layers' as str or list of str.
         
         Returns:
             Dict[str, Union[str, List[str]]]: A dictionary with MadaclimPoint.specimen_id as keys and values of str or list of str of the layers_name with nodata values.
+                None if Collection has not been sampled yet or all layers sampled contained valid data.
         """
         return self.__nodata_layers
     
