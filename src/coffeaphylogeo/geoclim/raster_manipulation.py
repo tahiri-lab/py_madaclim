@@ -1336,8 +1336,100 @@ class MadaclimCollection:
             This method also updates the 'sampled_rasters_data' and 'nodata_layers' attributes of the MadaclimCollection instance.
 
         Examples:
+            >>> # Start with a collection
+            >>> from coffeaphylogeo.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
+            >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
+            >>> specimen_2 = MadaclimPoint(specimen_id="spe2_humb", latitude=-12.716667, longitude=45.066667, source_crs=4326, genus="Coffea", species="humblotiana", has_sequencing=True)
+            >>> collection = MadaclimCollection([specimen_1, specimen_2])
+
+            >>> # Fetch a specific set of layers to sample(using the MadaclimLayers class utilities)
+            >>> from coffeaphylogeo.geoclim.madaclim_info import MadaclimLayers
+            >>> madaclim_info = MadaclimLayers()
+            >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
+            >>> bioclim_labels[0]
+            'clim_37_bio1 (Annual mean temperature)'
+
+            >>> collection_bioclim_data = collection.sample_from_rasters(bioclim_labels)
+
+            ######################################## Extracting data for: spe1_aren ########################################
+
+            Sampling 19 layer(s) from madaclim_current.tif (geoclim_type=clim)...
+            Extracting layer 55: bio19 (Precipitation of coldest quarter):  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
+
+            Finished raster sampling operation in 7.39 seconds.
 
 
+            ######################################## Extracting data for: spe2_humb ########################################
+
+            Sampling 19 layer(s) from madaclim_current.tif (geoclim_type=clim)...
+            Extracting layer 55: bio19 (Precipitation of coldest quarter):  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
+
+            Finished raster sampling operation in 7.29 seconds.
+
+            >>> # Dictionary output with keys based on MadaclimPoint.specimen_id attribute
+            >>> list(collection_bioclim_data.keys())
+            ['spe1_aren', 'spe2_humb']
+            >>> collection_bioclim_data["spe2_humb"]["layer_55"]
+            66
+            >>> # Results also stored in the .sampled_rasters_data attribute
+            >>> collection.sampled_rasters_data["spe2_humb"]["layer_55"]
+            66
+
+            >>> Sample all layers and examine nodata layers with more informative layers names
+            >>> collection_all_layers, collection_nodata_layers = collection.sample_from_rasters(layer_info=True, return_nodata_layers=True)
+
+            ######################################## Extracting data for: spe1_aren ########################################
+
+            Sampling 70 layer(s) from madaclim_current.tif (geoclim_type=clim)...
+            Extracting layer 70: ndm (Number of dry months in the year):  100%|██████████████████████████████████████████████████████████████████████████████████████| layer 70/70 [Time remaining: 00:00]
+
+            Sampling 9 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
+            Extracting layer 79: forestcover (None):  100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
+
+            Finished raster sampling operation in 25.37 seconds.
+
+
+            ######################################## Extracting data for: spe2_humb ########################################
+
+            Sampling 70 layer(s) from madaclim_current.tif (geoclim_type=clim)...
+            Extracting layer 70: ndm (Number of dry months in the year):  100%|██████████████████████████████████████████████████████████████████████████████████████| layer 70/70 [Time remaining: 00:00]
+
+            Sampling 9 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
+            Extracting layer 79: forestcover (None):  100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
+            BEWARE! 5 layer(s) contain a nodata value at the specimen location
+
+            Finished raster sampling operation in 25.22 seconds.
+
+            >>> len(collection_nodata_layers)
+            1
+            >>> len(collection_nodata_layers["spe2_humb"])
+            5
+            >>> collection_nodata_layers["spe2_humb"][-1]
+            'env_79_forestcover (None)'
+            >>> # Also saved in the .nodata_layers attribute
+            >>> collection.nodata_layers["spe2_humb"]
+            ['env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))', 'env_76_soil (None)', 'env_77_vegetation (None)', 'env_78_watersheds (None)', 'env_79_forestcover (None)']
+
+
+            >>> # layers_to_sample also accepts a single layer
+            >>> collection.sample_from_rasters(37)
+
+            ######################################## Extracting data for: spe1_aren ########################################
+
+            Sampling 1 layer(s) from madaclim_current.tif (geoclim_type=clim)...
+            Extracting layer 37: bio1 (Annual mean temperature):  100%|████████████████████████████████████████████████████████████████████████████████████████████████| layer 1/1 [Time remaining: 00:00]
+
+            Finished raster sampling operation in 0.34 seconds.
+
+
+            ######################################## Extracting data for: spe2_humb ########################################
+
+            Sampling 1 layer(s) from madaclim_current.tif (geoclim_type=clim)...
+            Extracting layer 37: bio1 (Annual mean temperature):  100%|████████████████████████████████████████████████████████████████████████████████████████████████| layer 1/1 [Time remaining: 00:00]
+
+            Finished raster sampling operation in 0.34 seconds.
+
+            {'spe1_aren': {'layer_37': 196}, 'spe2_humb': {'layer_37': 238}}
         """
         
         if not len(self.__all_points) > 0:
