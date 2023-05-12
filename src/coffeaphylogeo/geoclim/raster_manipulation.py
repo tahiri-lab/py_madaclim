@@ -390,48 +390,73 @@ class MadaclimPoint:
 
             >>> # Sampling the bioclim layers
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
-            >>> spe1_arenesia_bioclim = specimen_1.sample_from_rasters(bioclim_layers)
-            >>> {layer: val for layer, val in list(spe1_arenesia_bioclim.items())[:2]}
-            {'clim_37_bio1 (Annual mean temperature)': 196, 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))': 112}
+            >>> spe1_bioclim = specimen_1.sample_from_rasters(bioclim_labels)
 
-            >>> # Sample from both clim and env rasters with just a layer number
-            >>> specimen_1.sample_from_rasters([68, 71])
+            ######################################## Extracting data for: spe1_aren ########################################
+
+            Sampling 19 layer(s) from madaclim_current.tif (geoclim_type=clim)...
+            Extracting layer 55: bio19 (Precipitation of coldest quarter):  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
+
+            Finished raster sampling operation in 7.19 seconds.
+
+            >>> spe1_bioclim["layer_37"]
+            196
+
+            >>> # layer_info key as more descriptive and informative
+            >>> spe1_bioclim = specimen_1.sample_from_rasters(bioclim_labels, layer_info=True)
+
+            ######################################## Extracting data for: spe1_aren ########################################
+
+            Sampling 19 layer(s) from madaclim_current.tif (geoclim_type=clim)...
+            Extracting layer 55: bio19 (Precipitation of coldest quarter):  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
+
+            Finished raster sampling operation in 7.29 seconds.
+
+            >>> bio1 = bioclim_labels[0]    # Example for first bioclim variable
+            'clim_37_bio1 (Annual mean temperature)'
+            >>> spe1_bioclim[bio1]
+            196
+            >>> {k:v for k, v in list(spe1_bioclim.items())[:3]}    # Print first 3 extracted items
+            {'clim_37_bio1 (Annual mean temperature)': 196, 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))': 112, 'clim_39_bio3 (Isothermality (BIO2/BIO7) (x 100))': 64}
+
+            
+            >>> # Sample any rasters using layer numbers only
+            >>> specimen_1.sample_from_rasters([68, 71], layer_info=True)
 
             ######################################## Extracting data for: spe1_aren ########################################
 
             Sampling 1 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 68: pet (Annual potential evapotranspiration from the Thornthwaite equation (mm)):  1
+            Extracting layer 68: pet (Annual potential evapotranspiration from the Thornthwaite equation (mm)):  100%|█████████████████████████████████████████████████| layer 1/1 [Time remaining: 00:00]
 
             Sampling 1 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
-            Extracting layer 71: altitude (None):  100%|███████████████████████| layer 1/1 [Time remaining: 00:00]
+            Extracting layer 71: altitude (None):  100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████| layer 1/1 [Time remaining: 00:00]
 
-            Finished raster sampling operation in 0.44 seconds.
+            Finished raster sampling operation in 0.45 seconds.
 
             {'clim_68_pet (Annual potential evapotranspiration from the Thornthwaite equation (mm))': 891, 'env_71_altitude (None)': 899}
 
-            >>> # Sample all layers with less descriptive layer names
-            >>> specimen_2 = MadaclimPoint(specimen_id="spe2_humb", latitude=-12.716667	, longitude=45.066667, source_crs=4326)
-            >>> spe2_all_layers = specimen_2.sample_from_rasters(layer_info=False)
 
-            ######################################## Extracting data for: spe2 ########################################
+            >>> # Sample all layers with less descriptive layer names
+            >>> specimen_2 = MadaclimPoint(specimen_id="spe2_humb", latitude=-12.716667, longitude=45.066667, source_crs=4326, genus="Coffea", species="humblotiana", has_sequencing=True)
+            >>> spe2_all_layers = specimen_2.sample_from_rasters()
+
+            ######################################## Extracting data for: spe2_humb ########################################
 
             Sampling 70 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 70: ndm (Number of dry months in the year):  100%|█████████████████████| layer 70/70 [Time remaining: 00:00]
+            Extracting layer 70: ndm (Number of dry months in the year):  100%|██████████████████████████████████████████████████████████████████████████████████████| layer 70/70 [Time remaining: 00:00]
 
             Sampling 9 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
-            Extracting layer 79: forestcover (None):  100%|███████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
+            Extracting layer 79: forestcover (None):  100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
             BEWARE! 5 layer(s) contain a nodata value at the specimen location
 
-            Finished raster sampling operation in 27.58 seconds.
-            >>> {layer: val for layer, val in list(spe2_all_layers.items())[:5]}
-            {'layer_1': 197, 'layer_2': 218, 'layer_3': 218, 'layer_4': 216, 'layer_5': 207}
-            >>> spe2_all_layers["layer_37"]
-            238
+            Finished raster sampling operation in 26.62 seconds.
 
+            >>> spe2_all_layers["layer_68"]
+            1213
+            
+            >>> # Note the BEWARE! message indicating that we have some NaN in the data extracted for that MadaclimPoint
             >>> # We can easily access the nodata layers (still sampled with the method regardless)
-            >>> spe2_all_layers, spe2_nodata_layers = specimen_2.sample_from_rasters("all", return_nodata_layers=True)
-            >>> len(spe2_nodata_layers)
-            5
+            >>> spe2_all_layers, spe2_nodata_layers = specimen_2.sample_from_rasters(layer_info=True, return_nodata_layers=True)
             >>> spe2_nodata_layers
             ['env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))', 'env_76_soil (None)', 'env_77_vegetation (None)', 'env_78_watersheds (None)', 'env_79_forestcover (None)']
         """
