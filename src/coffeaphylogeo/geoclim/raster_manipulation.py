@@ -677,7 +677,7 @@ class MadaclimCollection:
             >>> # You can also initiliaze an empty collection
             >>> collection = MadaclimCollection()
             >>> print(collection)
-            No MadaclimPoint inside the collection yet.
+            No MadaclimPoint inside the collection.
 
             >>> # Add a single MadaclimPoint
             >>> collection.add_points(specimen_1)
@@ -767,7 +767,7 @@ class MadaclimCollection:
     
     def __str__(self) -> str:
         if len(self.__all_points) == 0:
-            return "No MadaclimPoint inside the collection yet."
+            return "No MadaclimPoint inside the collection."
         else:
             all_points_short = [
                 f"MadaclimPoint(specimen_id={point.specimen_id}, mada_geom_point={point.mada_geom_point})" for point in self.all_points
@@ -997,7 +997,7 @@ class MadaclimCollection:
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1", latitude=-23.574583, longitude=46.419806, source_crs="epsg:4326")
             >>> collection = MadaclimCollection()
             >>> print(collection)
-            No MadaclimPoint inside the collection yet.
+            No MadaclimPoint inside the collection.
 
             >>> # Add a single point
             >>> collection.add_points(specimen_1)
@@ -1138,7 +1138,7 @@ class MadaclimCollection:
                 MadaclimPoint(specimen_id=sample_Z, mada_geom_point=POINT (1036778.1471182993 8526563.721996231))
             ]
 
-            >>> collection.remove_points(indices=-1)    # removes sample_Z
+            >>> collection.remove_points(indices=-1)    # Removes last point of the collection
             >>> print(collection)
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=sample_W, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
@@ -1146,11 +1146,37 @@ class MadaclimCollection:
                 MadaclimPoint(specimen_id=sample_Y, mada_geom_point=POINT (838822.9378705097 7903464.491492193))
             ]
 
-            >>> #TODO FINISH STR SPECIMEN_ID EXAMPLE
+            >>> # Using the specimen.id attribute
+            >>> collection.remove_points(madaclim_points="sample_Y")
+            >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=sample_W, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
+                MadaclimPoint(specimen_id=sample_X, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
+                MadaclimPoint(specimen_id=sample_Z, mada_geom_point=POINT (1036778.1471182993 8526563.721996231))
+            ]
 
+            # We can also use a list to remove multiple points at the same time.
+            # A list of str or MadaclimPoint or mixed types are accepted for the madaclim_points argument.
+            >>> sample_w = collection.all_points[0]
+            >>> to_remove = [sample_w, "sample_X"]
+            >>> collection.remove_points(madaclim_points=to_remove)
+            >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=sample_Y, mada_geom_point=POINT (838822.9378705097 7903464.491492193)),
+                MadaclimPoint(specimen_id=sample_Z, mada_geom_point=POINT (1036778.1471182993 8526563.721996231))
+            ]
 
+            # Or pass in a list of indices to the indices argument.
+            >>> collection.remove_points(indices=[0, -1])    # Remove first and last point
+            >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=sample_X, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
+                MadaclimPoint(specimen_id=sample_Y, mada_geom_point=POINT (838822.9378705097 7903464.491492193))
+            ]
 
-
+            # Finaly we can clear the collection of all instances.
+            >>> collection.remove_points(clear=True)
+            No MadaclimPoint inside the collection.
         """
         # Handle empty MadaclimCollection
         if not len(self.__all_points) > 0:
@@ -1171,26 +1197,43 @@ class MadaclimCollection:
         
         # Remove single/multiple points by MadaclimPoint instance(s)
         if madaclim_points is not None:
-            if isinstance(madaclim_points, list):    # Multiple objects removal
-                for point in madaclim_points:
-                    
-                    if not isinstance(point, (MadaclimPoint, str)):
-                        raise TypeError(f"{point} is not a MadaclimPoint object or str. Accepted types are a single MadaclimPoint, a str, a list of MadaclimPoint objects or a list of str.")
-                    
-                    # MadaclimPoint object handling
-                    if point not in self.__all_points:
-                        raise ValueError(f"{point} does not exists in the current MadaclimCollection instance.")
-                
-                self.__all_points = [point for point in self.__all_points if point not in madaclim_points]
+            # Containers for objects (MadaclimPoint) or specimen_id (str) to remove
+            madaclim_points_objects = []
+            madaclim_points_ids = []
             
-            else:    # Single object removal
-                if not isinstance(madaclim_points, MadaclimPoint):
-                    raise TypeError("The madaclim_point to remove is not a MadaclimPoint object.")
+            # Multiple objects removal (list arg)
+            if isinstance(madaclim_points, list):
+                for point_to_rm in madaclim_points:
+                    if not isinstance(point_to_rm, (MadaclimPoint, str)):
+                        raise TypeError(f"{point_to_rm} is not a MadaclimPoint object or str. Accepted types are a single MadaclimPoint, a str, a list of MadaclimPoint objects or a list of str.")
+                    
+                    if isinstance(point_to_rm, MadaclimPoint):
+                        if point_to_rm not in self.__all_points:
+                            raise ValueError(f"{point_to_rm} does not exists in the current MadaclimCollection instance.")
+                        madaclim_points_objects.append(point_to_rm)
+                    else:
+                        if point_to_rm not in [point.specimen_id for point in self.__all_points]:
+                            raise ValueError(f"{point_to_rm} is not a valid MadaclimPoint.specimen_id for all points of the collection.")
+                        madaclim_points_ids.append(point_to_rm)
+
+                self.__all_points = [point for point in self.__all_points if point not in madaclim_points_objects and point.specimen_id not in madaclim_points_ids]
+
+            # Single object removal
+            else:    
+                if not isinstance(madaclim_points, (MadaclimPoint, str)):
+                    raise TypeError(f"{madaclim_points} is not a MadaclimPoint object or str. Accepted types are a single MadaclimPoint, a str, a list of MadaclimPoint objects or a list of str.")
                 
-                if madaclim_points not in self.__all_points:
-                    raise ValueError(f"{madaclim_points} does not exists in the current MadaclimCollection instance.")
-                
-                self.__all_points = [point for point in self.__all_points if point != madaclim_points]
+                if isinstance(madaclim_points, MadaclimPoint):
+                    if madaclim_points not in self.__all_points:
+                        raise ValueError(f"{madaclim_points} does not exists in the current MadaclimCollection instance.")
+                    madaclim_points_objects.append(madaclim_points)
+                else:
+                    if madaclim_points not in [point.specimen_id for point in self.__all_points]:
+                        raise ValueError(f"{madaclim_points} is not a valid MadaclimPoint.specimen_id for all points of the collection.")
+                    madaclim_points_ids.append(madaclim_points)
+
+                self.__all_points = [point for point in self.__all_points if point not in madaclim_points_objects and point.specimen_id not in madaclim_points_ids]
+
         
         
         # Remove multiple points from an indices list
