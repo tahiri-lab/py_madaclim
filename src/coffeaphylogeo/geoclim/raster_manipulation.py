@@ -922,6 +922,30 @@ class MadaclimCollection:
             TypeError: If 'df' is not a pd.DataFrame.
             ValueError: If the DataFrame is missing any of the required arguments to construct 
                         a MadaclimPoint.
+        Examples:
+            >>> sample_df
+            specimen_id    latitude  longitude
+            0    sample_W  -16.295741  46.826763
+            1    sample_X    -17.9869    49.2966
+            2    sample_Y    -18.9333    48.2166
+            3    sample_Z      -13.28      49.95
+
+            >>> collection = MadaclimCollection.populate_from_df(sample_df)
+            Warning! No source_crs column in the df. Using the default value of EPSG:4326...
+            Creating MadaclimPoint(specimen_id=sample_W...)
+            Creating MadaclimPoint(specimen_id=sample_X...)
+            Creating MadaclimPoint(specimen_id=sample_Y...)
+            Creating MadaclimPoint(specimen_id=sample_Z...)
+            Created new MadaclimCollection with 4 samples.
+            >>> collection.all_points[0]
+            MadaclimPoint(
+                specimen_id = sample_W,
+                source_crs = 4326,
+                latitude = -16.295741,
+                longitude = 46.826763,
+                mada_geom_point = POINT (695186.2170220022 8197477.647690434)
+            )
+
         """
         if not isinstance(df, pd.DataFrame):
             raise TypeError("'df' is not a pd.DataFrame.")
@@ -965,6 +989,45 @@ class MadaclimCollection:
         Raises:
             TypeError: If the input is not a MadaclimPoint object or a list of MadaclimPoint objects.
             ValueError: If the input MadaclimPoint(s) is/are already in the MadaclimCollection or if their specimen_id(s) are not unique.
+        Examples:
+            >>> from coffeaphylogeo.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
+
+            >>> specimen_1 = MadaclimPoint(specimen_id="spe1", latitude=-23.574583, longitude=46.419806, source_crs="epsg:4326")
+            >>> collection = MadaclimCollection()
+            >>> print(collection)
+            No MadaclimPoint inside the collection yet.
+
+            >>> # Add a single point
+            >>> collection.add_points(specimen_1)
+            >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=spe1, mada_geom_point=POINT (644890.8921103649 7392153.658976035))
+            ]
+
+            >>> # Add multiple points
+            >>> specimen_2 = MadaclimPoint(specimen_id="spe2", latitude=-20.138470, longitude=46.054688, family="Rubiaceae", has_sequencing=True, num_samples=1)            
+            >>> other_collection.add_points([specimen_1, specimen_2])
+            >>> print(other_collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=spe1, mada_geom_point=POINT (644890.8921103649 7392153.658976035)),
+                MadaclimPoint(specimen_id=spe2, mada_geom_point=POINT (610233.867750987 7772846.143786541))
+            ]
+
+            # You cannot add duplicates, each point must have a unique specimen_id attribute.
+            >>> other_collection.add_points(specimen_1)
+            Traceback (most recent call last):
+            File "<stdin>", line 1, in <module>
+            File ".../coffeaPhyloGeo/src/coffeaphylogeo/geoclim/raster_manipulation.py", line 1013, in add_points
+                MadaclimPoint(specimen_id=spe2, mada_geom_point=POINT (610233.867750987 7772846.143786541))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            ValueError: MadaclimPoint(
+                specimen_id = spe1,
+                source_crs = 4326,
+                latitude = -23.574583,
+                longitude = 46.419806,
+                mada_geom_point = POINT (644890.8921103649 7392153.658976035)
+            ) is already in the current MadaclimCollection instance.
+
         """
         # Add multiple MadaclimPoint objects
         if isinstance(madaclim_points, list):
