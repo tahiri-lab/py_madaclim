@@ -1500,25 +1500,21 @@ class MadaclimCollection:
 
         # Sample rasters for whole collection
         for point in self.__all_points:
-            point_data = point.sample_from_rasters(
+            sampled_data_point, nodata_layers_point = point.sample_from_rasters(
                 layers_to_sample=layers_to_sample,
                 layer_info=layer_info,
-                return_nodata_layers=return_nodata_layers,
+                return_nodata_layers=True,
                 clim_raster_path=clim_raster_path,
                 env_raster_path=env_raster_path
             )
 
-            if return_nodata_layers:
-                sampled_data_point, nodata_layers_point = point_data    # Tuple from single sample_from_rasters output
+            # Save sampled raster data (nested dicts)
+            sampled_data[point.specimen_id] = sampled_data_point
+
+            # Save layers name only when val is nodata
+            if len(nodata_layers_point) > 0:
+                nodata_layers[point.specimen_id] = nodata_layers_point
                 
-                sampled_data[point.specimen_id] = sampled_data_point    # Save raster data
-    
-                # Save layers name only when val is nodata
-                if len(nodata_layers_point) > 0:
-                    nodata_layers[point.specimen_id] = nodata_layers_point
-            else:
-                sampled_data[point.specimen_id] = point_data
-        
         # Update instance attributes
         self.__sampled_raster_data = sampled_data
         self.__nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
