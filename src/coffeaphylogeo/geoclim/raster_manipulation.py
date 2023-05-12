@@ -357,7 +357,7 @@ class MadaclimPoint:
     def sample_from_rasters(
             self,
             layers_to_sample: Union[int, str, List[Union[int, str]]]="all", 
-            layer_info: bool=True,
+            layer_info: bool=False,
             return_nodata_layers: bool=False,
             clim_raster_path: Optional[pathlib.Path]=None, 
             env_raster_path: Optional[pathlib.Path]=None
@@ -368,7 +368,7 @@ class MadaclimPoint:
         Args:
             layers_to_sample (Union[int, str, List[Union[int, str]]], optional): The layer number(s) to sample from the raster files.
                 Can be a single int, a single string in the format 'layer_<num>', or a list of ints or such strings. Defaults to 'all'.
-            layer_info (bool, optional): Whether to use descriptive labels for the returned dictionary keys. Defaults to True.
+            layer_info (bool, optional): Whether to use descriptive labels for the returned dictionary keys. Defaults to False.
             return_nodata_layers (bool, optional): Whether to return a list of layers with nodata values at the specimen location.
                 Defaults to False.
             clim_raster_path (Optional[pathlib.Path], optional): Path to the climate raster file. Defaults to None.
@@ -410,6 +410,7 @@ class MadaclimPoint:
             {'clim_68_pet (Annual potential evapotranspiration from the Thornthwaite equation (mm))': 891, 'env_71_altitude (None)': 899}
 
             >>> # Sample all layers with less descriptive layer names
+            >>> specimen_2 = MadaclimPoint(specimen_id="spe2_humb", latitude=-12.716667	, longitude=45.066667, source_crs=4326)
             >>> spe2_all_layers = specimen_2.sample_from_rasters(layer_info=False)
 
             ######################################## Extracting data for: spe2 ########################################
@@ -1282,7 +1283,7 @@ class MadaclimCollection:
     def sample_from_rasters(
             self,
             layers_to_sample: Union[int, str, List[Union[int, str]]]="all", 
-            layer_info: bool=True,
+            layer_info: bool=False,
             return_nodata_layers: bool=False,
             clim_raster_path: Optional[pathlib.Path]=None, 
             env_raster_path: Optional[pathlib.Path]=None
@@ -1292,7 +1293,7 @@ class MadaclimCollection:
 
         Args:
             layers_to_sample (Union[int, str, List[Union[int, str]]], optional): The raster layers to sample. Can be an integer (layer index), a string (layer name), or a list of integers or strings. If 'all', all layers are sampled. Defaults to 'all'.
-            layer_info (bool, optional): If True, return detailed information about each layer. Defaults to True.
+            layer_info (bool, optional): If True, return detailed information about each layer. Defaults to False.
             return_nodata_layers (bool, optional): If True, return layers where the sampled value is nodata. Defaults to False.
             clim_raster_path (Optional[pathlib.Path], optional): Path to the climate raster file. If not provided, the default path is used. Defaults to None.
             env_raster_path (Optional[pathlib.Path], optional): Path to the environmental raster file. If not provided, the default path is used. Defaults to None.
@@ -1310,6 +1311,7 @@ class MadaclimCollection:
             This method also updates the 'sampled_rasters_data' and 'nodata_layers' attributes of the MadaclimCollection instance.
 
         Examples:
+
 
         """
         
