@@ -773,6 +773,9 @@ class MadaclimCollection:
                 f"MadaclimPoint(specimen_id={point.specimen_id}, mada_geom_point={point.mada_geom_point})" for point in self.all_points
             ]
             return "MadaclimCollection = [\n" + "\t" + ",\n\t".join(all_points_short) + "\n]"
+        
+    def __repr__(self) -> str:
+        return self.__str__()
     
     @classmethod
     def populate_from_csv(cls, csv_file: Union[str, pathlib.Path]) -> "MadaclimCollection":
