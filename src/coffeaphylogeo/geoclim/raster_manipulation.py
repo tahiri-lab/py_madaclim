@@ -65,24 +65,39 @@ class MadaclimPoint:
             >>> specimen_1.mada_geom_point
             <POINT (837072.915 7903496.321)>
 
+            >>> # Uses default EPSG:4326 CRS when not specified
+            >>> specimen_1.source_crs
+            <Geographic 2D CRS: EPSG:4326>
+            Name: WGS 84
+            Axis Info [ellipsoidal]:
+            - Lat[north]: Geodetic latitude (degree)
+            - Lon[east]: Geodetic longitude (degree)
+            Area of Use:
+            - name: World.
+            - bounds: (-180.0, -90.0, 180.0, 90.0)
+            Datum: World Geodetic System 1984 ensemble
+            - Ellipsoid: WGS 84
+            - Prime Meridian: Greenwich
+
             >>> # Also accepts any other kwargs and saves them as attributes with specific typing
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
             >>> specimen_1.species
             'arenesiana'
             >>> specimen_1.has_sequencing
             True
-            >>> print(specimen_1)
+            >>> specimen_1
             MadaclimPoint(
-                genus = Coffea,
-                mada_geom_point = POINT (837072.9150244407 7903496.320897499),
-                source_crs = 4326,
                 specimen_id = spe1_aren,
-                species = arenesiana,
-                has_sequencing = True,
+                source_crs = 4326,
+                latitude = -18.9333,
                 longitude = 48.2,
-                latitude = -18.9333
+                mada_geom_point = POINT (837072.9150244407 7903496.320897499),
+                sampled_data = None,
+                nodata_layers = None,
+                genus = Coffea,
+                species = arenesiana,
+                has_sequencing = True
             )
-
         """
         
         self.specimen_id = specimen_id
@@ -698,19 +713,19 @@ class MadaclimCollection:
             
             >>> # Add points to the collection when constructing
             >>> collection = MadaclimCollection([specimen_1, specimen_2])
-            >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=spe1, mada_geom_point=POINT (644890.8921103649 7392153.658976035)),
                 MadaclimPoint(specimen_id=spe2, mada_geom_point=POINT (536050.6239664567 7465523.013290589))
             ]
             >>> # You can also initiliaze an empty collection
             >>> collection = MadaclimCollection()
-            >>> print(collection)
+            >>> collection
             No MadaclimPoint inside the collection.
 
             >>> # Add a single MadaclimPoint
             >>> collection.add_points(specimen_1)
-            >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=spe1, mada_geom_point=POINT (644890.8921103649 7392153.658976035))
             ]
@@ -724,7 +739,7 @@ class MadaclimCollection:
             Creating MadaclimPoint(specimen_id=sample_D...)
             Creating MadaclimPoint(specimen_id=sample_E...)
             Created new MadaclimCollection with 5 samples.
-            >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=sample_A, mada_geom_point=POINT (837072.9150244407 7903496.320897499)),
                 MadaclimPoint(specimen_id=sample_B, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
@@ -740,8 +755,11 @@ class MadaclimCollection:
                 source_crs = 4326,
                 latitude = -18.9333,
                 longitude = 48.2,
-                mada_geom_point = POINT (837072.9150244407 7903496.320897499)
+                mada_geom_point = POINT (837072.9150244407 7903496.320897499),
+                sampled_data = None,
+                nodata_layers = None
             )
+
         """
         self.__all_points = []
         if madaclim_points:
@@ -762,11 +780,13 @@ class MadaclimCollection:
             
             >>> collection.all_points[0]
             MadaclimPoint(
-                longitude = 48.2,
                 specimen_id = sample_A,
-                latitude = -18.9333,
                 source_crs = 4326,
-                mada_geom_point = POINT (837072.9150244407 7903496.320897499)
+                latitude = -18.9333,
+                longitude = 48.2,
+                mada_geom_point = POINT (837072.9150244407 7903496.320897499),
+                sampled_data = None,
+                nodata_layers = None
             )
         """
         return self.__all_points
@@ -849,7 +869,7 @@ class MadaclimCollection:
             Creating MadaclimPoint(specimen_id=sample_D...)
             Creating MadaclimPoint(specimen_id=sample_E...)
             Created new MadaclimCollection with 5 samples.
-            >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=sample_A, mada_geom_point=POINT (837072.9150244407 7903496.320897499)),
                 MadaclimPoint(specimen_id=sample_B, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
@@ -880,6 +900,8 @@ class MadaclimCollection:
                 latitude = -19.9333,
                 longitude = 47.2,
                 mada_geom_point = POINT (730272.0056458472 7794391.966030249),
+                sampled_data = None,
+                nodata_layers = None,
                 has_sequencing = True,
                 specie = bojeri
             )
@@ -889,6 +911,8 @@ class MadaclimCollection:
                 latitude = -18.295741,
                 longitude = 45.826763,
                 mada_geom_point = POINT (587378.6907481698 7976896.406900212),
+                sampled_data = None,
+                nodata_layers = None,
                 has_sequencing = False,
                 specie = periwinkle
             )
@@ -898,10 +922,11 @@ class MadaclimCollection:
                 latitude = -21.223,
                 longitude = 44.5204,
                 mada_geom_point = POINT (450229.7195355138 7653096.609718417),
+                sampled_data = None,
+                nodata_layers = None,
                 has_sequencing = False,
                 specie = spectabilis
             )
-
         """
         # Convert str to pathlib.Path
         if isinstance(csv_file, str):
@@ -994,7 +1019,9 @@ class MadaclimCollection:
                 source_crs = 4326,
                 latitude = -16.295741,
                 longitude = 46.826763,
-                mada_geom_point = POINT (695186.2170220022 8197477.647690434)
+                mada_geom_point = POINT (695186.2170220022 8197477.647690434),
+                sampled_data = None,
+                nodata_layers = None
             )
 
         """
@@ -1045,12 +1072,12 @@ class MadaclimCollection:
 
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1", latitude=-23.574583, longitude=46.419806, source_crs="epsg:4326")
             >>> collection = MadaclimCollection()
-            >>> print(collection)
+            >>> collection
             No MadaclimPoint inside the collection.
 
             >>> # Add a single point
             >>> collection.add_points(specimen_1)
-            >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=spe1, mada_geom_point=POINT (644890.8921103649 7392153.658976035))
             ]
@@ -1156,7 +1183,9 @@ class MadaclimCollection:
                 source_crs = 4326,
                 latitude = -16.295741,
                 longitude = 46.826763,
-                mada_geom_point = POINT (695186.2170220022 8197477.647690434)
+                mada_geom_point = POINT (695186.2170220022 8197477.647690434),
+                sampled_data = None,
+                nodata_layers = None
             )
 
             >>> # You must specify madaclim_points keyword arg
@@ -1165,7 +1194,7 @@ class MadaclimCollection:
             File "<stdin>", line 1, in <module>
             TypeError: MadaclimCollection.remove_points() takes 1 positional argument but 2 were given
             >>> collection.remove_points(madaclim_points=sample_W)
-            >>> >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=sample_X, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
                 MadaclimPoint(specimen_id=sample_Y, mada_geom_point=POINT (838822.9378705097 7903464.491492193)),
@@ -1179,7 +1208,7 @@ class MadaclimCollection:
             Creating MadaclimPoint(specimen_id=sample_Y...)
             Creating MadaclimPoint(specimen_id=sample_Z...)
             Created new MadaclimCollection with 4 samples.
-            >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=sample_W, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
                 MadaclimPoint(specimen_id=sample_X, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
@@ -1188,7 +1217,7 @@ class MadaclimCollection:
             ]
 
             >>> collection.remove_points(indices=-1)    # Removes last point of the collection
-            >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=sample_W, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
                 MadaclimPoint(specimen_id=sample_X, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
@@ -1197,7 +1226,7 @@ class MadaclimCollection:
 
             >>> # Using the specimen.id attribute
             >>> collection.remove_points(madaclim_points="sample_Y")
-            >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=sample_W, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
                 MadaclimPoint(specimen_id=sample_X, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
@@ -1209,7 +1238,7 @@ class MadaclimCollection:
             >>> sample_w = collection.all_points[0]
             >>> to_remove = [sample_w, "sample_X"]
             >>> collection.remove_points(madaclim_points=to_remove)
-            >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=sample_Y, mada_geom_point=POINT (838822.9378705097 7903464.491492193)),
                 MadaclimPoint(specimen_id=sample_Z, mada_geom_point=POINT (1036778.1471182993 8526563.721996231))
@@ -1217,7 +1246,7 @@ class MadaclimCollection:
 
             # Or pass in a list of indices to the indices argument.
             >>> collection.remove_points(indices=[0, -1])    # Remove first and last point
-            >>> print(collection)
+            >>> collection
             MadaclimCollection = [
                 MadaclimPoint(specimen_id=sample_X, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
                 MadaclimPoint(specimen_id=sample_Y, mada_geom_point=POINT (838822.9378705097 7903464.491492193))
@@ -1345,13 +1374,16 @@ class MadaclimCollection:
             >>> from coffeaphylogeo.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
             >>> specimen_2 = MadaclimPoint(specimen_id="spe2_humb", latitude=-12.716667, longitude=45.066667, source_crs=4326, genus="Coffea", species="humblotiana", has_sequencing=True)
-            >>> collection = MadaclimCollection([specimen_1, specimen_2])
+            >>> collection = MadaclimCollection()
+            >>> collection.add_points([specimen_1, specimen_2])
 
-            >>> # Fetch a specific set of layers to sample(using the MadaclimLayers class utilities)
+
+            # Fetch a specific set of layers to sample(using the MadaclimLayers class utilities)
             >>> from coffeaphylogeo.geoclim.madaclim_info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
-            >>> bioclim_labels[0]
+            >>> bio1 = bioclim_labels[0]
+            >>> bio1
             'clim_37_bio1 (Annual mean temperature)'
 
             >>> collection_bioclim_data = collection.sample_from_rasters(bioclim_labels)
@@ -1380,7 +1412,9 @@ class MadaclimCollection:
             >>> collection.sampled_raster_data["spe2_humb"]["layer_55"]
             66
 
-            >>> Sample all layers and examine nodata layers with more informative layers names
+            >>> # TODO UPDATE ATT PRINTS
+
+            # Sample all layers and examine nodata layers with more informative layers names
             >>> collection_all_layers, collection_nodata_layers = collection.sample_from_rasters(layer_info=True, return_nodata_layers=True)
 
             ######################################## Extracting data for: spe1_aren ########################################
