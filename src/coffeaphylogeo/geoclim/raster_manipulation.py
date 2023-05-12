@@ -98,6 +98,9 @@ class MadaclimPoint:
         # Store base attributes names/vals
         self.__base_attr = {k:v for k,v in self.__dict__.items()}
 
+        self.__sampled_data = {}
+        self.__nodata_layers = {}
+
         # Store any additional keyword arguments as instance attributes
         base_args = self.get_args_names()[0] + [self.get_args_names()[1]]
         additional_args = [key for key in kwargs if key not in base_args]
@@ -743,7 +746,7 @@ class MadaclimCollection:
         self.__all_points = []
         if madaclim_points:
             self.add_points(madaclim_points)
-        self.__sampled_rasters_data = None
+        self.__sampled_raster_data = None
         self.__nodata_layers = None
 
     @property
@@ -769,8 +772,8 @@ class MadaclimCollection:
         return self.__all_points
     
     @property
-    def sampled_rasters_data(self) -> Dict[str, Dict[str, float]]:
-        """Get the sampled_rasters_data attribute.
+    def sampled_raster_data(self) -> Dict[str, Dict[str, float]]:
+        """Get the sampled_raster_data attribute.
 
         This attribute is a nested dictionary. The outer dictionary uses the MadaclimPoint.specimen_id as keys. 
         The corresponding value for each key is another dictionary, which uses layer_names as keys and sampled values from rasters as values.
@@ -778,7 +781,7 @@ class MadaclimCollection:
         Returns:
             Dict[str, Dict[str, float]]: A dictionary with MadaclimPoint.specimen_id as keys and a dictionary of layer_names (str) and sampled values (float) as values or "nodata_layers" (str) and names of the layers with nodata values (list) as values. 
         """
-        return self.__sampled_rasters_data
+        return self.__sampled_raster_data
 
     @property
     def nodata_layers(self) -> Dict[str, Union[str, List[str]]]:
@@ -1333,7 +1336,7 @@ class MadaclimCollection:
             ValueError: If the MadaclimCollection doesn't contain any MadaclimPoints.
 
         Notes:
-            This method also updates the 'sampled_rasters_data' and 'nodata_layers' attributes of the MadaclimCollection instance.
+            This method also updates the 'sampled_raster_data' and 'nodata_layers' attributes of the MadaclimCollection instance.
 
         Examples:
             >>> # Start with a collection
@@ -1371,8 +1374,8 @@ class MadaclimCollection:
             ['spe1_aren', 'spe2_humb']
             >>> collection_bioclim_data["spe2_humb"]["layer_55"]
             66
-            >>> # Results also stored in the .sampled_rasters_data attribute
-            >>> collection.sampled_rasters_data["spe2_humb"]["layer_55"]
+            >>> # Results also stored in the .sampled_raster_data attribute
+            >>> collection.sampled_raster_data["spe2_humb"]["layer_55"]
             66
 
             >>> Sample all layers and examine nodata layers with more informative layers names
@@ -1461,7 +1464,7 @@ class MadaclimCollection:
                 sampled_data[point.specimen_id] = point_data
         
         # Update instance attributes
-        self.__sampled_rasters_data = sampled_data
+        self.__sampled_raster_data = sampled_data
         self.__nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
 
         if return_nodata_layers:
