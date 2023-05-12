@@ -1480,7 +1480,7 @@ class MadaclimCollection:
             5
             >>> collection_nodata_layers["spe2_humb"][-1]
             'env_79_forestcover (None)'
-            >>> # Also saved in the .nodata_layers attribute
+            >>> # Also saved in the 'nodata_layers' attribute
             >>> collection.nodata_layers["spe2_humb"]
             ['env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))', 'env_76_soil (None)', 'env_77_vegetation (None)', 'env_78_watersheds (None)', 'env_79_forestcover (None)']
 
