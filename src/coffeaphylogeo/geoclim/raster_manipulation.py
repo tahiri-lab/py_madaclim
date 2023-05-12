@@ -923,6 +923,8 @@ class MadaclimCollection:
             ValueError: If the DataFrame is missing any of the required arguments to construct 
                         a MadaclimPoint.
         Examples:
+            >>> import pandas as pd
+
             >>> sample_df
             specimen_id    latitude  longitude
             0    sample_W  -16.295741  46.826763
@@ -1078,6 +1080,77 @@ class MadaclimCollection:
             TypeError: If an invalid type is provided for 'madaclim_points' or 'indices'.
             ValueError: If a provided MadaclimPoint object is not in the collection or if an index is out of bounds.
             IndexError: If an index is out of range.
+
+        Examples:
+            >>> import pandas as pd
+            >>> sample_df
+              specimen_id   latitude  longitude source_crs
+            0    sample_W -16.295741  46.826763  EPSG:4326
+            1    sample_X -17.986900  49.296600  EPSG:4326
+            2    sample_Y -18.933300  48.216600  EPSG:4326
+            3    sample_Z -13.280000  49.950000  EPSG:4326
+
+            >>> collection = MadaclimCollection.populate_from_df(sample_df)
+            Creating MadaclimPoint(specimen_id=sample_W...)
+            Creating MadaclimPoint(specimen_id=sample_X...)
+            Creating MadaclimPoint(specimen_id=sample_Y...)
+            Creating MadaclimPoint(specimen_id=sample_Z...)
+            Created new MadaclimCollection with 4 samples.
+
+            # Remove points by passing in the MadaclimPoint objects, the index or the specimen_id to remove from the Collection.
+            
+            >>> # From MadaclimPoint instances
+            >>> sample_W = collection.all_points[0]
+            >>> sample_W
+            MadaclimPoint(
+                specimen_id = sample_W,
+                source_crs = 4326,
+                latitude = -16.295741,
+                longitude = 46.826763,
+                mada_geom_point = POINT (695186.2170220022 8197477.647690434)
+            )
+
+            >>> # You must specify madaclim_points keyword arg
+            >>> collection.remove_points(sample_W)
+            Traceback (most recent call last):
+            File "<stdin>", line 1, in <module>
+            TypeError: MadaclimCollection.remove_points() takes 1 positional argument but 2 were given
+            >>> collection.remove_points(madaclim_points=sample_W)
+            >>> >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=sample_X, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
+                MadaclimPoint(specimen_id=sample_Y, mada_geom_point=POINT (838822.9378705097 7903464.491492193)),
+                MadaclimPoint(specimen_id=sample_Z, mada_geom_point=POINT (1036778.1471182993 8526563.721996231))
+            ]
+
+            >>> # Using the position index of the instance
+            >>> collection = MadaclimCollection.populate_from_df(sample_df)
+            Creating MadaclimPoint(specimen_id=sample_W...)
+            Creating MadaclimPoint(specimen_id=sample_X...)
+            Creating MadaclimPoint(specimen_id=sample_Y...)
+            Creating MadaclimPoint(specimen_id=sample_Z...)
+            Created new MadaclimCollection with 4 samples.
+            >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=sample_W, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
+                MadaclimPoint(specimen_id=sample_X, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
+                MadaclimPoint(specimen_id=sample_Y, mada_geom_point=POINT (838822.9378705097 7903464.491492193)),
+                MadaclimPoint(specimen_id=sample_Z, mada_geom_point=POINT (1036778.1471182993 8526563.721996231))
+            ]
+
+            >>> collection.remove_points(indices=-1)    # removes sample_Z
+            >>> print(collection)
+            MadaclimCollection = [
+                MadaclimPoint(specimen_id=sample_W, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
+                MadaclimPoint(specimen_id=sample_X, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
+                MadaclimPoint(specimen_id=sample_Y, mada_geom_point=POINT (838822.9378705097 7903464.491492193))
+            ]
+
+            >>> #TODO FINISH STR SPECIMEN_ID EXAMPLE
+
+
+
+
         """
         # Handle empty MadaclimCollection
         if not len(self.__all_points) > 0:
@@ -1101,9 +1174,10 @@ class MadaclimCollection:
             if isinstance(madaclim_points, list):    # Multiple objects removal
                 for point in madaclim_points:
                     
-                    if not isinstance(point, MadaclimPoint):
-                        raise TypeError(f"{point} is not a MadaclimPoint object. Accepted types are a single MadaclimPoint and a list of MadaclimPoint objects.")
+                    if not isinstance(point, (MadaclimPoint, str)):
+                        raise TypeError(f"{point} is not a MadaclimPoint object or str. Accepted types are a single MadaclimPoint, a str, a list of MadaclimPoint objects or a list of str.")
                     
+                    # MadaclimPoint object handling
                     if point not in self.__all_points:
                         raise ValueError(f"{point} does not exists in the current MadaclimCollection instance.")
                 
@@ -1123,7 +1197,7 @@ class MadaclimCollection:
         if indices is not None:
             if isinstance(indices, list):
                 try:
-                    indices = [int(index) for index in indices]
+                    indices = [int(index) if index >= 0 else len(self.__all_points) + int(index) for index in indices]
                 except:
                     raise TypeError("Indices should be integers.")
                 for index in indices:
@@ -1133,15 +1207,16 @@ class MadaclimCollection:
 
             else:    # Remove single point
                 try:
-                    index = int(indices)
+                    index = int(indices) if indices >= 0 else len(self.__all_points) + int(indices)
                 except:
                     raise TypeError("Single index must be an integer.")
-            
+                
                 if index < 0 or index >= len(self.__all_points):
                     raise IndexError("Index out of range.")
                 
                 else:
                     self.__all_points.pop(index)
+
 
     def sample_from_rasters(
             self,
