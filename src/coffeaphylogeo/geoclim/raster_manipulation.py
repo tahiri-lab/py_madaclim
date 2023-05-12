@@ -477,6 +477,22 @@ class MadaclimPoint:
             >>> spe2_all_layers, spe2_nodata_layers = specimen_2.sample_from_rasters(layer_info=True, return_nodata_layers=True)
             >>> spe2_nodata_layers
             ['env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))', 'env_76_soil (None)', 'env_77_vegetation (None)', 'env_78_watersheds (None)', 'env_79_forestcover (None)']
+
+            # Calling the sample_from_rasters method also updates the 'sampled_data' and 'nodata_layers' attributes
+            >>> specimen_2.sample_from_rasters([37, 75])
+            >>> specimen_2
+            MadaclimPoint(
+                    specimen_id = spe2_humb,
+                    source_crs = 4326,
+                    latitude = -12.716667,
+                    longitude = 45.066667,
+                    mada_geom_point = POINT (507237.57495924993 8594195.741515966),
+                    sampled_data = {'layer_37': 238, 'layer_75': -32768},
+                    nodata_layers = ['layer_75'],
+                    genus = Coffea,
+                    species = humblotiana,
+                    has_sequencing = True
+            )
         """
         
         # Create a MadaclimLayers instance to get layers labels and validate layers to sample
@@ -625,6 +641,10 @@ class MadaclimPoint:
         elapsed_time = end_time - start_time    # Total raster sampling time
         print(f"\nFinished raster sampling operation in {elapsed_time:.2f} seconds.\n")
         
+        # Update instance attributes
+        self._sampled_data = sampled_data
+        self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
+
         if return_nodata_layers:
             return sampled_data, nodata_layers
         
