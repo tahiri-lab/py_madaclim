@@ -12,3 +12,9 @@ layers.ipynb
 
 # Trimmed fasta files
 data/genetic/gbs_trimmed/*
+
+# sphinx documentation
+src/make.bat
+src/Makefile
+src/source
+src/build
