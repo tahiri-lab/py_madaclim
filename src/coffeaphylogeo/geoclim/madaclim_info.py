@@ -403,9 +403,14 @@ class MadaclimLayers:
             >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> clim_layers_labels = madaclim_info.get_layers_labels(geoclim_type="clim")
-            >>> # Extract more information
+            
+            >>> # Extract more information (can also be the input for 'fetch_specific_layers' method)
             >>> madaclim_info.get_layers_labels(as_descriptive_labels=True)[36:39]
             ['clim_37_bio1 (Annual mean temperature)', 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))', 'clim_39_bio3 (Isothermality (BIO2/BIO7) (x 100))']
+
+            >>> # Example to get bioclim layers
+            >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
+
         """
         # Validate geoclim_type
         if not isinstance(geoclim_type, str):
@@ -460,7 +465,7 @@ class MadaclimLayers:
         Example:
             >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
-            >>> madaclim_info.fetch_specific_layers([1, 15, 55, 71])
+            >>> madaclim_info.fetch_specific_layers([1, 15, 55, 71])    # Output is a pd.DataFrame
                 layer_number                        geoclim_feature geoclim_type layer_name                                layer_description
             0              1  Monthly minimum temperature (°C x 10)         clim      tmin1  Monthly minimum temperature (°C x 10) - January
             14            15  Monthly maximum temperature (°C x 10)         clim      tmax3    Monthly maximum temperature (°C x 10) - March
@@ -468,7 +473,8 @@ class MadaclimLayers:
             0             71                           Altitude (m)          env   altitude                                             None
             
             >>> # Using the output from get_layers_labels() method
-            >>> bio1_to_bio5_labels = madaclim_info.get_layers_labels(geoclim_type="clim")[36:41]
+            >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
+            >>> bio1_to_bio5_labels = bioclim_labels[0:6]
             >>> madaclim_info.fetch_specific_layers(bio1_to_bio5_labels)
                 layer_number                  geoclim_feature geoclim_type layer_name                                  layer_description
             36            37  Bioclimatic variables (bioclim)         clim       bio1                            Annual mean temperature
@@ -490,7 +496,7 @@ class MadaclimLayers:
             4             5  ...       Monthly minimum temperature (°C x 10) - May
 
             
-            >>> # Fetch description only with output as dict
+            >>> # Fetch description only with output as dict (instead of pd.DataFrame)
             >>> madaclim_info.fetch_specific_layers(bio1_to_bio5_labels, as_descriptive_labels=True)
             {'layer_37': 'clim_37_bio1 (Annual mean temperature)', 'layer_38': 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))', 'layer_39': 'clim_39_bio3 (Isothermality (BIO2/BIO7) (x 100))', 'layer_40': 'clim_40_bio4 (Temperature seasonality (standard deviation x 100))', 'layer_41': 'clim_41_bio5 (Max temperature of warmest month)'}
 
