@@ -478,7 +478,7 @@ class MadaclimPoint:
             >>> spe2_nodata_layers
             ['env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))', 'env_76_soil (None)', 'env_77_vegetation (None)', 'env_78_watersheds (None)', 'env_79_forestcover (None)']
 
-            # Calling the sample_from_rasters method also updates the 'sampled_data' and 'nodata_layers' attributes
+            >>> # Calling the sample_from_rasters method also updates the 'sampled_data' and 'nodata_layers' attributes
             >>> specimen_2.sample_from_rasters([37, 75])
             >>> specimen_2
             MadaclimPoint(
@@ -875,10 +875,10 @@ class MadaclimCollection:
             ValueError: If the CSV file headers are missing required arguments for
             constructing MadaclimPoint objects.
         Examples:
-            # csv headers must contain the 3 required positional args for MadaclimPoint (specimen_id, lat, lon)
-            # When no source_crs header is found, defaults to EPSG:4326
+            >>> # csv headers must contain the 3 required positional args for MadaclimPoint (specimen_id, lat, lon)
+            >>> # When no source_crs header is found, defaults to EPSG:4326
 
-            # CSV example #1: "some_samples.csv"
+            >>> # CSV example #1: "some_samples.csv"
             specimen_id,latitude,longitude
             sample_A,-18.9333,48.2
             sample_B,-16.295741,46.826763
@@ -903,9 +903,9 @@ class MadaclimCollection:
                 MadaclimPoint(specimen_id=sample_E, mada_geom_point=POINT (757247.2175273325 7618631.528869408), sampled=False)
             ]
 
-            # Can accept other non-required data for MadaclimPoint instantiation
+            >>> # Can accept other non-required data for MadaclimPoint instantiation
             
-            # CSV example #2: "other_samples.csv"
+            >>> # CSV example #2: "other_samples.csv"
             specimen_id,latitude,longitude,source_crs,has_sequencing,specie
             sample_F,-19.9333,47.2,4326,True,bojeri
             sample_G,-18.295741,45.826763,4326,False,periwinkle
@@ -1023,7 +1023,6 @@ class MadaclimCollection:
                         a MadaclimPoint.
         Examples:
             >>> import pandas as pd
-
             >>> sample_df
             specimen_id    latitude  longitude
             0    sample_W  -16.295741  46.826763
@@ -1116,7 +1115,7 @@ class MadaclimCollection:
                 MadaclimPoint(specimen_id=spe2, mada_geom_point=POINT (610233.867750987 7772846.143786541), sampled=False)
             ]
 
-            # You cannot add duplicates, each point must have a unique specimen_id attribute.
+            >>> # You cannot add duplicates, each point must have a unique specimen_id attribute.
             >>> other_collection.add_points(specimen_1)
             Traceback (most recent call last):
             File "<stdin>", line 1, in <module>
@@ -1200,7 +1199,7 @@ class MadaclimCollection:
             Creating MadaclimPoint(specimen_id=sample_Z...)
             Created new MadaclimCollection with 4 samples.
 
-            # Remove points by passing in the MadaclimPoint objects, the index or the specimen_id to remove from the Collection.
+            >>> # Remove points by passing in the MadaclimPoint objects, the index or the specimen_id to remove from the Collection.
             
             >>> # From MadaclimPoint instances
             >>> sample_W = collection.all_points[0]
@@ -1260,8 +1259,8 @@ class MadaclimCollection:
                 MadaclimPoint(specimen_id=sample_Z, mada_geom_point=POINT (1036778.1471182993 8526563.721996231), sampled=False)
             ]
 
-            # We can also use a list to remove multiple points at the same time.
-            # A list of str or MadaclimPoint or mixed types are accepted for the madaclim_points argument.
+            >>> # We can also use a list to remove multiple points at the same time.
+            >>> # A list of str or MadaclimPoint or mixed types are accepted for the madaclim_points argument.
             >>> sample_w = collection.all_points[0]
             >>> to_remove = [sample_w, "sample_X"]
             >>> collection.remove_points(madaclim_points=to_remove)
@@ -1271,7 +1270,7 @@ class MadaclimCollection:
                 MadaclimPoint(specimen_id=sample_Z, mada_geom_point=POINT (1036778.1471182993 8526563.721996231), sampled=False)
             ]
 
-            # Or pass in a list of indices to the indices argument.
+            >>> # Or pass in a list of indices to the indices argument.
             >>> collection.remove_points(indices=[0, -1])    # Remove first and last point
             >>> collection
             MadaclimCollection = [
@@ -1279,7 +1278,7 @@ class MadaclimCollection:
                 MadaclimPoint(specimen_id=sample_Y, mada_geom_point=POINT (838822.9378705097 7903464.491492193), sampled=False)
             ]
 
-            # Finaly we can clear the collection of all instances.
+            >>> # Finaly we can clear the collection of all instances.
             >>> collection.remove_points(clear=True)
             No MadaclimPoint inside the collection.
         """
@@ -1404,7 +1403,7 @@ class MadaclimCollection:
             >>> collection = MadaclimCollection()
             >>> collection.add_points([specimen_1, specimen_2])
 
-            # Fetch a specific set of layers to sample(using the MadaclimLayers class utilities)
+            >>> # Fetch a specific set of layers to sample(using the MadaclimLayers class utilities)
             >>> from coffeaphylogeo.geoclim.madaclim_info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
@@ -1449,7 +1448,7 @@ class MadaclimCollection:
             >>> collection.sampled_raster_data["spe2_humb"]["layer_55"]
             66
 
-            # Sample all layers and examine nodata layers with more informative layers names
+            >>> # Sample all layers and examine nodata layers with more informative layers names
             >>> collection_all_layers, collection_nodata_layers = collection.sample_from_rasters(layer_info=True, return_nodata_layers=True)
 
             ######################################## Extracting data for: spe1_aren ########################################
