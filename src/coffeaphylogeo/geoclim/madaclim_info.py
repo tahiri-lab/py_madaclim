@@ -962,7 +962,7 @@ class MadaclimLayers:
             raise IOError(f"Could not open {env_raster_path}: {e}")
 
     #!DEPRECATED METHOD, TO REMOVE
-    def sample_rasters_from_gdf(self, gdf: gpd.GeoDataFrame, geometry_col_name: str="geometry", as_descriptive_labels: bool=True)->Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]:
+    def _sample_rasters_from_gdf(self, gdf: gpd.GeoDataFrame, geometry_col_name: str="geometry", as_descriptive_labels: bool=True)->Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]:
         """Samples raster values from a GeoDataFrame containing Point geometries.
 
         Args:
@@ -1069,12 +1069,4 @@ class MadaclimLayers:
         # Close rasters and return geodataframe + sampled raster values
         raster_clim.close()
         raster_env.close()
-        return gdf_copy, raster_samples
-    
-    #TODO DEF SAMPLE_FROM_SINGLE_POINT()
-
-    
-
-
-    
-    
+        return gdf_copy, raster_samples    
