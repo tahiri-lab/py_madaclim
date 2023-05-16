@@ -358,17 +358,17 @@ class MadaclimLayers:
             ValueError: If geoclim_type does not corresponds to a valid geoclim type.
         
         Examples:
-        >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
-        >>> madaclim_info = MadaclimLayers()
-        >>> clim_df = madaclim_info.select_geoclim_type_layers(geoclim_type="clim")
-        >>> clim_df.head()
-        layer_number                        geoclim_feature geoclim_type layer_name                                 layer_description
-        0             1  Monthly minimum temperature (°C x 10)         clim      tmin1   Monthly minimum temperature (°C x 10) - January
-        1             2  Monthly minimum temperature (°C x 10)         clim      tmin2  Monthly minimum temperature (°C x 10) - February
-        2             3  Monthly minimum temperature (°C x 10)         clim      tmin3     Monthly minimum temperature (°C x 10) - March
-        3             4  Monthly minimum temperature (°C x 10)         clim      tmin4     Monthly minimum temperature (°C x 10) - April
-        4             5  Monthly minimum temperature (°C x 10)         clim      tmin5       Monthly minimum temperature (°C x 10) - May
-
+            >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
+            >>> madaclim_info = MadaclimLayers()
+            >>> clim_df = madaclim_info.select_geoclim_type_layers(geoclim_type="clim")
+            >>> clim_df.head()
+            layer_number                        geoclim_feature geoclim_type layer_name                                 layer_description
+            0             1  Monthly minimum temperature (°C x 10)         clim      tmin1   Monthly minimum temperature (°C x 10) - January
+            1             2  Monthly minimum temperature (°C x 10)         clim      tmin2  Monthly minimum temperature (°C x 10) - February
+            2             3  Monthly minimum temperature (°C x 10)         clim      tmin3     Monthly minimum temperature (°C x 10) - March
+            3             4  Monthly minimum temperature (°C x 10)         clim      tmin4     Monthly minimum temperature (°C x 10) - April
+            4             5  Monthly minimum temperature (°C x 10)         clim      tmin5       Monthly minimum temperature (°C x 10) - May
+        
         """
         all_layers_df = self.all_layers.copy()
         # Validate geoclim_type
