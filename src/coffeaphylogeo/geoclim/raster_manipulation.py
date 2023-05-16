@@ -14,6 +14,8 @@ import pyproj
 import shapely
 from pyproj import Transformer
 from shapely import Point
+import geopandas as gpd
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -123,6 +125,10 @@ class MadaclimPoint:
         additional_args = [key for key in kwargs if key not in base_args]
         for key in additional_args:
             setattr(self, key, kwargs[key])
+
+        self.gdf = {
+            "test": "geopandas_gdf"
+        }
     
     @property
     def specimen_id(self) -> str:
@@ -215,12 +221,21 @@ class MadaclimPoint:
 
     @property
     def base_attr(self) -> dict:
-        """Get the base attributes when constructing the instance
+        """Get the base attributes when constructing the instance.
 
         Returns:
             dict: A dictionary containing the base attributes names as keys and their values as values.
         """
         return self.__base_attr
+    
+    @property
+    def gdf(self) -> gpd.GeoDataFrame:
+        """Get the geodataframe using mada_geom_point as geometry.
+
+        Returns:
+            gpd.GeoDataFrame: A Geopandas GeoDataFrame generated from instance attributes and Point geometry.
+        """
+        return self.__gdf
 
     def __str__(self) -> str:
         
