@@ -1,0 +1,3 @@
+{
+    "table_0": "{\"Layer\":{\"0\":1,\"1\":2,\"2\":3,\"3\":4,\"4\":5,\"5\":6,\"6\":7,\"7\":8,\"8\":9},\"Environmental variable\":{\"0\":\"Altitude (m)\",\"1\":\"Slope (in degree)\",\"2\":\"Aspect (clockwise from North, in degree)\",\"3\":\"Solar radiation (Wh.m-2.day-1)\",\"4\":\"Geology (Kew Botanical Garden, 1997)\",\"5\":\"Soil (Pelletier, 1981)\",\"6\":\"Vegetation (Kew Botanical Garden, 2007)\",\"7\":\"Watersheds (Pearson, 2009)\",\"8\":\"Percentage of forest cover for the year 2010 (%).\"}}"
+}

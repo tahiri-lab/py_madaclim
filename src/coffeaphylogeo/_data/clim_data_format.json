@@ -1,0 +1,3 @@
+{
+    "table_0": "{\"Layers\":{\"0\":\"1-12\",\"1\":\"13-24\",\"2\":\"25-36\",\"3\":\"37-55\",\"4\":\"56-67\",\"5\":\"68\",\"6\":\"69\",\"7\":\"70\"},\"Climate variable\":{\"0\":\"Monthly minimum temperature (\\u00b0C x 10)\",\"1\":\"Monthly maximum temperature (\\u00b0C x 10)\",\"2\":\"Monthly total precipitation (mm.month-1)\",\"3\":\"Bioclimatic variables (bioclim)\",\"4\":\"Monthly potential evapotranspiration (mm.month-1)\",\"5\":\"Annual potential evapotranspiration (mm)\",\"6\":\"Annual climatic water deficit (mm)\",\"7\":\"Number of dry months in the year\"}}"
+}
