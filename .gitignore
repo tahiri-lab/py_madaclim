@@ -11,7 +11,7 @@ layers.ipynb
 *.egg-info
 
 # Trimmed fasta files
-data/genetic/gbs_trimmed/*
+gbs_trimmed/
 
 # sphinx documentation
 src/make.bat
