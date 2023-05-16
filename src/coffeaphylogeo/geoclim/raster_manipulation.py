@@ -15,6 +15,8 @@ import shapely
 from pyproj import Transformer
 from shapely import Point
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 # Default dir and path for rasters
@@ -649,6 +651,53 @@ class MadaclimPoint:
             return sampled_data, nodata_layers
         
         return sampled_data
+    
+    def visualize_on_layer(layer: Union[int, str], **kwargs) -> None:
+        
+        # Create a MadaclimLayers instance to get layers labels and validate layers to sample
+        madaclim_info = MadaclimLayers()
+        all_layers_df = madaclim_info.all_layers
+        
+        # Validate layers to sample
+        possible_layers_num_format = madaclim_info.get_layers_labels()
+        possible_layers_desc_format = madaclim_info.get_layers_labels(as_descriptive_labels=True)
+
+        # viz
+        if isinstance(layer, str):
+            if layer in possible_layers_num_format:    # Check layer_<num> str format param
+                layer_num = int(layer.split("_")[1])
+
+            elif layer in possible_layers_desc_format:    # Check as_descriptive_labels str format param
+                layer_num = int(layer.split("_")[1])
+            else:
+                try:
+                    layer_num = int(layer)    # Check <int> param
+                except (ValueError, TypeError):
+                    raise TypeError("'layer' must be either a single int value or one of the output of 'get_layers_labels' method from the MadaclimLayers class")
+         
+        # Validate layer number range for layer_numbers as in
+        min_layer = min(all_layers_df["layer_number"])
+        max_layer = max(all_layers_df["layer_number"])
+
+        if not min_layer <= layer_num <= max_layer:
+            raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_num=} is not valid.")
+        
+        # Assign raster and get band number from layer
+        clim_layer_nums = all_layers_df[all_layers_df["geoclim_type"] == "clim"]["layer_number"].to_list()
+        env_layer_nums = all_layers_df[all_layers_df["geoclim_type"] == "env"]["layer_number"].to_list()
+        
+        if layer_num in clim_layer_nums:
+            geoclim_type = "clim"
+            raster_file = default_clim_raster_path
+        
+        if layer_num in env_layer_nums:
+            geoclim_type = "env"
+            raster_file = default_env_raster_path
+        
+        band_num = madaclim_info.get_band_from_layer_number(layer_num, geoclim_type)
+
+        # TODO IMPLEMENT MATPLOTLIB / GEOPANDAS PLOT
+
     
     def _get_additional_attributes(self) -> dict:
         """
