@@ -7,6 +7,7 @@ import inspect
 from calendar import month_name
 from pathlib import Path
 from typing import List, Union, Optional, Tuple, Dict
+import importlib.resources as pkg_resources
 
 import pandas as pd
 import geopandas as gpd
@@ -15,33 +16,30 @@ import rasterio
 import pyproj
 from shapely.geometry import Point
 
-from coffeaphylogeo.definitions import Definitions
-
-defs = Definitions()
+from coffeaphylogeo._constants import Constants
 
 class MadaclimLayers:
     """A class that represents all of the information and data from the climate and environmental variable layers that can be found from the rasters of the Madaclim database.
+
+    The main metadata retrieval tool for the Madaclim database. Access all layers information with the 'all_layers' attribute.
+    Also provides methods to filter, generate unique labels from all_layers and also access the crs and band number from the climate and environmental rasters.
     
     Attributes:
-        climate_dir (Path): The directory path for climate-related data.
-        enviro_dir (Path): The directory path for environment-related data.
-        clim_dataformat_filename (str): The file name of the climate data format file.
-        clim_meta_filename (str): The file name of the climate metadata file.
-        env_dataformat_filename (str): The file name of the environment data format file.
-        env_meta_filename (str): The file name of the environment metadata file.
+        clim_raster (pathlib.Path): The path to the Madaclim climate raster GeoTif file. Defaults to None if not specified.
+        env_raster (pathlib.Path): The path to the Madaclim environmental raster GeoTif file. Defaults to None if not specified.
         all_layers (pd.DataFrame): A DataFrame containing a complete and formatted version of all Madaclim layers.
     
     """
-    def __init__(self):
+    def __init__(self, clim_raster: Optional[pathlib.Path]=None, env_raster: Optional[pathlib.Path]=None):
         """Initializes a new instance of the MadaclimLayers class.
 
         This constructor sets the directory paths and file names for climate and environment data,
         and generates a DataFrame containing all Madaclim layers.
         
         Examples:
-            >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
+            >>> from coffeaphylogeo.madaclim_info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
-            >>> # Save the all layers df
+            >>> # Access the all layers df
             >>> all_layers_df = madaclim_info.all_layers
             >>> all_layers_df.info()
             <class 'pandas.core.frame.DataFrame'>
@@ -55,294 +53,248 @@ class MadaclimLayers:
             3   layer_name         79 non-null     object
             4   layer_description  71 non-null     object
             dtypes: int64(1), object(4)
-        """
-        self.climate_dir = defs.get_geoclim_path("climate_data")    # Path dir for clim-related data
-        self.enviro_dir = defs.get_geoclim_path("environment_data")    # Path dir for env-related data
-        
-        self.clim_dataformat_filename = defs.geoclim_files["clim_data_format"]
-        self.clim_meta_filename = defs.geoclim_files["clim_metadata"]
-        self.env_dataformat_filename = defs.geoclim_files["env_data_format"]
-        self.env_meta_filename = defs.geoclim_files["env_metadata"]
-        self.clim_raster_filename = defs.geoclim_files["madaclim_current"]
-        self.env_raster_filename = defs.geoclim_files["madaclim_enviro"]
-        
-        self.all_layers = self._get_madaclim_layers(
-            climate_dir=self.climate_dir,
-            enviro_dir=self.enviro_dir,
-            clim_dataformat_filename=self.clim_dataformat_filename,
-            clim_meta_filename=self.clim_meta_filename,
-            env_dataformat_filename=self.env_dataformat_filename,
-            env_meta_filename=self.env_meta_filename
-        )
 
+            >>> # 'clim_raster' and 'env_raster' attributes are empty by default
+            >>> print(madaclim_info.clim_raster)
+            None
+            >>> print(madaclim_info.env_raster)
+            None
+            
+            >>> # Certain attributes and methods need a valid 'clim_raster' or 'env_raster' attribute a-priori
+            >>> madaclim_info.clim_crs
+            Traceback (most recent call last):
+            ...
+                raise ValueError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
+            ValueError: Undefined attribute: 'clim_raster'. You need to assign a valid pathlib.Path to the related raster attribute first.
+
+            >>> # You can download the rasters using the 'download_data' method
+            >>> madaclim_info.download_data()    # Defaults to current working dir otherwise specify save_dir pathlib.Path
+            
+            >>> madaclim_info.clim_raster = Path("madaclim_current.tif")
+            >>> madaclim_info.env_raster = Path("madaclim_enviro.tif")
+            >>> madaclim_info.clim_raster
+            PosixPath('madaclim_current.tif')
+            >>> madaclim_info.clim_crs
+            <Derived Projected CRS: EPSG:32738>
+            Name: WGS 84 / UTM zone 38S
+            Axis Info [cartesian]:
+            - E[east]: Easting (metre)
+            - N[north]: Northing (metre)
+            Area of Use:
+            - name: Between 42°E and 48°E, southern hemisphere between 80°S and equator, onshore and offshore. Madagascar.
+            - bounds: (42.0, -80.0, 48.0, 0.0)
+            Coordinate Operation:
+            - name: UTM zone 38S
+            - method: Transverse Mercator
+            Datum: World Geodetic System 1984 ensemble
+            - Ellipsoid: WGS 84
+            - Prime Meridian: Greenwich
+        """
+        self._clim_dataformat = self._load_dataformat(Constants.CLIM_DATAFORMAT_FILE)
+        self._clim_metadata = self._load_metadata(Constants.CLIM_METADATA_FILE)
+
+        self._env_dataformat = self._load_dataformat(Constants.ENV_DATAFORMAT_FILE)
+        self._env_metadata = self._load_metadata(Constants.ENV_METADATA_FILE)
+        
+        self.all_layers = self._get_madaclim_layers()
+
+        self.clim_raster = clim_raster
+        self.env_raster = env_raster
+
+    
 
     @property
-    def climate_dir(self):
-        """Path: The directory path for climate data."""
-        return self._climate_dir
-    
-    @climate_dir.setter
-    def climate_dir(self, value):
-        """Sets the directory path for climate data.
+    def clim_raster(self) -> pathlib.Path:
+        """pathlib.Path: Get or set the path to the climate raster file.
 
-        Args:
-            value (Path): The directory path for climate data.
+        This property allows you to get the current path to the climate raster file, or set a new
+        path. If setting a new path, the value must be a pathlib.Path object or a str. If the value 
+        is a str, it will be converted to a pathlib.Path object. The path must exist, otherwise a 
+        FileNotFoundError will be raised.
 
-        Raises:
-            ValueError: If the provided value is not a valid directory path.
-        """
-        if not value.is_dir():
-            raise ValueError(f"{value} is not a valid directory path.")
-        
-        self._climate_dir = value
-        
-    @property
-    def enviro_dir(self):
-        """Path: The directory path for environmental data."""
-        return self._enviro_dir
-    
-    @enviro_dir.setter
-    def enviro_dir(self, value):
-        """Sets the directory path for environmental data.
-
-        Args:
-            value (Path): The directory path for environmental data.
+        Returns:
+            The current path to the climate raster file.
 
         Raises:
-            ValueError: If the provided value is not a valid directory path.
+            TypeError: If the new path is not a pathlib.Path object or str.
+            ValueError: If the new path cannot be converted to a pathlib.Path object.
+            FileNotFoundError: If the new path does not exist.
         """
-        if not value.is_dir():
-            raise ValueError(f"{value} is not a valid directory path.")
-        
-        self._enviro_dir = value
-
-    @property
-    def clim_dataformat_filename(self):
-        """str: The file name of the climate data file."""
-        return self._clim_dataformat_filename
+        return self._clim_raster
     
-    @clim_dataformat_filename.setter
-    def clim_dataformat_filename(self, value):
-        """Sets the file name of the climate data file.
-
-        Args:
-            value (str): The file name of the climate data file.
-
-        Raises:
-            TypeError: If the provided value is not a string.
-            ValueError: If the provided file does not exist in the climate data directory.
-        """
-        # Validate type
-        if not isinstance(value, str):
-            raise TypeError("clim_dataformat_filename attribute nust be a string.")
-        
-        # Validate path and file
-        valid_file = self.climate_dir / value
-        if not valid_file.exists():
-            raise ValueError(f"{valid_file} does not exists")
-        
+    @clim_raster.setter
+    def clim_raster(self, value: Optional[pathlib.Path]) -> None:
+        if value is None:
+            self._clim_raster = value
         else:
-            self._clim_dataformat_filename = value
+            # Validate type
+            if not isinstance(value, (pathlib.Path, str)):
+                raise TypeError("clim_raster must be a pathlib.Path object or str.")
+            
+            # Validate path and file
+            try:
+                value = Path(value)
+            except:
+                raise ValueError(f"Could not create a pathlib.Path object from {value}")
+            
+            if not value.exists():
+                raise FileNotFoundError(f"{value} does not exists.")
+            
+            self._clim_raster = value
 
     @property
-    def clim_meta_filename(self):
-        """str: The file name of the climate metadata file."""
-        return self._clim_meta_filename
     
-    @clim_meta_filename.setter
-    def clim_meta_filename(self, value):
-        """Sets the file name of the climate metadata file.
+    def env_raster(self) -> pathlib.Path:
+        """pathlib.Path: Get or set the path to the environment raster file.
 
-        Args:
-            value (str): The file name of the climate metadata file.
+        This property allows you to get the current path to the environment raster file, or set a new
+        path. If setting a new path, the value must be a pathlib.Path object or a str. If the value 
+        is a str, it will be converted to a pathlib.Path object. The path must exist, otherwise a 
+        FileNotFoundError will be raised.
+
+        Returns:
+            The current path to the environment raster file.
 
         Raises:
-            TypeError: If the provided value is not a string.
-            ValueError: If the provided file does not exist in the climate data directory.
+            TypeError: If the new path is not a pathlib.Path object or str.
+            ValueError: If the new path cannot be converted to a pathlib.Path object.
+            FileNotFoundError: If the new path does not exist.
         """
-        # Validate type
-        if not isinstance(value, str):
-            raise TypeError("clim_meta_filename attribute nust be a string.")
-        
-        # Validate path and file
-        valid_file = self.climate_dir / value
-        if not valid_file.exists():
-            raise ValueError(f"{valid_file} does not exists")
-        
-        else:
-            self._clim_meta_filename = value
+        return self._env_raster
     
-    @property
-    def env_dataformat_filename(self):
-        """str: The file name of the environmental data file."""
-        return self._env_dataformat_filename
-    
-    @env_dataformat_filename.setter
-    def env_dataformat_filename(self, value):
-        """Sets the file name of the environmental data file.
-
-        Args:
-            value (str): The file name of the environmental data file.
-
-        Raises:
-            TypeError: If the provided value is not a string.
-            ValueError: If the provided file does not exist in the environmental data directory.
-        """
-        # Validate type
-        if not isinstance(value, str):
-            raise TypeError("env_dataformat_filename attribute nust be a string.")
-        
-        # Validate path and file
-        valid_file = self.enviro_dir / value
-        if not valid_file.exists():
-            raise ValueError(f"{valid_file} does not exists")
-        
-        else:
-            self._env_dataformat_filename = value
+    @env_raster.setter
+    def env_raster(self, value: Optional[pathlib.Path]) -> None:
+        if value is None:
+            self._env_raster = value
+        else:       
+            # Validate type
+            if not isinstance(value, (pathlib.Path, str)):
+                raise TypeError("env_raster must be a pathlib.Path object or str.")
+            
+            # Validate path and file
+            try:
+                value = Path(value)
+            except:
+                raise ValueError(f"Could not create a pathlib.Path object from {value}")
+            
+            if not value.exists():
+                raise FileNotFoundError(f"{value} does not exists.")
+            
+            self._env_raster = value
 
     @property
-    def env_meta_filename(self):
-        """str: The file name of the environmental metadata file."""
-        return self._env_meta_filename
-    
-    @env_meta_filename.setter
-    def env_meta_filename(self, value):
-        """Sets the file name of the environmental metadata file.
-
-        Args:
-            value (str): The file name of the environmental metadata file.
-
-        Raises:
-            TypeError: If the provided value is not a string.
-            ValueError: If the provided file does not exist in the environmental data directory.
+    def clim_crs(self) -> pyproj.crs.CRS:
         """
-        # Validate type
-        if not isinstance(value, str):
-            raise TypeError("env_meta_filename attribute nust be a string.")
-        
-        # Validate path and file
-        valid_file = self.enviro_dir / value
-        if not valid_file.exists():
-            raise ValueError(f"{valid_file} does not exists")
-        
-        else:
-            self._env_meta_filename = value
+        Retrieves the Coordinate Reference System (CRS) from the Madaclim climate raster.
 
-    @property
-    def clim_raster_filename(self):
-        """str: The file name of the current_climate raster file."""
-        return self._clim_raster_filename
-    
-    @clim_raster_filename.setter
-    def clim_raster_filename(self, value):
-        """Sets the file name of the current_climate raster file.
+        This property first validates the clim_raster attribute, ensuring its integrity and existence. 
+        It then opens the raster file and retrieves the CRS in EPSG format. The EPSG code is used to 
+        create and return a pyproj CRS object.
 
-        Args:
-            value (str): The file name of the current_climate raster file.
+        Returns:
+            pyproj.crs.CRS: The CRS object derived from the EPSG code of the climate raster.
 
-        Raises:
-            TypeError: If the provided value is not a string.
-            ValueError: If the provided file does not exist in the climate data directory.
+        Examples:
+            >>> # You need to have a valid 'clim_raster' attribute before
+            >>> madaclim_info = MadaclimLayers()
+            >>> madaclim_info.clim_crs
+            Traceback (most recent call last):
+            ...
+                raise ValueError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
+            ValueError: Undefined attribute: 'clim_raster'. You need to assign a valid pathlib.Path to the related raster attribute first.
+
+            >>> madaclim_info.clim_raster = Path("madaclim_current.tif")
+            >>> madaclim_info.clim_crs
+            <Derived Projected CRS: EPSG:32738>
+            Name: WGS 84 / UTM zone 38S
+            Axis Info [cartesian]:
+            - E[east]: Easting (metre)
+            - N[north]: Northing (metre)
+            Area of Use:
+            - name: Between 42°E and 48°E, southern hemisphere between 80°S and equator, onshore and offshore. Madagascar.
+            - bounds: (42.0, -80.0, 48.0, 0.0)
+            Coordinate Operation:
+            - name: UTM zone 38S
+            - method: Transverse Mercator
+            Datum: World Geodetic System 1984 ensemble
+            - Ellipsoid: WGS 84
+            - Prime Meridian: Greenwich
         """
-        # Validate type
-        if not isinstance(value, str):
-            raise TypeError("env_meta_filename attribute nust be a string.")
         
-        # Validate path and file
-        test_raster_file = self.climate_dir / value
-        if not test_raster_file.exists():
-            raise ValueError(f"{test_raster_file} does not exists")
-        
-        else:
-            self._clim_raster_filename = value
-
-    @property
-    def env_raster_filename(self):
-        """str: The file name of the environmental raster file."""
-        return self._env_raster_filename
-    
-    @env_raster_filename.setter
-    def env_raster_filename(self, value):
-        """Sets the file name of the environmental raster file.
-
-        Args:
-            value (str): The file name of the environmental raster file.
-
-        Raises:
-            TypeError: If the provided value is not a string.
-            ValueError: If the provided file does not exist in the environmental data directory.
-        """
-        # Validate type
-        if not isinstance(value, str):
-            raise TypeError("env_meta_filename attribute nust be a string.")
-        
-        # Validate path and file
-        test_raster_file = self.enviro_dir / value
-        if not test_raster_file.exists():
-            raise ValueError(f"{test_raster_file} does not exists")
-        
-        else:
-            self._env_raster_filename = value
-
-    @property
-    def clim_crs(self):
-        """pyproj.crs.CRS: The CRS from the Madaclim climate raster."""
-        
-        # Validate raster IO path + integrity
-        self._check_rasters()
+        # Validate raster attr value, IO path, integrity
+        self._validate_raster("clim_raster")
         
         # Get epsg from clim_raster
-        clim_raster_path = self.climate_dir / self.clim_raster_filename
-        with rasterio.open(clim_raster_path) as clim_raster:
+        with rasterio.open(self.clim_raster) as clim_raster:
             clim_epsg = clim_raster.crs.to_epsg()  # Get the EPSG code of the CRS
             clim_crs = pyproj.CRS.from_epsg(clim_epsg)  # Create a pyproj CRS object
         return clim_crs
 
     @property
     def env_crs(self):
-        """pyproj.crs.CRS: The CRS from the Madaclim environmental raster."""
+        """
+        Retrieves the Coordinate Reference System (CRS) from the Madaclim environmental raster.
+
+        This property first validates the env_raster attribute, ensuring its integrity and existence. 
+        It then opens the raster file and retrieves the CRS in EPSG format. The EPSG code is used to 
+        create and return a pyproj CRS object.
+
+        Returns:
+            pyproj.crs.CRS: The CRS object derived from the EPSG code of the environmental raster.
         
-        # Validate raster IO path + integrity
-        self._check_rasters()
+        Examples:
+            >>> # You need to have a valid 'env_raster' attribute
+            >>> madaclim_info = MadaclimLayers()
+            >>> madaclim_info.env_crs
+            Traceback (most recent call last):
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            ...                
+            ValueError: Undefined attribute: 'env_raster'. You need to assign a valid pathlib.Path to the related raster attribute first.
+            
+            >>> madaclim_info.env_raster = Path("madaclim_enviro.tif")
+            >>> madaclim_info.env_crs
+            <Derived Projected CRS: EPSG:32738>
+            Name: WGS 84 / UTM zone 38S
+            Axis Info [cartesian]:
+            - E[east]: Easting (metre)
+            - N[north]: Northing (metre)
+            Area of Use:
+            - name: Between 42°E and 48°E, southern hemisphere between 80°S and equator, onshore and offshore. Madagascar.
+            - bounds: (42.0, -80.0, 48.0, 0.0)
+            Coordinate Operation:
+            - name: UTM zone 38S
+            - method: Transverse Mercator
+            Datum: World Geodetic System 1984 ensemble
+            - Ellipsoid: WGS 84
+            - Prime Meridian: Greenwich
+        """
+        
+        # Validate raster attr value, IO path, integrity
+        self._validate_raster("env_raster")
         
         # Get epsg from env_raster
-        env_raster_path = self.enviro_dir / self.env_raster_filename
-        with rasterio.open(env_raster_path) as env_raster:
+        with rasterio.open(self.env_raster) as env_raster:
             env_epsg = env_raster.crs.to_epsg()  # Get the EPSG code of the CRS
             env_crs = pyproj.CRS.from_epsg(env_epsg)  # Create a pyproj CRS object
         return env_crs
     
     def __str__(self) -> str:
-        # Get instance attributes
-        attribute_keys = list(self.__dict__.keys())
-        
-        # Extract custom methods
-        extract_methods = inspect.getmembers(self, predicate=inspect.ismethod)
-        custom_methods = [method[0] for method in extract_methods if not method[0] == "__init__"]
-
-        return f"Instance attributes:\n{attribute_keys}\n\nCustom methods:\n{custom_methods}\n"
-
-    def update_all_layers(self):
-        """Updates the all_layers attribute with the current values of the instance attributes.
-
-        This method calls the _get_madaclim_layers method with the current values of the climate_dir,
-        enviro_dir, clim_dataformat_filename, clim_meta_filename, env_dataformat_filename, and env_meta_filename
-        attributes and assigns its return value to the all_layers attribute.
-
-        Args:
-            self (MadaclimLayers): The instance of the MadaclimLayers class.
+        """Prints the MadaclimLayers instance's attributes.
 
         Returns:
-            None
+            str: All the object's attributes as attr_name for keys and attr_value for values.
         """
-        self.all_layers = self._get_madaclim_layers(
-            climate_dir=self.climate_dir,
-            enviro_dir=self.enviro_dir,
-            clim_dataformat_filename=self.clim_dataformat_filename,
-            clim_meta_filename=self.clim_meta_filename,
-            env_dataformat_filename=self.env_dataformat_filename,
-            env_meta_filename=self.env_meta_filename
+        info = (
+            f"all_layers = \n{self.all_layers.head().to_string(index=False)}\n...\n"
+            f"{len(self.all_layers)} rows x {len(self.all_layers.columns)} columns\n\n"  
+            f"clim_raster = {self.clim_raster}\n"
+            f"clim_crs = {self.clim_crs if self.clim_raster else None}\n"
+            f"env_raster = {self.env_raster}\n"
+            f"env_crs = {self.env_crs if self.env_raster else None}\n"   
         )
+        info = "MadaclimLayers\n" + info
+        return info
+
 
     def select_geoclim_type_layers(self, geoclim_type: str) -> pd.DataFrame:
         """Method that selects the desired geoclimatic type layers as a dataframe.
@@ -358,7 +310,7 @@ class MadaclimLayers:
             ValueError: If geoclim_type does not corresponds to a valid geoclim type.
         
         Examples:
-            >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
+            >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> clim_df = madaclim_info.select_geoclim_type_layers(geoclim_type="clim")
             >>> clim_df.head()
@@ -388,8 +340,8 @@ class MadaclimLayers:
         Retrieves unique layer labels based on the specified geoclim_type.
 
         Args:
-            geoclim_type (str, optional): The type of geoclim to filter by. Can be "clim", "env", or "all". Defaults to "all".
-            as_descriptive_labels (bool, optional): If True, returns the descriptive layer labels. Otherwise, returns the "layer_<num>" format. Defaults to False.
+            geoclim_type (str): The type of geoclim to filter by. Can be "clim", "env", or "all". Defaults to "all".
+            as_descriptive_labels (bool): If True, returns the descriptive layer labels. Otherwise, returns the "layer_<num>" format. Defaults to False.
 
         Returns:
             list: A list of unique layer labels based on the specified geoclim_type.
@@ -400,7 +352,7 @@ class MadaclimLayers:
             ValueError: If 'layer_number' and 'layer_name' columns in the all_layers dataframe have non-unique entries.
 
         Example:
-            >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
+            >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> clim_layers_labels = madaclim_info.get_layers_labels(geoclim_type="clim")
             
@@ -412,6 +364,8 @@ class MadaclimLayers:
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
 
         """
+        all_layers_df = self.all_layers.copy()
+
         # Validate geoclim_type
         if not isinstance(geoclim_type, str):
             raise TypeError("geoclim_type must be a string.")
@@ -421,11 +375,10 @@ class MadaclimLayers:
             raise ValueError(f"geoclim_type must be one of {possible_geoclim_types}")
         
         # Validate unique entries
-        if len(self.all_layers) != len(self.all_layers["layer_number"].unique()) != len(self.all_layers["layer_name"].unique()):
+        if len(all_layers_df) != len(all_layers_df["layer_number"].unique()) != len(all_layers_df["layer_name"].unique()):
             raise ValueError("'layer_number' and 'layer_name' columns in the all_layers dataframe have non-unique entries.")
         
         # Get dict for unique labels according to geoclim_type selection
-        all_layers_df = self.all_layers.copy()
         if geoclim_type != "all":
             select_df = all_layers_df[all_layers_df["geoclim_type"] == geoclim_type]
         else: 
@@ -445,14 +398,14 @@ class MadaclimLayers:
         return unique_labels
         
 
-    def fetch_specific_layers(self, layers_labels: Union[int, str, List[Union[int, str]]], as_descriptive_labels: bool=False, return_list: Optional[bool]=False) -> Union[dict, pd.DataFrame, list]:
+    def fetch_specific_layers(self, layers_labels: Union[int, str, List[Union[int, str]]], as_descriptive_labels: bool=False, return_list: bool=False) -> Union[dict, pd.DataFrame, list]:
         """
         Fetches specific layers from the all_layers DataFrame based on the given input.
 
         Args:
             layers_labels (Union[int, str, List[Union[int, str]]]): The layer labels to fetch. Can be a single int or str value, or a list of int or str values.
                 The input can also be in the format "layer_{num}" or "{geotype}_{num}_{name}_({description})" (output from .get_layers_labels(as_descriptive_labels=True) method).
-            as_descriptive_labels (bool, optional): If True, only the layer descriptions are returned. Defaults to False.
+            as_descriptive_labels (bool): If True, only the layer descriptions are returned. Defaults to False.
 
         Returns:
             Union[dict, pd.DataFrame]: If as_descriptive_labels is True, returns a dictionary with the layer descriptions.
@@ -463,7 +416,7 @@ class MadaclimLayers:
             ValueError: If any layer_number does not fall between the minimum and maximum layer numbers.
 
         Example:
-            >>> from coffeaphylogeo.geoclim.madaclim_layers import MadaclimLayers
+            >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> madaclim_info.fetch_specific_layers([1, 15, 55, 71])    # Output is a pd.DataFrame
                 layer_number                        geoclim_feature geoclim_type layer_name                                layer_description
@@ -559,18 +512,33 @@ class MadaclimLayers:
             return select_df
 
     def download_data(self, save_dir: Optional[pathlib.Path]=None):
-        """Downloads climate and environment data from the Madaclim website.
+        """Downloads climate and environment raster files from the Madaclim website.
 
         This method downloads the climate and environment raster data from the Madaclim website
         and saves them to the specified directory. If no directory is specified, the data is saved
-        to the default directory.
+        to the current working directory.
 
         Args:
             save_dir (Optional[pathlib.Path]): The directory where the data should be saved. If not specified,
-                the data is saved to the default directory.
+                the data is saved to the current working directory.
 
         Raises:
             ValueError: If save_dir is not a directory.
+
+        Examples:
+            >>> madaclim_info.download_data()    # Defaults to current working directory
+
+            ####   Trying get request to Madaclim website...   ####
+            madaclim_current.tif is 21.8 MB
+            Server response OK from madaclim.cirad.fr, starting to download madaclim_current.tif
+            Progress for madaclim_current.tif : 100.00 % completed of 21.8 MB downloaded [ average speed of  3.3 MB/s ]
+            Done downloading madaclim_current.tif in 6.65 seconds !
+
+            ####   Trying get request to Madaclim website...   ####
+            madaclim_enviro.tif is 5.5 MB
+            Server response OK from madaclim.cirad.fr, starting to download madaclim_enviro.tif
+            Progress for madaclim_enviro.tif : 100.00 % completed of 5.5 MB downloaded [ average speed of  2.7 MB/s ]
+            Done downloading madaclim_enviro.tif in 2.07 seconds !
         """
         
         def download_single_file(url: str, dir_savepath: pathlib.Path, filename: str)-> pathlib.Path:
@@ -624,39 +592,26 @@ class MadaclimLayers:
                 print(f"File {filename} cannot be downloaded. Status code : {response.status_code}")
             return dir_savepath / filename
         
-        # Validate save_dir when specified
-        if save_dir is not None:
-            if not save_dir.is_dir():
-                raise ValueError("save_dir is not a directory.")
-        
-        # Download rasters with default save_dir
-        if save_dir is None:
-            download_single_file(    # Climate raster
-                url=defs.urls["madaclim_current_raster"],
-                dir_savepath=self.climate_dir,
-                filename=self.clim_raster_filename
-            )
+        # Validate save target directory
+        save_dir = Path.cwd() if save_dir is None else save_dir
+        if not save_dir.is_dir():
+            raise FileNotFoundError(f"Cannot find directory: {save_dir}")
 
-            download_single_file(
-                url=defs.urls["environment_raster"],
-                dir_savepath=self.enviro_dir,
-                filename=self.env_raster_filename
-            )
-        # Download to specified path
-        else:
-            download_single_file(    # Climate raster
-                url=defs.urls["madaclim_current_raster"],
-                dir_savepath=save_dir,
-                filename=self.clim_raster_filename
-            )
+        # Download rasters
+        download_single_file(    # Climate raster
+            url=Constants.MADACLIM_URLS["clim_raster"],
+            dir_savepath=save_dir,
+            filename=Constants.DEFAULT_CLIM_RASTER_FILENAME
+        )
 
-            download_single_file(
-                url=defs.urls["environment_raster"],
-                dir_savepath=save_dir,
-                filename=self.env_raster_filename
-            )
+        download_single_file(
+            url=Constants.MADACLIM_URLS["env_raster"],
+            dir_savepath=save_dir,
+            filename=Constants.DEFAULT_ENV_RASTER_FILENAME
+        )
 
-    def get_band_from_layer_number(self, layer_number: Union[str, int], geoclim_type: str)->int:
+    #! Unefficient method with raster.read I/O operation for each band
+    def _get_band_from_layer_number(self, layer_number: Union[str, int], geoclim_type: str)->int:
         """Get the band number in a raster file corresponding to a given layer number and geoclim type.
 
         Args:
@@ -689,11 +644,13 @@ class MadaclimLayers:
 
         # Get the number of bands for the selected geoclim_type raster
         if geoclim_type == "clim":
-            with rasterio.open(self.climate_dir / self.clim_raster_filename) as clim_raster:
+            self._validate_raster(f"{geoclim_type}_raster")    # Validate raster before I/O
+            with rasterio.open(self.clim_raster) as clim_raster:
                 raster_bands = clim_raster.read().shape[0]
         
         if geoclim_type == "env":
-            with rasterio.open(self.enviro_dir / self.env_raster_filename) as env_raster:
+            self._validate_raster(f"{geoclim_type}_raster")    # Validate raster before I/O
+            with rasterio.open(self.env_raster) as env_raster:
                 raster_bands = env_raster.read().shape[0]
 
         # Return the band number according to the layer number
@@ -704,8 +661,8 @@ class MadaclimLayers:
         
         return band_number
 
-    def _get_madaclim_layers(self, climate_dir, enviro_dir, clim_dataformat_filename, clim_meta_filename, env_dataformat_filename, env_meta_filename) -> pd.DataFrame :
-        """Private method that will generate the all_layers attributes based on the climate/enviro dirs and all the data and metada files found by accessing their corresponding attriubtes.
+    def _get_madaclim_layers(self) -> pd.DataFrame :
+        """Private method that will generate the all_layers attributes based on the format and metada files from the Madaclim db by accessing their corresponding attributes.
 
         Args:
             climate_dir (Path): The directory path for climate-related data.
@@ -842,18 +799,8 @@ class MadaclimLayers:
             return merged_df
         
         
-        # Open data and metadata tables
-        with open(climate_dir / clim_dataformat_filename, "r") as f:
-            clim_format = json.load(f)
-        with open(climate_dir /  clim_meta_filename,"r") as f:
-            clim_meta = json.load(f)
-        with open(enviro_dir / env_dataformat_filename, "r") as f:
-            env_format = json.load(f)
-        with open(enviro_dir / env_meta_filename, "r") as f:
-            env_meta = json.load(f)
-
         # Extract climate data and format it using the metadata
-        df_clim = pd.read_json(clim_format["table_0"])
+        df_clim = pd.read_json(self._clim_dataformat["table_0"])
         df_clim["data_type"] = "clim"    # Tag for latter id in merge
 
         # Split the layers to get initial layer_num for all clim-related layers
@@ -861,7 +808,7 @@ class MadaclimLayers:
         df_clim.columns = ["layer_number", "geoclim_feature", "geoclim_type"]
 
         # Formatting + add layers to the monthly bioclim metadata
-        bio_monthly_feats = pd.read_json(clim_meta["table_0"])
+        bio_monthly_feats = pd.read_json(self._clim_metadata["table_0"])
         bio_monthly_feats.columns = ["layer_name", "layer_description"]
         
         bio_monthly_feats = pd.concat(    # Split according to range
@@ -871,14 +818,14 @@ class MadaclimLayers:
         bio_monthly_feats = add_layer_numbers_bio_monthly(bio_monthly_feats)    # Append layer numbers
 
         # Formatting + add layers to the other bioclim metadata (non-monthly)
-        bioclim_feats = pd.read_json(clim_meta["table_1"])
+        bioclim_feats = pd.read_json(self._clim_metadata["table_1"])
         bioclim_feats.columns = ["layer_name", "layer_description"]
 
         current_start_layer = len(bio_monthly_feats) + 1    # Save the current state of the layer number for clim_df
         bioclim_feats["layer_number"] = range(current_start_layer, current_start_layer + len(bioclim_feats))
 
         # Formatting + add layers to monthly and annual evapotranspiration metadata
-        evap_feats = pd.read_json(clim_meta["table_2"])
+        evap_feats = pd.read_json(self._clim_metadata["table_2"])
         evap_feats.columns = ["layer_name", "layer_description"]
         
         evap_feats = pd.concat(    # Split monthly evapo data
@@ -889,7 +836,7 @@ class MadaclimLayers:
         evap_feats["layer_number"] = range(current_start_layer, current_start_layer + len(evap_feats))
 
         # Formatting + add layers to the bioclim water-related metadata
-        biowater_feats = pd.read_json(clim_meta["table_3"])
+        biowater_feats = pd.read_json(self._clim_metadata["table_3"])
         biowater_feats.columns = ["layer_name", "layer_description"]
         
         current_start_layer = max(evap_feats["layer_number"]) + 1    # Save the current state of the layer number for clim_df
@@ -901,7 +848,7 @@ class MadaclimLayers:
 
 
         # Extract environmental data and format it using its related metadata
-        df_env = pd.read_json(env_format["table_0"])
+        df_env = pd.read_json(self._env_dataformat["table_0"])
         df_env.columns = ["layer_number", "geoclim_feature"]
         df_env["geoclim_type"] = "env"    # Tag for latter id in merge
 
@@ -916,7 +863,7 @@ class MadaclimLayers:
         # Assign dummy var information for geology layer to layer_description
         geology_description = []
     
-        env_meta_str = env_meta["table_0"]
+        env_meta_str = self._env_metadata["table_0"]
         env_meta_data = json.loads(env_meta_str)
 
         for i, val in env_meta_data["Raster value"].items():
@@ -933,140 +880,64 @@ class MadaclimLayers:
 
         return df
     
-    def _check_rasters(self):
-        # Define rasters path + validate file
-        clim_raster_path = self.climate_dir / self.clim_raster_filename
-        env_raster_path = self.enviro_dir / self.env_raster_filename
-
-        # Check if both files exist
-        if not clim_raster_path.is_file() and not env_raster_path.is_file():
-            raise FileExistsError(f"Could not find both {clim_raster_path} and {env_raster_path} raster files.")
-        # Check if climate raster file exists
-        elif not clim_raster_path.is_file():
-            raise FileExistsError(f"Could not find climate raster file: {clim_raster_path}.")
-        # Check if environmental raster file exists
-        elif not env_raster_path.is_file():
-            raise FileExistsError(f"Could not find environmental raster file: {env_raster_path}.")
-        
-        # Catch any IO errors
-        try:
-            with rasterio.open(clim_raster_path) as clim_raster:
-                pass
-        except rasterio.errors.RasterioIOError as e:
-            raise IOError(f"Could not open {clim_raster_path}: {e}")
-
-        try:
-            with rasterio.open(env_raster_path) as env_raster:
-                pass
-        except rasterio.errors.RasterioIOError as e:
-            raise IOError(f"Could not open {env_raster_path}: {e}")
-
-    #!DEPRECATED METHOD, TO REMOVE
-    def _sample_rasters_from_gdf(self, gdf: gpd.GeoDataFrame, geometry_col_name: str="geometry", as_descriptive_labels: bool=True)->Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]:
-        """Samples raster values from a GeoDataFrame containing Point geometries.
+    def _load_dataformat(self, filepath: pathlib.Path) -> dict:
+        """Parse the json dataformat (either clim or env) file into a dictionary.
 
         Args:
-            gdf (gpd.GeoDataFrame): The GeoDataFrame containing the Point geometries to sample from.
-            geometry_col_name (str, optional): The name of the column in the GeoDataFrame that contains the Point geometries. Defaults to "geometry".
-            as_descriptive_labels (bool, optional): Whether to return descriptive labels for the raster values. Defaults to True.
+            filepath (pathlib.Path): Path to the dataformat file.
 
         Raises:
-            ValueError: If the geometry column in the GeoDataFrame is not a Point geometry or if it contains empty Point objects.
-            ValueError: If the raster projections are on different coordinate reference systems (CRS).
+            ValueError: If filepath is not a path to an existing file.
+            ValueError: If json file cannot be parsed.
 
         Returns:
-            Tuple[gpd.GeoDataFrame, Dict[str, List[np.ndarray]]]: A tuple containing a copy of the input GeoDataFrame with additional columns for the raster values and a dictionary containing the raster values for each filename.
+            dict: A dictionary containing the data format information contained in the dataformat file.
         """
-        # Make a copy of the geodf
-        gdf_copy = gdf.copy()
-
-        # Get the geometry column from the GeoDataFrame
-        geom_data = gdf_copy[geometry_col_name]
-
-        # Check if the geometry column is a Point geometry
-        if geom_data.dtype != 'geometry' or geom_data.geom_type.unique()[0] != 'Point':
-            raise ValueError(f"The '{geometry_col_name}' column in the GeoDataFrame is not a Point geometry.")
         
-        # Check if geodataframe contains empty Point objects
-        empty_points = (geom_data.is_empty).sum()
-        if empty_points > 0:
-            raise ValueError("Empty Point objects cannot be sampled. To remove them use:\ngpd.GeoDataFrame(gdf.loc[gdf[geometry].is_empty == False])")
-
-        # Define rasters path
-        raster_clim = rasterio.open(self.climate_dir / self.clim_raster_filename)
-        raster_env = rasterio.open(self.enviro_dir / self.env_raster_filename)
-
-        # Sanity check for rasters
-        if raster_clim.crs != raster_env.crs:
-            raise ValueError("Raster projections are on different coordinate reference system (CRS).")
-
-        # Validate the CRS from the geodataframe to both rasters
-        if gdf_copy.crs != raster_clim.crs or gdf_copy.crs!= raster_env.crs:
-            try:
-                print(f"Reprojecting gdf[geometry] Point objects from {gdf_copy.crs} to the rasters' {raster_clim.crs}...\n")
-                gdf_copy = gdf_copy.to_crs(raster_clim.crs)
-            except Exception as e:
-                raise(f"Error {e}: Could not convert GeoDataFrame to the raster's CRS.")
-
-        # Extract nodata value for each rasters
-        nodata_clim = raster_clim.nodata
-        nodata_env = raster_env.nodata
-
-        # Get geometry points coordinates
-        coord_list = [(x,y) for x,y in zip(gdf_copy[geometry_col_name].x, gdf_copy[geometry_col_name].y)]
-
-        # Sample rasters from Point objects
-        raster_samples = {}
-        raster_samples[self.clim_raster_filename] = [x for x in raster_clim.sample(coord_list)]    # Climate raster sampling        
-        print(f"Extracted {len(raster_samples[self.clim_raster_filename])} specimens from {self.clim_raster_filename}")
-
-        raster_samples[self.env_raster_filename] = [x for x in raster_env.sample(coord_list)]    # Environmental raster sampling
-        print(f"Extracted {len(raster_samples[self.env_raster_filename])} specimens from {self.env_raster_filename}\n")
-
-        # Catch specimens with nodata values
-        if nodata_clim is None:    # Climate nodata samples 
-            print(f"Raster {self.clim_raster_filename} does not contain nodata values")
-        else:
-            num_nodata_clim = sum([nodata_clim in val for val in raster_samples[self.clim_raster_filename]])
-            if num_nodata_clim > 0 :
-                print(f"BEWARE! {num_nodata_clim} specimens contains 'nodata' values when extracting from {self.clim_raster_filename}:")
-                print(f"Index of specimen(s) with at least 1 'nodata' point: {[i for i, val in enumerate(raster_samples[self.clim_raster_filename]) if nodata_clim in val]}\n")
-            else:
-                print(f"0 specimen containing nodata values in any of the {len(raster_clim.indexes)} variables from {self.clim_raster_filename}\n")
+        try:
+            with open(filepath) as f:
+                return json.load(f)
+        except FileNotFoundError:
+            raise ValueError(f".json dataformat file not found: {filepath}")
+        except json.JSONDecodeError:
+            raise ValueError(f"Failed to parse json dataformat file: {filepath}")
         
-        if nodata_env is None:    # Environmental nodata samples
-            print(f"Raster {self.env_raster_filename} does not contain nodata values")
-        else:
-            num_nodata_env = sum([nodata_env in val for val in raster_samples[self.env_raster_filename]])    
-            if num_nodata_env > 0 :
-                print(f"BEWARE! {num_nodata_env} specimens contains 'nodata' values when extracting from {self.env_raster_filename}:")
-                print(f"Index of specimen(s) with at least 1 'nodata' point: {[i for i, val in enumerate(raster_samples[self.env_raster_filename]) if nodata_env in val]}\n")
-            else:
-                print(f"0 specimen containing nodata values in any of the {len(raster_env.indexes)} variables from {self.env_raster_filename}\n")
+    def _load_metadata(self, filepath: pathlib.Path) -> dict:
+        """Parse the json metadata (either clim or env) file into a dictionary.
+
+        Args:
+            filepath (pathlib.Path): Path to the metadata file.
+
+        Raises:
+            ValueError: If filepath is not a path to an existing file.
+            ValueError: If json file cannot be parsed.
+
+        Returns:
+            dict: A dictionary containing the metadata contained in the metadata file.
+        """
         
-        # Assign a new column with the list arrays sampled
-        gdf_copy[f"raster_samples[{self.clim_raster_filename}]"] = raster_samples[self.clim_raster_filename]
-        gdf_copy[f"raster_samples[{self.env_raster_filename}]"] = raster_samples[self.env_raster_filename]
-
-        # Extract layer_info to use as col name when transposing raster samples to geodataframe
-        clim_number_layers = self.select_geoclim_type_layers("clim")["layer_number"].to_list()
-        clim_layers_info = self.fetch_specific_layers(layer_numbers=clim_number_layers, as_descriptive_labels=True)
-
-        env_number_layers = self.select_geoclim_type_layers("env")["layer_number"].to_list()
-        env_layers_info = self.fetch_specific_layers(layer_numbers=env_number_layers, as_descriptive_labels=True)
-
-        # Append sampled data to geodataframe
-        for index, (k, v) in enumerate(clim_layers_info.items()):
-            for val, specimen_index in zip(raster_samples[self.clim_raster_filename], gdf_copy.index.to_list()):
-                col_layer_name = v if as_descriptive_labels else k    # layer num as col names or more descriptive
-                gdf_copy.loc[specimen_index, col_layer_name] = val[index]
+        try:
+            with open(filepath) as f:
+                return json.load(f)
+        except FileNotFoundError:
+            raise ValueError(f".json dataformat file not found: {filepath}")
+        except json.JSONDecodeError:
+            raise ValueError(f"Failed to parse json dataformat file: {filepath}")
+    
+    def _validate_raster(self, raster_attr_name: str):
         
-        for index, (k, v) in enumerate(env_layers_info.items()):
-            for val, specimen_index in zip(raster_samples[self.env_raster_filename], gdf_copy.index.to_list()):
-                col_layer_name = v if as_descriptive_labels else k    # layer num as col names or more descriptive
-                gdf_copy.loc[specimen_index, col_layer_name] = val[index]
+        raster_to_check = getattr(self, raster_attr_name)    # Fetch current value of raster attr
 
-        # Close rasters and return geodataframe + sampled raster values
-        raster_clim.close()
-        raster_env.close()
-        return gdf_copy, raster_samples    
+        if raster_to_check is None:
+            raise ValueError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
+
+        # Check if raster file exists
+        if not raster_to_check.is_file():
+            raise FileExistsError(f"Could not find '{raster_attr_name}' file: {raster_to_check}")
+                
+        # Catch any IO errors
+        try:
+            with rasterio.open(raster_to_check) as raster_file:
+                return
+        except rasterio.errors.RasterioIOError as e:
+            raise IOError(f"Could not open '{raster_attr_name}': {raster_to_check}. Error: {e}")
