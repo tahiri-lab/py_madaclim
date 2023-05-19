@@ -1051,7 +1051,20 @@ class MadaclimLayers:
             raise ValueError(f"Failed to parse json dataformat file: {filepath}")
     
     def _validate_raster(self, raster_attr_name: str):
-        
+        """
+        Validates the specified raster attribute.
+
+        This method checks whether the specified raster attribute exists, whether the corresponding raster file exists, 
+        and whether the raster file can be opened without any IO errors.
+
+        Args:
+            raster_attr_name (str): Name of the raster attribute to be validated.
+
+        Raises:
+            ValueError: If the specified raster attribute is not defined.
+            FileExistsError: If the corresponding raster file does not exist.
+            IOError: If the raster file cannot be opened due to IO errors.
+        """    
         raster_to_check = getattr(self, raster_attr_name)    # Fetch current value of raster attr
 
         if raster_to_check is None:
