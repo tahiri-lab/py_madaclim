@@ -289,7 +289,9 @@ class MadaclimLayers:
         )
         info = "MadaclimLayers\n" + info
         return info
-
+    
+    def __repr__(self) -> str:
+        return self.__str__()
 
     def select_geoclim_type_layers(self, geoclim_type: str) -> pd.DataFrame:
         """Method that selects the desired geoclimatic type layers as a dataframe.
