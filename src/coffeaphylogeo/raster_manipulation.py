@@ -6,8 +6,8 @@ from typing import Optional, Union, List, Optional, Tuple, Dict
 import time
 from tqdm import tqdm
 
-from coffeaphylogeo.definitions import Definitions
-from coffeaphylogeo.geoclim.madaclim_info import MadaclimLayers
+from coffeaphylogeo._constants import Constants
+from coffeaphylogeo.madaclim_info import MadaclimLayers
 
 import rasterio
 import pyproj
@@ -19,18 +19,6 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-# Default dir and path for rasters
-defs = Definitions()
-
-climate_dir = defs.get_geoclim_path("climate_data")
-clim_raster_filename = defs.geoclim_files["madaclim_current"]
-default_clim_raster_path = climate_dir / clim_raster_filename
-
-enviro_dir = defs.get_geoclim_path("environment_data") 
-env_raster_filename = defs.geoclim_files["madaclim_enviro"]
-default_env_raster_path = enviro_dir / env_raster_filename
 
 
 class MadaclimPoint:
@@ -52,7 +40,7 @@ class MadaclimPoint:
 
     def __init__(self, specimen_id: str, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS=pyproj.CRS.from_epsg(4326), **kwargs) -> None:
         """
-        Initialize a MadaclimPoint object with the given specimen_id, latitude, longitude, and source_crs. The coordinates provided should respect the nature of the given source CRS native units' (i.e. degrees WGS84 or meters for EPSG:3857)
+        Initialize a MadaclimPoint object with the given `specimen_id`, `latitude`, `longitude`, and `source_crs`. The coordinates provided should respect the nature of the given source CRS native units' (i.e. degrees WGS84 or meters for EPSG:3857)
         Optionally, provide additional keyword arguments to store as instance attributes.
         
         Args:
@@ -133,7 +121,10 @@ class MadaclimPoint:
     @property
     def specimen_id(self) -> str:
         """
-        Get the specimen_id attribute.
+        Get or sets the specimen_id attribute.
+
+        Args:
+            value (str): The new identifier for the MadaclimPoint.
 
         Returns:
             str: The identifier for the MadaclimPoint.
@@ -141,18 +132,15 @@ class MadaclimPoint:
         return self._specimen_id
     @specimen_id.setter
     def specimen_id(self, value: str):
-        """
-        Set the specimen_id attribute.
-
-        Args:
-            value (str): The new identifier for the MadaclimPoint.
-        """
         self._specimen_id = value
     
     @property
     def latitude(self) -> float:
         """
-        Get the latitude attribute.
+        Get or sets the latitude attribute.
+
+        Args:
+            value (float): The latitude value for the point.
 
         Returns:
             float: The latitude of the point.
@@ -161,12 +149,6 @@ class MadaclimPoint:
     
     @latitude.setter
     def latitude(self, value: float):
-        """
-        Set the latitude attribute after validating the input value.
-
-        Args:
-            value (float): The latitude value for the point.
-        """
         value = self.validate_lat(value, crs=self.source_crs)
         self._latitude = value
         # Update mada_geom_point when latitude is updated
@@ -175,7 +157,10 @@ class MadaclimPoint:
     @property
     def longitude(self) -> float:
         """
-        Get the longitude attribute.
+        Get or sets the longitude attribute.
+
+        Args:
+            value (float): The longitude value for the point.
 
         Returns:
             float: The longitude of the point.
@@ -184,12 +169,6 @@ class MadaclimPoint:
     
     @longitude.setter
     def longitude(self, value: float):
-        """
-        Set the longitude attribute after validating the input value.
-
-        Args:
-            value (float): The longitude value for the point.
-        """
         value = self.validate_lon(value, crs=self.source_crs)
         self._longitude = value
         # Update mada_geom_point when longitude is updated
@@ -198,8 +177,11 @@ class MadaclimPoint:
     @property
     def source_crs(self) -> pyproj.crs.CRS:
         """
-        Get the source_crs attribute.
-
+        Get or sets the source_crs attribute.
+       
+         Args:
+            value (pyproj.crs.CRS): The coordinate reference system for the point.
+    
         Returns:
             pyproj.crs.CRS: The coordinate reference system of the point.
         """
@@ -207,12 +189,6 @@ class MadaclimPoint:
     
     @source_crs.setter
     def source_crs(self, value: pyproj.crs.CRS):
-        """
-        Set the source_crs attribute after validating the input value.
-
-        Args:
-            value (pyproj.crs.CRS): The coordinate reference system for the point.
-        """
         value = self.validate_crs(value)
         self._source_crs = value
         
