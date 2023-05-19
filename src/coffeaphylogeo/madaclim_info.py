@@ -21,11 +21,11 @@ from coffeaphylogeo._constants import Constants
 class MadaclimLayers:
     """A class that represents all of the information and data from the climate and environmental variable layers that can be found from the rasters of the Madaclim database.
 
-    The main metadata retrieval tool for the Madaclim database. Access all layers information with the 'all_layers' attribute.
+    The main metadata retrieval tool for the Madaclim database. Access all layers information with the `all_layers` attribute.
     Also provides methods to filter, generate unique labels from all_layers and also access the crs and band number from the climate and environmental rasters.
     
     Attributes:
-        clim_raster (pathlib.Path): The path to the Madaclim climate raster GeoTif file. Defaults to None if not specified.
+        clim_raster (pathlib.Path): The path to the Madaclim climate raster GeoTiff file. Defaults to None if not specified.
         env_raster (pathlib.Path): The path to the Madaclim environmental raster GeoTif file. Defaults to None if not specified.
         all_layers (pd.DataFrame): A DataFrame containing a complete and formatted version of all Madaclim layers.
     
@@ -187,7 +187,7 @@ class MadaclimLayers:
         """
         Retrieves the Coordinate Reference System (CRS) from the Madaclim climate raster.
 
-        This property first validates the clim_raster attribute, ensuring its integrity and existence. 
+        This property first validates the `clim_raster` attribute, ensuring its integrity and existence. 
         It then opens the raster file and retrieves the CRS in EPSG format. The EPSG code is used to 
         create and return a pyproj CRS object.
 
@@ -235,7 +235,7 @@ class MadaclimLayers:
         """
         Retrieves the Coordinate Reference System (CRS) from the Madaclim environmental raster.
 
-        This property first validates the env_raster attribute, ensuring its integrity and existence. 
+        This property first validates the `env_raster` attribute, ensuring its integrity and existence. 
         It then opens the raster file and retrieves the CRS in EPSG format. The EPSG code is used to 
         create and return a pyproj CRS object.
 
@@ -279,7 +279,7 @@ class MadaclimLayers:
         return env_crs
     
     def __str__(self) -> str:
-        """Prints the MadaclimLayers instance's attributes.
+        """Prints the `MadaclimLayers` instance's attributes.
 
         Returns:
             str: All the object's attributes as attr_name for keys and attr_value for values.
@@ -303,7 +303,7 @@ class MadaclimLayers:
             geoclim_type (str): The desired geoclimatic layers type to extract.
 
         Returns:
-            pd.DataFrame: A slice of the all_layers dataframe containing the desired geoclimatic type layers.
+            pd.DataFrame: A slice of the `all_layers` dataframe containing the desired geoclimatic type layers.
 
         Raises:
             TypeError: If geoclim_type is not a string.
@@ -327,7 +327,7 @@ class MadaclimLayers:
         if not isinstance(geoclim_type, str):
             raise TypeError("geoclim_type must be a string.")
         
-        possible_geoclim_types = ["clim", "env"]
+        possible_geoclim_types = all_layers_df["geoclim_type"].unique() 
         if geoclim_type not in possible_geoclim_types:
             raise ValueError(f"geoclim_type must be one of {possible_geoclim_types}")
         
@@ -335,54 +335,98 @@ class MadaclimLayers:
 
         return select_df
     
-    def get_layers_labels(self, geoclim_type: str="all", as_descriptive_labels: bool=False) -> list:
+    def get_layers_labels(self, layers_subset: Optional[Union[str, List[int]]]=None, as_descriptive_labels: bool=False) -> list:
         """
-        Retrieves unique layer labels based on the specified geoclim_type.
+        Retrieves unique layer labels based on the provided subset of layers.
+
+        This method fetches the unique labels from the `all_layers` dataframe, 
+        given a subset of layers (specified as either layer numbers, a geoclim_type, or a single layer number).
+        The layer labels can be returned in a descriptive format if `as_descriptive_labels` is set to True.
 
         Args:
-            geoclim_type (str): The type of geoclim to filter by. Can be "clim", "env", or "all". Defaults to "all".
-            as_descriptive_labels (bool): If True, returns the descriptive layer labels. Otherwise, returns the "layer_<num>" format. Defaults to False.
-
-        Returns:
-            list: A list of unique layer labels based on the specified geoclim_type.
+            layers_subset (Optional[Union[str, List[int]]], optional): A list of layer numbers or a geoclim_type string 
+                to subset the labels from, or a single layer number as a string or int. Defaults to None, which will 
+                select all layers (no subset).
+            as_descriptive_labels (bool, optional): If True, returns the descriptive layer labels. Otherwise, returns 
+                the "layer_<num>" format. Defaults to False.
 
         Raises:
-            TypeError: If geoclim_type is not a string.
-            ValueError: If geoclim_type is not one of ["clim", "env", "all"].
-            ValueError: If 'layer_number' and 'layer_name' columns in the all_layers dataframe have non-unique entries.
+            TypeError: If elements of `layers_subset` cannot be converted to int.
+            ValueError: If `layers_subset` is a string not in `possible_geoclim_types`, cannot be converted to int, 
+                or if the 'layer_number' and 'layer_name' columns in the `all_layers` dataframe have non-unique entries.
 
+        Returns:
+            list: A list of unique layer labels. These labels are either in the "layer_<num>" format or the descriptive format, 
+            based on `as_descriptive_labels`.
+        
         Example:
+            >>> # Get labels for all layers
             >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
-            >>> clim_layers_labels = madaclim_info.get_layers_labels(geoclim_type="clim")
+            >>> all_layers = madaclim_info.get_layers_labels()
+            
+            >>> # Specify a geoclim subset
+            >>> env_layers = madaclim_info.get_layers_labels(layers_subset="env")
+            >>> env_layers
+            ['layer_71', 'layer_72', 'layer_73', 'layer_74', 'layer_75', 'layer_76', 'layer_77', 'layer_78', 'layer_79']
             
             >>> # Extract more information (can also be the input for 'fetch_specific_layers' method)
-            >>> madaclim_info.get_layers_labels(as_descriptive_labels=True)[36:39]
-            ['clim_37_bio1 (Annual mean temperature)', 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))', 'clim_39_bio3 (Isothermality (BIO2/BIO7) (x 100))']
+            >>> informative_labels = madaclim_info.get_layers_labels(as_descriptive_labels=True)
+            >>> informative_labels[:5]
+            ['clim_1_tmin1 (Monthly minimum temperature (°C x 10) - January)', 'clim_2_tmin2 (Monthly minimum temperature (°C x 10) - February)', 'clim_3_tmin3 (Monthly minimum temperature (°C x 10) - March)', 'clim_4_tmin4 (Monthly minimum temperature (°C x 10) - April)', 'clim_5_tmin5 (Monthly minimum temperature (°C x 10) - May)']
 
-            >>> # Example to get bioclim layers
+            >>> # Specify a single layer or a subset of layers
+            >>> madaclim_info.get_layers_labels(37, as_descriptive_labels=True)
+            ['clim_37_bio1 (Annual mean temperature)']
+            >>> madaclim_info.get_layers_labels([68, 75], as_descriptive_labels=True)
+            ['clim_68_pet (Annual potential evapotranspiration from the Thornthwaite equation (mm))', 'env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))']
+
+            >>> # Example to get bioclim layers only
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
-
         """
         all_layers_df = self.all_layers.copy()
+        layers_numbers = all_layers_df["layer_number"].to_list()
+        possible_geoclim_types = all_layers_df["geoclim_type"].unique()
 
-        # Validate geoclim_type
-        if not isinstance(geoclim_type, str):
-            raise TypeError("geoclim_type must be a string.")
+
+        # Convert layers_subset to a list of ints for all inputs
         
-        possible_geoclim_types = ["clim", "env", "all"]
-        if geoclim_type not in possible_geoclim_types:
-            raise ValueError(f"geoclim_type must be one of {possible_geoclim_types}")
+        if isinstance(layers_subset, list):
+            try:
+                layers_subset = [int(layer) for layer in layers_subset]
+            except:
+                raise TypeError("'layers_subet' list elements must be int or can be converted to int.")
+            
+        elif isinstance(layers_subset, (str, int)):
+            # Extract layer num if layers_subset is a geoclim_type
+            if layers_subset in possible_geoclim_types:
+                layers_subset = all_layers_df.loc[all_layers_df["geoclim_type"] == layers_subset, "layer_number"].to_list()
+
+            else:
+                try:
+                    layers_subset = [int(layers_subset)]
+                except ValueError:
+                    raise ValueError(f"'layers_subset' must be an int (or can be converted to int) or be one of {possible_geoclim_types}")
         
+        elif layers_subset is None:
+            layers_subset = layers_numbers
+
+        else:
+            raise TypeError("'layers_subset' must be a str, int or a list of str or ints.")
+
+        # Validate layer number range for layer_numbers as in
+        min_layer, max_layer = min(layers_numbers), max(layers_numbers)
+
+        for layer_number in layers_subset:
+            if not min_layer <= layer_number <= max_layer:
+                raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_number=} is not valid.")
+            
         # Validate unique entries
         if len(all_layers_df) != len(all_layers_df["layer_number"].unique()) != len(all_layers_df["layer_name"].unique()):
             raise ValueError("'layer_number' and 'layer_name' columns in the all_layers dataframe have non-unique entries.")
         
-        # Get dict for unique labels according to geoclim_type selection
-        if geoclim_type != "all":
-            select_df = all_layers_df[all_layers_df["geoclim_type"] == geoclim_type]
-        else: 
-            select_df = all_layers_df
+         # Fetch rows according to layers_subset
+        select_df = all_layers_df[all_layers_df["layer_number"].isin(layers_subset)]
         
         # Fetch layer_<num> and descriptive labels
         sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
@@ -400,15 +444,15 @@ class MadaclimLayers:
 
     def fetch_specific_layers(self, layers_labels: Union[int, str, List[Union[int, str]]], as_descriptive_labels: bool=False, return_list: bool=False) -> Union[dict, pd.DataFrame, list]:
         """
-        Fetches specific layers from the all_layers DataFrame based on the given input.
+        Fetches specific layers from the `all_layers` DataFrame based on the given input.
 
         Args:
             layers_labels (Union[int, str, List[Union[int, str]]]): The layer labels to fetch. Can be a single int or str value, or a list of int or str values.
-                The input can also be in the format "layer_{num}" or "{geotype}_{num}_{name}_({description})" (output from .get_layers_labels(as_descriptive_labels=True) method).
+                The input can also be in the format "layer_{num}" or "{geotype}_{num}_{name}_({description})" (output from `get_layers_labels(as_descriptive_labels=True)` method).
             as_descriptive_labels (bool): If True, only the layer descriptions are returned. Defaults to False.
 
         Returns:
-            Union[dict, pd.DataFrame]: If as_descriptive_labels is True, returns a dictionary with the layer descriptions.
+            Union[dict, pd.DataFrame]: If `as_descriptive_labels` is True, returns a dictionary with the layer descriptions.
                 Otherwise, returns a DataFrame with the specified layers.
 
         Raises:
@@ -474,7 +518,7 @@ class MadaclimLayers:
                 try:
                     layers_numbers = [int(layer) for layer in layers_labels]
                 except (ValueError, TypeError):
-                    raise TypeError("layers_labels must be either a single int value or a string that can be converted to an int, or a list of int values or strings that can be converted to int values")
+                    raise TypeError("layers_labels must be either a list of int values (or str that can be converted to int) or the output format from the 'get_layers_labels' method.")
         
         # Single layers_labels type check 
         else:
@@ -483,7 +527,7 @@ class MadaclimLayers:
             try:
                 layers_numbers = [int(layers_labels)]
             except (ValueError, TypeError):
-                raise TypeError("layers_labels must be either a single int value or a string that can be converted to an int")
+                raise TypeError("layers_labels must be either a single int value (or a str that can be converted to an int) or in the output format from the 'get_layers_labels' method.")
   
         # Validate layer number range for layer_numbers as in
         min_layer = min(all_layers_df["layer_number"])
@@ -610,7 +654,89 @@ class MadaclimLayers:
             filename=Constants.DEFAULT_ENV_RASTER_FILENAME
         )
 
-    #! Unefficient method with raster.read I/O operation for each band
+    def get_bandnums_from_layers(self, layers_labels : Union[int, str, List[Union[int, str]]]) -> List[int]:
+        """
+        Retrieves band numbers corresponding to the provided layers' labels.
+
+        This method accepts labels for a subset of layers (specified as either layer numbers, "layer_<num>" format, or descriptive labels)
+        and returns the corresponding band numbers from the `all_layers` dataframe. If the input is in the descriptive label format or "layer_<num>" format,
+        it should match the output of the `get_layers_labels` method.
+
+        Args:
+            layers_labels (Union[int, str, List[Union[int, str]]]): A list of layer labels in various formats, or a single layer label.
+
+        Raises:
+            TypeError: If elements of `layers_labels` cannot be converted to int or if they do not match the format produced by the `get_layers_labels` method.
+            ValueError: If the derived layer numbers do not fall within the valid range of layer numbers in the `all_layers` dataframe.
+
+        Returns:
+            List[int]: A list of band numbers corresponding to the provided layer labels.
+
+        Example:
+            >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
+            >>> madaclim_info = MadaclimLayers()
+            >>> last_20 = madaclim_info.get_layers_labels()[-20:]
+            >>> band_nums = madaclim_info.get_bandnums_from_layers(last_20)
+            >>> band_nums
+            [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        """
+        all_layers_df = self.all_layers.copy()    # Reference to all clim and env metadata df
+
+        # Validate layers_labels
+        possible_layers_num_format = [f"layer_{num}" for num in all_layers_df["layer_number"].to_list()]
+        possible_layers_desc_format = self.get_layers_labels(as_descriptive_labels=True)
+
+        if isinstance(layers_labels, list):
+            # Check if all elements are in unique label format
+            layers_num_format = all([layer_label in possible_layers_num_format for layer_label in layers_labels])
+            layers_desc_format = all([layer_label in possible_layers_desc_format for layer_label in layers_labels])
+            
+            # Save as list of ints for later filtering
+            if layers_num_format or layers_desc_format:
+                layers_numbers = [int(layer_label.split("_")[1]) for layer_label in layers_labels]
+
+            # layers_labels as list of ints
+            else:
+                try:
+                    layers_numbers = [int(layer) for layer in layers_labels]
+                except (ValueError, TypeError):
+                    raise TypeError("layers_labels must be either a list of int values (or str that can be converted to int) or the output format from the 'get_layers_labels' method.")
+        
+        # Single layers_labels type check 
+        else:
+            if layers_labels in possible_layers_num_format:    # Check layer_<num> str format
+                layers_numbers = [int(layers_labels.split("_")[1])]
+            try:
+                layers_numbers = [int(layers_labels)]
+            except (ValueError, TypeError):
+                raise TypeError("layers_labels must be either a single int value (or a str that can be converted to an int) or in the output format from the 'get_layers_labels' method.")
+  
+        # Validate layer number range for layer_numbers as in
+        min_layer = min(all_layers_df["layer_number"])
+        max_layer = max(all_layers_df["layer_number"])
+
+        for layer_number in layers_numbers:
+            if not min_layer <= layer_number <= max_layer:
+                raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_number=} is not valid.")
+            
+        # Fetch rows and geoclim type(s) according to selected layers
+        select_df = all_layers_df[all_layers_df["layer_number"].isin(layers_numbers)]
+        geoclim_types = select_df["geoclim_type"].unique()
+        
+        # Get band num according to geoclim_type
+        total_clim_layers = (all_layers_df["geoclim_type"] == "clim").sum()
+        band_nums = []
+
+        for geoclim_type in geoclim_types:
+            self._validate_raster(f"{geoclim_type}_raster")    # Validate raster attr val, IO path and integrity
+            if geoclim_type == "clim":
+                band_nums += select_df.loc[select_df["geoclim_type"] == geoclim_type, "layer_number"].to_list()
+            else:
+                band_nums += (select_df.loc[select_df["geoclim_type"] == geoclim_type, "layer_number"] - total_clim_layers).to_list()
+        
+        return band_nums
+
+    #! Deprecated: Unefficient method with raster.read I/O operation for each band
     def _get_band_from_layer_number(self, layer_number: Union[str, int], geoclim_type: str)->int:
         """Get the band number in a raster file corresponding to a given layer number and geoclim type.
 
@@ -662,7 +788,7 @@ class MadaclimLayers:
         return band_number
 
     def _get_madaclim_layers(self) -> pd.DataFrame :
-        """Private method that will generate the all_layers attributes based on the format and metada files from the Madaclim db by accessing their corresponding attributes.
+        """Private method that will generate the `all_layers` attributes based on the format and metada files from the Madaclim db by accessing their corresponding attributes.
 
         Args:
             climate_dir (Path): The directory path for climate-related data.
