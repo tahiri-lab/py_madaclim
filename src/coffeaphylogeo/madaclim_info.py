@@ -28,8 +28,10 @@ class MadaclimLayers:
     def __init__(self, clim_raster: Optional[pathlib.Path]=None, env_raster: Optional[pathlib.Path]=None):
         """Initializes a new instance of the MadaclimLayers class.
 
-        This constructor sets the directory paths and file names for climate and environment data,
-        and generates a DataFrame containing all Madaclim layers.
+        This constructor generates a DataFrame containing all Madaclim layers' information though the `all_layers` attribute.
+        If given the current climate or environmental raster from the Madaclim db, it will also get the CRS for each raster.
+        The instance can also access various methods to extract relevant information from the Madaclim database.
+
         
         Examples:
             >>> from coffeaphylogeo.madaclim_info import MadaclimLayers
