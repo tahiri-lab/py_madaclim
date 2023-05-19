@@ -3,18 +3,13 @@ import re
 import pathlib
 import requests
 import time
-import inspect
 from calendar import month_name
 from pathlib import Path
-from typing import List, Union, Optional, Tuple, Dict
-import importlib.resources as pkg_resources
+from typing import List, Union, Optional
 
 import pandas as pd
-import geopandas as gpd
-import numpy as np
 import rasterio
 import pyproj
-from shapely.geometry import Point
 
 from coffeaphylogeo._constants import Constants
 
