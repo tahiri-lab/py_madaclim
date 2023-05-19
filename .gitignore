@@ -4,7 +4,7 @@ __pycache__
 
 # testfiles
 test.py
-scripts/test.ipynb
+test.ipynb
 layers.ipynb
 
 # editable package dev-mode
