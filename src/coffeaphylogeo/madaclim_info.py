@@ -87,6 +87,9 @@ class MadaclimLayers:
             - Ellipsoid: WGS 84
             - Prime Meridian: Greenwich
         """
+        self.clim_raster = clim_raster
+        self.env_raster = env_raster
+
         self._clim_dataformat = self._load_dataformat(Constants.CLIM_DATAFORMAT_FILE)
         self._clim_metadata = self._load_metadata(Constants.CLIM_METADATA_FILE)
 
@@ -94,11 +97,6 @@ class MadaclimLayers:
         self._env_metadata = self._load_metadata(Constants.ENV_METADATA_FILE)
         
         self.all_layers = self._get_madaclim_layers()
-
-        self.clim_raster = clim_raster
-        self.env_raster = env_raster
-
-    
 
     @property
     def clim_raster(self) -> pathlib.Path:
