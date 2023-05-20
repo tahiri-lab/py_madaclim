@@ -178,7 +178,7 @@ class MadaclimLayers:
             self._env_raster = value
 
     @property
-    def clim_crs(self) -> pyproj.crs.CRS:
+    def clim_crs(self) -> pyproj.crs.crs.CRS:
         """
         Retrieves the Coordinate Reference System (CRS) from the Madaclim climate raster.
 
@@ -187,7 +187,7 @@ class MadaclimLayers:
         create and return a pyproj CRS object.
 
         Returns:
-            pyproj.crs.CRS: The CRS object derived from the EPSG code of the climate raster.
+            pyproj.crs.crs.CRS: The CRS object derived from the EPSG code of the climate raster.
 
         Examples:
             >>> # You need to have a valid 'clim_raster' attribute before
@@ -226,7 +226,7 @@ class MadaclimLayers:
         return clim_crs
 
     @property
-    def env_crs(self):
+    def env_crs(self) -> pyproj.crs.crs.CRS:
         """
         Retrieves the Coordinate Reference System (CRS) from the Madaclim environmental raster.
 
@@ -235,7 +235,7 @@ class MadaclimLayers:
         create and return a pyproj CRS object.
 
         Returns:
-            pyproj.crs.CRS: The CRS object derived from the EPSG code of the environmental raster.
+            pyproj.crs.crs.CRS: The CRS object derived from the EPSG code of the environmental raster.
         
         Examples:
             >>> # You need to have a valid 'env_raster' attribute
