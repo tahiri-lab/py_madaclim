@@ -1,6 +1,6 @@
 from pathlib import Path
-
 import importlib.resources as pkg_resources
+import pyproj
 
 class Constants:
     # Define relevant directories
@@ -26,6 +26,7 @@ class Constants:
     # Default raster filenames
     DEFAULT_CLIM_RASTER_FILENAME = "madaclim_current.tif"
     DEFAULT_ENV_RASTER_FILENAME = "madaclim_enviro.tif"
+    MADACLIM_CRS = pyproj.CRS.from_epsg(32738)
 
     # URLs
     MADACLIM_URLS = {
