@@ -1,3 +1,102 @@
 {
-    "table_0": "{\"Raster value\":{\"0\":1,\"1\":2,\"2\":4,\"3\":5,\"4\":6,\"5\":7,\"6\":9,\"7\":10,\"8\":11,\"9\":12,\"10\":13},\"Rock type\":{\"0\":\"Alluvial & Lake deposits\",\"1\":\"Unconsolidated Sands\",\"2\":\"Mangrove Swamp\",\"3\":\"Tertiary Limestones + Marls & Chalks\",\"4\":\"Sandstones\",\"5\":\"Mesozoic Limestones + Marls (inc. \\\"Tsingy\\\")\",\"6\":\"Lavas (including Basalts & Gabbros)\",\"7\":\"Basement Rocks (Ign & Met)\",\"8\":\"Ultrabasics\",\"9\":\"Quartzites\",\"10\":\"Marble (Cipolin)\"}}"
+    "table_0": "{\"Raster value\":{\"0\":1,\"1\":2,\"2\":4,\"3\":5,\"4\":6,\"5\":7,\"6\":9,\"7\":10,\"8\":11,\"9\":12,\"10\":13},\"Rock type\":{\"0\":\"Alluvial & Lake deposits\",\"1\":\"Unconsolidated Sands\",\"2\":\"Mangrove Swamp\",\"3\":\"Tertiary Limestones + Marls & Chalks\",\"4\":\"Sandstones\",\"5\":\"Mesozoic Limestones + Marls (inc. \\\"Tsingy\\\")\",\"6\":\"Lavas (including Basalts & Gabbros)\",\"7\":\"Basement Rocks (Ign & Met)\",\"8\":\"Ultrabasics\",\"9\":\"Quartzites\",\"10\":\"Marble (Cipolin)\"}}",
+    "table_1": {
+        "Raster value": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+        "Soil types": [
+            "Bare Rocks",
+            "Raw Lithic Mineral Soils",
+            "Poorly Evolved Erosion Soils, Lithosols",
+            "Wind-deposited Soils",
+            "Alluvio-colluvial Deposited Soils",
+            "Salty Deposited Soils",
+            "Fluvio-marine Deposited Soils - Mangroves",
+            "Vertisols",
+            "Andosols",
+            "Podzolic Soils and Podzols",
+            "Hydromorphic Soils",
+            "Red Fersiallitic Soils",
+            "Yellow Fersiallitic Soils",
+            "Yellow-red Ferruginous Soils (Red Sands)",
+            "Red Ferruginous Soils",
+            "Skeletal Shallow Eroded Ferruginous Soils",
+            "Typical Reddish-brown Ferralitic Soils with Little Degrading Structure",
+            "Humic Ferralitic Soils",
+            "Indurated-Concretion Ferralitic Soils",
+            "Humic Rejuvenated Ferralitic Soils",
+            "Rejuvenated Ferralitic Soils with Little Degrading Structure",
+            "Rejuvenated Ferralitic Soils with Degrading Structure",
+            "Highly Rejuvenated, Penevoluted Ferralitic Soils"
+        ]
+    },
+    "table_2": {
+        "Raster value": [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25],
+        "Vegetation types (Kew 2007)": [
+            "VegCat_1",
+            "VegCat_2",
+            "VegCat_3",
+            "VegCat_4",
+            "VegCat_5",
+            "VegCat_6",
+            "VegCat_7",
+            "VegCat_9",
+            "VegCat_10",
+            "VegCat_11",
+            "VegCat_12",
+            "VegCat_13",
+            "VegCat_14",
+            "VegCat_15",
+            "VegCat_16",
+            "VegCat_18",
+            "VegCat_19",
+            "VegCat_22",
+            "VegCat_23",
+            "VegCat_25"
+        ]
+    },
+    "table_3": {
+        "Raster value": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+        "Watersheds (Wilmé 2006, Pearson 2009)": [
+        "N-Bemarivo",
+        "S-Bemarivo, N-Mangoro",
+        "S-Mangoro, N-Manampatrana",
+        "S-Manampatrana, N-Mananara",
+        "S-Mananara",
+        "S-Mangoky",
+        "N-Mangoky, S-Tsiribihina",
+        "N-Tsiribihina, W-Betsiboka",
+        "E-Betsiboka, S-Maevarano",
+        "N-Sambirano, W-Mahavavy",
+        "N-Mahavavy",
+        "ret-disp_Bemarivo",
+        "ret-disp_Antainambalana",
+        "ret-disp_Mangoro",
+        "ret-disp_Manampatrana",
+        "ret-disp_Mananara du Sud",
+        "ret-disp_Mandrare",
+        "ret-disp_Onilahy",
+        "ret-disp_Mangoky",
+        "ret-disp_Tsiribihina",
+        "ret-disp_Betsiboka",
+        "ret-disp_Maevarana (1/2 N)",
+        "ret-disp_Sambirano",
+        "ret-disp_Mahavavy"
+        ]
+    },
+    
+    "table_4": {
+        "layer_name": [
+            "altitude", 
+            "slope",
+            "aspect",
+            "solar",
+            "forestcover"
+        ],
+        "layer_description": [
+            "Altitude in meters",
+            "Slope in degrees", 
+            "Aspect clockwise from North in degrees",
+            "Solar radiation (in Wh.m-2.day-1) computed from altitude, slope and aspect",
+            "Percentage of forest cover in 1 km by 1 km grid cells"
+        ]
+    }
 }
