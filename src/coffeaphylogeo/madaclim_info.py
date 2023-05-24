@@ -38,19 +38,22 @@ class MadaclimLayers:
             >>> madaclim_info = MadaclimLayers()
             >>> # Access the all layers df
             >>> all_layers_df = madaclim_info.all_layers
-            >>> all_layers_df.info()
-            <class 'pandas.core.frame.DataFrame'>
-            Int64Index: 79 entries, 0 to 8
-            Data columns (total 5 columns):
-            #   Column             Non-Null Count  Dtype 
-            ---  ------             --------------  ----- 
-            0   layer_number       79 non-null     int64 
-            1   geoclim_feature    79 non-null     object
-            2   geoclim_type       79 non-null     object
-            3   layer_name         79 non-null     object
-            4   layer_description  71 non-null     object
-            dtypes: int64(1), object(4)
-
+            >>> all_layers_df.shape
+            (79, 5)
+            >>> all_layers_df
+                layer_number                                    geoclim_feature geoclim_type   layer_name                                  layer_description
+            0              1              Monthly minimum temperature (°C x 10)         clim        tmin1    Monthly minimum temperature (°C x 10) - January
+            1              2              Monthly minimum temperature (°C x 10)         clim        tmin2   Monthly minimum temperature (°C x 10) - February
+            2              3              Monthly minimum temperature (°C x 10)         clim        tmin3      Monthly minimum temperature (°C x 10) - March
+            3              4              Monthly minimum temperature (°C x 10)         clim        tmin4      Monthly minimum temperature (°C x 10) - April
+            4              5              Monthly minimum temperature (°C x 10)         clim        tmin5        Monthly minimum temperature (°C x 10) - May
+            ..           ...                                                ...          ...          ...                                                ...
+            74            75               Geology (Kew Botanical Garden, 1997)          env      geology  [1=Alluvial_&_Lake_deposits, 2=Unconsolidated_...
+            75            76                             Soil (Pelletier, 1981)          env         soil  [1=Bare_Rocks, 2=Raw_Lithic_Mineral_Soils, 3=P...
+            76            77            Vegetation (Kew Botanical Garden, 2007)          env   vegetation  [1=VegCat_1, 2=VegCat_2, 3=VegCat_3, 4=VegCat_...
+            77            78                         Watersheds (Pearson, 2009)          env   watersheds  [1=N-Bemarivo, 2=S-Bemarivo,_N-Mangoro, 3=S-Ma...
+            78            79  Percentage of forest cover for the year 2010 (%).          env  forestcover  Percentage of forest cover in 1 km by 1 km gri...
+            
             >>> # 'clim_raster' and 'env_raster' attributes are empty by default
             >>> print(madaclim_info.clim_raster)
             None
@@ -464,7 +467,7 @@ class MadaclimLayers:
             0              1  Monthly minimum temperature (°C x 10)         clim      tmin1  Monthly minimum temperature (°C x 10) - January
             14            15  Monthly maximum temperature (°C x 10)         clim      tmax3    Monthly maximum temperature (°C x 10) - March
             54            55        Bioclimatic variables (bioclim)         clim      bio19                 Precipitation of coldest quarter
-            0             71                           Altitude (m)          env   altitude                                             None
+            70            71                           Altitude (m)          env   altitude                               Altitude in meters
             
             >>> # Using the output from get_layers_labels() method
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
@@ -787,14 +790,6 @@ class MadaclimLayers:
     def _get_madaclim_layers(self) -> pd.DataFrame :
         """Private method that will generate the `all_layers` attributes based on the format and metada files from the Madaclim db by accessing their corresponding attributes.
 
-        Args:
-            climate_dir (Path): The directory path for climate-related data.
-            enviro_dir (Path): The directory path for environment-related data.
-            clim_dataformat_filename (str): The file name of the climate data format file.
-            clim_meta_filename (str): The file name of the climate metadata file.
-            env_dataformat_filename (str): The file name of the environment data format file.
-            env_meta_filename (str): The file name of the environment metadata file.
-
         Returns:
             pd.DataFrame: A DataFrame containing a complete and formatted version of all Madaclim layers.
         """
@@ -983,20 +978,38 @@ class MadaclimLayers:
         df_env.loc[df_env["layer_number"] == 79, "layer_name"] = "forestcover"    # Fix first word with more informative info
         df_env["layer_description"] = None
 
-        # Assign dummy var information for geology layer to layer_description
+        # Assign dummy var int-val to information for all categorical data layers
+        env_meta_geol = json.loads(self._env_metadata["table_0"])    # env-raster band num 5 == 'geology'
         geology_description = []
-    
-        env_meta_str = self._env_metadata["table_0"]
-        env_meta_data = json.loads(env_meta_str)
 
-        for i, val in env_meta_data["Raster value"].items():
-            rock_type = env_meta_data["Rock type"][i]
+        for i, val in env_meta_geol["Raster value"].items():
+            rock_type = env_meta_geol["Rock type"][i]
             rock_type = "_".join(rock_type.split(" "))
             rock_type_categorical = f"{val}={rock_type}"
             geology_description.append(rock_type_categorical)
 
-        df_env.at[(df_env["layer_name"] == "geology").idxmax(), "layer_description"] = geology_description
+
+        env_meta_soil = list(zip(*self._env_metadata["table_1"].values()))    # env-raster band num 6 == 'soil'
+        soil_description = [f"{val}={'_'.join(soil.split(' '))}" for val, soil in env_meta_soil]
+
+        env_meta_vegetation = list(zip(*self._env_metadata["table_2"].values()))    # env-raster band num 7 == 'vegetation'
+        vege_description = [f"{val}={'_'.join(vege.split(' '))}" for val, vege in env_meta_vegetation]
+
+        env_meta_watersheds = list(zip(*self._env_metadata["table_3"].values()))    # env-raster band num 7 == 'vegetation'
+        watersheds_description = [f"{val}={'_'.join(watershed.split(' '))}" for val, watershed in env_meta_watersheds]
         
+        
+        # Add to layer_description col
+        df_env.at[(df_env["layer_name"] == "geology").idxmax(), "layer_description"] = geology_description
+        df_env.at[(df_env["layer_name"] == "soil").idxmax(), "layer_description"] = soil_description
+        df_env.at[(df_env["layer_name"] == "vegetation").idxmax(), "layer_description"] = vege_description
+        df_env.at[(df_env["layer_name"] == "watersheds").idxmax(), "layer_description"] = watersheds_description
+
+        # Add description to None numerical environmental vars
+        env_meta_others = list(zip(*self._env_metadata["table_4"].values()))
+        for name, desc in env_meta_others:
+            df_env.at[(df_env["layer_name"] == name).idxmax(), "layer_description"] = desc
+    
         # Concat both clim and env final dfs
         df = pd.concat([df_clim, df_env])
         df = df.reset_index().drop(columns="index")
