@@ -21,6 +21,172 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+class MadaclimRaster:
+    """Handles operations on Madaclim climate and environmental raster files.
+
+    Attributes:
+        clim_raster (pathlib.Path): Path to the climate raster file.
+        env_raster (pathlib.Path): Path to the environmental raster file.
+    """
+
+    def __init__(self, clim_raster: pathlib.Path, env_raster: pathlib.Path) -> None:
+        """
+        Initializes a MadaclimRaster object with climate and environmental raster files.
+
+        Args:
+            clim_raster (pathlib.Path): Path to the climate raster file.
+            env_raster (pathlib.Path): Path to the environmental raster file.
+        
+        Examples:
+            >>> from coffeaphylogeo.raster_manipulation import MadaclimRaster
+            >>> mada_raster = MadaclimRaster(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
+            >>> mada_raster.clim_crs
+            <Derived Projected CRS: EPSG:32738>
+            Name: WGS 84 / UTM zone 38S
+            Axis Info [cartesian]:
+            - E[east]: Easting (metre)
+            - N[north]: Northing (metre)
+            Area of Use:
+            - name: Between 42°E and 48°E, southern hemisphere between 80°S and equator, onshore and offshore. Madagascar.
+            - bounds: (42.0, -80.0, 48.0, 0.0)
+            Coordinate Operation:
+            - name: UTM zone 38S
+            - method: Transverse Mercator
+            Datum: World Geodetic System 1984 ensemble
+            - Ellipsoid: WGS 84
+            - Prime Meridian: Greenwich
+       
+        """
+        self.clim_raster = clim_raster
+        self.env_raster = env_raster
+    
+    @property
+    def clim_raster(self) -> pathlib.Path:
+        """
+        Retrieves or sets the climate raster file path.
+
+        Args:
+            value (pathlib.Path): The new climate raster file path.
+
+        Raises:
+            TypeError: If the input value is not a pathlib.Path or str.
+            ValueError: If a pathlib.Path object could not be created from the input value.
+            FileExistsError: If the file does not exist.
+            IOError: If the raster file could not be opened.
+
+        Returns:
+            pathlib.Path: The climate raster file path.
+        """
+        return self._clim_raster
+    
+    @clim_raster.setter
+    def clim_raster(self, value: pathlib.Path) -> None:
+        # Validate type
+        if not isinstance(value, (pathlib.Path, str)):
+            raise TypeError("'clim_raster' must be a pathlib.Path object or str.")
+        
+        # Validate path and file
+        try:
+            value = Path(value)
+        except:
+            raise ValueError(f"Could not create a pathlib.Path object from {value}")
+            
+        # Check if raster file exists
+        if not value.exists():
+            raise FileExistsError(f"Could not find 'clim_raster' file: {value}")
+              
+        # Catch any IO errors
+        try:
+            with rasterio.open(value) as raster_file:
+                self._clim_raster = value
+        except rasterio.errors.RasterioIOError as e:
+            raise IOError(f"Could not open 'clim_raster' file: {value}. Error: {e}")
+
+    @property
+    def env_raster(self) -> pathlib.Path:
+        """
+        Retrieves or sets the environmental raster file path.
+
+        Args:
+            value (pathlib.Path): The new environmental raster file path.
+
+        Raises:
+            TypeError: If the input value is not a pathlib.Path or str.
+            ValueError: If a pathlib.Path object could not be created from the input value.
+            FileExistsError: If the file does not exist.
+            IOError: If the raster file could not be opened.
+
+        Returns:
+            pathlib.Path: The environmental raster file path.
+        """
+        return self._env_raster
+    
+    @env_raster.setter
+    def env_raster(self, value: pathlib.Path) -> None:
+        # Validate type
+        if not isinstance(value, (pathlib.Path, str)):
+            raise TypeError("'env_raster' must be a pathlib.Path object or str.")
+        
+        # Validate path and file
+        try:
+            value = Path(value)
+        except:
+            raise ValueError(f"Could not create a pathlib.Path object from {value}")
+            
+        # Check if raster file exists
+        if not value.exists():
+            raise FileExistsError(f"Could not find 'env_raster' file: {value}")
+              
+        # Catch any IO errors
+        try:
+            with rasterio.open(value) as raster_file:
+                self._env_raster = value
+        except rasterio.errors.RasterioIOError as e:
+            raise IOError(f"Could not open 'env_raster' file: {value}. Error: {e}")
+        
+    @property
+    def clim_crs(self) -> pyproj.crs.crs.CRS:
+        """
+        Retrieves the Coordinate Reference System (CRS) from the Madaclim climate raster.
+
+        This property opens the raster file and retrieves the CRS in EPSG format. The EPSG code is used to 
+        create and return a pyproj CRS object.
+
+        Returns:
+            pyproj.crs.
+        """
+        # Get epsg from clim_raster
+        with rasterio.open(self.clim_raster) as clim_raster:
+            clim_epsg = clim_raster.crs.to_epsg()  # Get the EPSG code of the CRS
+            clim_crs = pyproj.CRS.from_epsg(clim_epsg)  # Create a pyproj CRS object
+        return clim_crs
+    @property
+    def env_crs(self) -> pyproj.crs.crs.CRS:
+        """
+        Retrieves the Coordinate Reference System (CRS) from the Madaclim environmental raster.
+
+        This property opens the raster file and retrieves the CRS in EPSG format. The EPSG code is used to 
+        create and return a pyproj CRS object.
+
+        Returns:
+            pyproj.crs.
+        """
+        # Get epsg from clim_raster
+        with rasterio.open(self.env_raster) as env_raster:
+            env_epsg = env_raster.crs.to_epsg()  # Get the EPSG code of the CRS
+            env_crs = pyproj.CRS.from_epsg(env_epsg)  # Create a pyproj CRS object
+        return env_crs
+        
+    def __str__(self) -> str:
+        info = "\n ".join({f"{attr} = {val}" for attr, val in vars(self).items()})
+        return info
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+
+
+
 class MadaclimPoint:
     
     """
@@ -30,17 +196,27 @@ class MadaclimPoint:
     
     Attributes:
         specimen_id (str): An identifier for the point.
-        source_crs (pyproj.crs.crs.CRS): The coordinate reference system of the point.
         latitude (float): The latitude of the point.
         longitude (float): The longitude of the point.
+        #TODO CLIM/ENV_CRS + CLIM/ENV_RASTER ATTRS
+        source_crs (pyproj.crs.crs.CRS): The coordinate reference system of the point.
         mada_geom_point (shapely.geometry.point.Point): A Shapely Point object representing the point projected in the Madaclim rasters' CRS.
         ___base_attr (dict): A dictionary containing the base attributes names as keys and their values as values.
         
     """
 
-    def __init__(self, specimen_id: str, latitude: float, longitude: float, source_crs: pyproj.crs.crs.CRS=pyproj.CRS.from_epsg(4326), **kwargs) -> None:
+    def __init__(
+            self, 
+            specimen_id: str, 
+            latitude: float, 
+            longitude: float, 
+            source_crs: pyproj.crs.crs.CRS=pyproj.CRS.from_epsg(4326), 
+            **kwargs
+        ) -> None:
         """
-        Initialize a MadaclimPoint object with the given `specimen_id`, `latitude`, `longitude`, and `source_crs`. The coordinates provided should respect the nature of the given source CRS native units' (i.e. degrees WGS84 or meters for EPSG:3857)
+        Initialize a MadaclimPoint object with the given `specimen_id`, `latitude`, `longitude`, `clim_raster, `env_raster` and `source_crs`.
+        The coordinates provided should respect the nature of the given source CRS native units' (i.e. degrees WGS84 or meters for EPSG:3857).
+        The path to both climate and environmental rasters have to be provided to properly construc the `mada_geom_point` attribute and use other methods.
         Optionally, provide additional keyword arguments to store as instance attributes.
         
         Args:
@@ -50,7 +226,7 @@ class MadaclimPoint:
             source_crs (pyproj.crs.crs.CRS, optional): The coordinate reference system of the point. Defaults to WGS84 (EPSG:4326).
             **kwargs: Additional keyword arguments to store as instance attributes.
         Examples:
-            >>> from coffeaphylogeo.geoclim.raster_manipulation import MadaclimPoint
+            >>> from coffeaphylogeo.raster_manipulation import MadaclimPoint
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2)    # Default CRS of EPSG:4326
             
             >>> # Creates a shapely point object according to the Madaclim CRS' projection when instantiating a new instance. 
@@ -114,9 +290,9 @@ class MadaclimPoint:
         for key in additional_args:
             setattr(self, key, kwargs[key])
 
-        self.gdf = {
-            "test": "geopandas_gdf"
-        }
+        # self.gdf = {
+        #     "test": "geopandas_gdf"
+        # }
     
     @property
     def specimen_id(self) -> str:
@@ -204,14 +380,14 @@ class MadaclimPoint:
         """
         return self.__base_attr
     
-    @property
-    def gdf(self) -> gpd.GeoDataFrame:
-        """Get the geodataframe using mada_geom_point as geometry.
+    # @property
+    # def gdf(self) -> gpd.GeoDataFrame:
+    #     """Get the geodataframe using mada_geom_point as geometry.
 
-        Returns:
-            gpd.GeoDataFrame: A Geopandas GeoDataFrame generated from instance attributes and Point geometry.
-        """
-        return self.__gdf
+    #     Returns:
+    #         gpd.GeoDataFrame: A Geopandas GeoDataFrame generated from instance attributes and Point geometry.
+    #     """
+    #     return self.__gdf
 
     def __str__(self) -> str:
         
@@ -271,7 +447,7 @@ class MadaclimPoint:
             source_crs_val = source_crs_val.to_epsg()
         return source_crs_val
     
-    def validate_crs(self, crs):
+    def validate_crs(self, crs) -> pyproj.crs.crs.CRS:
         """
         Validate the input CRS and return a valid CRS object.
 
@@ -295,7 +471,7 @@ class MadaclimPoint:
             raise ValueError(crs_error)
         return valid_crs
     
-    def validate_lat(self, latitude, crs):
+    def validate_lat(self, latitude, crs) -> float:
         """
         Validate the input latitude value and return a valid latitude.
 
@@ -330,7 +506,7 @@ class MadaclimPoint:
         
         return latitude
     
-    def validate_lon(self, longitude, crs):
+    def validate_lon(self, longitude, crs) -> float:
         """
         Validate the input longitude value and return a valid longitude.
 
@@ -367,23 +543,23 @@ class MadaclimPoint:
     
     def sample_from_rasters(
             self,
+            clim_raster: pathlib.Path, 
+            env_raster: pathlib.Path,
             layers_to_sample: Union[int, str, List[Union[int, str]]]="all", 
             layer_info: bool=False,
             return_nodata_layers: bool=False,
-            clim_raster_path: Optional[pathlib.Path]=None, 
-            env_raster_path: Optional[pathlib.Path]=None
         ) -> Union[dict, list]:
         """
         Samples geoclimatic data from raster files for specified layers at the location of the instances's lat/lon coordinates from the mada_geom_point attribute.
 
         Args:
+            clim_raster_path (pathlib.Path): Path to the climate raster file.
+            env_raster_path (pathlib.Path): Path to the environment raster file.
             layers_to_sample (Union[int, str, List[Union[int, str]]], optional): The layer number(s) to sample from the raster files.
                 Can be a single int, a single string in the format 'layer_<num>', or a list of ints or such strings. Defaults to 'all'.
             layer_info (bool, optional): Whether to use descriptive labels for the returned dictionary keys. Defaults to False.
             return_nodata_layers (bool, optional): Whether to return a list of layers with nodata values at the specimen location.
                 Defaults to False.
-            clim_raster_path (Optional[pathlib.Path], optional): Path to the climate raster file. Defaults to None.
-            env_raster_path (Optional[pathlib.Path], optional): Path to the environment raster file. Defaults to None.
 
         Raises:
             TypeError: If the layers_to_sample is not valid, or if the mada_geom_point attribute is not a Point object.
@@ -395,61 +571,50 @@ class MadaclimPoint:
                 at the specimen location.
         Exmaples:
             >>> # Fetching bioclim layers from the MadaclimLayers class
-            >>> from coffeaphylogeo.geoclim.madaclim_info import MadaclimLayers
+            >>> from coffeaphylogeo.madaclim_info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
 
             >>> # Sampling the bioclim layers
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
-            >>> spe1_bioclim = specimen_1.sample_from_rasters(bioclim_labels)
-
-            ######################################## Extracting data for: spe1_aren ########################################
-
-            Sampling 19 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 55: bio19 (Precipitation of coldest quarter):  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
-
-            Finished raster sampling operation in 7.19 seconds.
-
+            >>> spe1_bioclim = specimen_1.sample_from_rasters(
+            ...     clim_raster="madaclim_current.tif",
+            ...     env_raster="madaclim_enviro.tif",
+            ...     layers_to_sample=bioclim_labels
+            ... )
             >>> spe1_bioclim["layer_37"]
             196
 
             >>> # layer_info key as more descriptive and informative
-            >>> spe1_bioclim = specimen_1.sample_from_rasters(bioclim_labels, layer_info=True)
+            >>> spe1_bioclim = specimen_1.sample_from_rasters(
+            ...     clim_raster="madaclim_current.tif",
+            ...     env_raster="madaclim_enviro.tif",
+            ...     layers_to_sample=bioclim_labels,
+            ...     layer_info=True
+            ... )
 
-            ######################################## Extracting data for: spe1_aren ########################################
-
-            Sampling 19 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 55: bio19 (Precipitation of coldest quarter):  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
-
-            Finished raster sampling operation in 7.29 seconds.
-
-            >>> bio1 = bioclim_labels[0]    # Example for first bioclim variable
+            >>> bio1_label = bioclim_labels[0]    # Example for first bioclim variable
             'clim_37_bio1 (Annual mean temperature)'
-            >>> spe1_bioclim[bio1]
+            >>> spe1_bioclim[bio1_label]
             196
             >>> {k:v for k, v in list(spe1_bioclim.items())[:3]}    # Print first 3 extracted items
             {'clim_37_bio1 (Annual mean temperature)': 196, 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))': 112, 'clim_39_bio3 (Isothermality (BIO2/BIO7) (x 100))': 64}
 
             
             >>> # Sample any rasters using layer numbers only
-            >>> specimen_1.sample_from_rasters([68, 71], layer_info=True)
+            >>> spe1_l68_l71 = specimen_1.sample_from_rasters(
+            ...     clim_raster="madaclim_current.tif",
+            ...     env_raster="madaclim_enviro.tif",
+            ...     layers_to_sample=[68, 71],
+            ...     layer_info=True
+            ... )
 
-            ######################################## Extracting data for: spe1_aren ########################################
-
-            Sampling 1 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 68: pet (Annual potential evapotranspiration from the Thornthwaite equation (mm)):  100%|█████████████████████████████████████████████████| layer 1/1 [Time remaining: 00:00]
-
-            Sampling 1 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
-            Extracting layer 71: altitude (None):  100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████| layer 1/1 [Time remaining: 00:00]
-
-            Finished raster sampling operation in 0.45 seconds.
-
-            {'clim_68_pet (Annual potential evapotranspiration from the Thornthwaite equation (mm))': 891, 'env_71_altitude (None)': 899}
-
+            >>> spe1_l68_l71
+            {'clim_68_pet (Annual potential evapotranspiration from the Thornthwaite equation (mm))': 891, 'env_71_altitude (Altitude in meters)': 899}
 
             >>> # Sample all layers with less descriptive layer names
             >>> specimen_2 = MadaclimPoint(specimen_id="spe2_humb", latitude=-12.716667, longitude=45.066667, source_crs=4326, genus="Coffea", species="humblotiana", has_sequencing=True)
-            >>> spe2_all_layers = specimen_2.sample_from_rasters()
+            >>> spe2_all_layers = specimen_2.sample_from_rasters("madaclim_current.tif", "madaclim_enviro.tif")
 
             ######################################## Extracting data for: spe2_humb ########################################
 
@@ -457,22 +622,33 @@ class MadaclimPoint:
             Extracting layer 70: ndm (Number of dry months in the year):  100%|██████████████████████████████████████████████████████████████████████████████████████| layer 70/70 [Time remaining: 00:00]
 
             Sampling 9 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
-            Extracting layer 79: forestcover (None):  100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
+            Extracting layer 79: forestcover (Percentage of forest cover in 1 km by 1 km grid cells):  100%|███████████████████████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
             BEWARE! 5 layer(s) contain a nodata value at the specimen location
 
-            Finished raster sampling operation in 26.62 seconds.
+            Finished raster sampling operation in 0.09 seconds.
 
             >>> spe2_all_layers["layer_68"]
             1213
             
             >>> # Note the BEWARE! message indicating that we have some NaN in the data extracted for that MadaclimPoint
             >>> # We can easily access the nodata layers (still sampled with the method regardless)
-            >>> spe2_all_layers, spe2_nodata_layers = specimen_2.sample_from_rasters(layer_info=True, return_nodata_layers=True)
-            >>> spe2_nodata_layers
-            ['env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))', 'env_76_soil (None)', 'env_77_vegetation (None)', 'env_78_watersheds (None)', 'env_79_forestcover (None)']
+            >>> spe2_all_layers, spe2_nodata_layers = specimen_2.sample_from_rasters(
+            ...     clim_raster="madaclim_current.tif",
+            ...     env_raster="madaclim_enviro.tif",
+            ...     layer_info=True, 
+            ...     return_nodata_layers=True
+            ... )
+            >>> len(spe2_nodata_layers)
+            5
+            >>> spe2_nodata_layers[0]    # Example of a categorical feature description with raster-value/description associations
+            'env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))'
 
             >>> # Calling the sample_from_rasters method also updates the 'sampled_data' and 'nodata_layers' attributes
-            >>> specimen_2.sample_from_rasters([37, 75])
+            >>> specimen_2.sample_from_rasters(
+            ...     clim_raster="madaclim_current.tif",
+            ...     env_raster="madaclim_enviro.tif",
+            ...     layers_to_sample=[37, 75]
+            ... )
             >>> specimen_2
             MadaclimPoint(
                     specimen_id = spe2_humb,
@@ -487,9 +663,16 @@ class MadaclimPoint:
                     has_sequencing = True
             )
         """
+        # Create a MadaclimRaster to validate both rasters
+        mada_raster = MadaclimRaster(clim_raster=clim_raster, env_raster=env_raster)
+        if mada_raster.clim_crs != Constants.MADACLIM_CRS:
+            raise ValueError(f"The provided clim_raster's CRS does not corresponds to Madaclim db's expected crs: {Constants.MADACLIM_CRS}")
+
+        if mada_raster.env_crs != Constants.MADACLIM_CRS:
+            raise ValueError(f"The provided env_raster's CRS does not corresponds to Madaclim db's expected crs: {Constants.MADACLIM_CRS}")
         
         # Create a MadaclimLayers instance to get layers labels and validate layers to sample
-        madaclim_info = MadaclimLayers()
+        madaclim_info = MadaclimLayers(clim_raster=mada_raster.clim_raster, env_raster=mada_raster.env_raster)
         all_layers_df = madaclim_info.all_layers
         
         # Validate layers to sample
@@ -535,12 +718,17 @@ class MadaclimPoint:
             if not min_layer <= layer_number <= max_layer:
                 raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_number=} is not valid.")
             
-        # Get possible layer numbers for each raster
+        # Save layers and band numbers to sample for each raster
+        clim_raster_sample_info, env_raster_sample_info = {}, {}
+
         geoclim_types = ["clim", "env"]
         geoclim_layer_ranges = {geoclim_type: madaclim_info.select_geoclim_type_layers(geoclim_type)["layer_number"].to_list() for geoclim_type in geoclim_types}
 
-        clim_raster_layers_to_sample = [layer_num for layer_num in layers_numbers if layer_num in geoclim_layer_ranges["clim"]]
-        env_raster_layers_to_sample = [layer_num for layer_num in layers_numbers if layer_num in geoclim_layer_ranges["env"]]
+        clim_raster_sample_info["layers"] = [layer_num for layer_num in layers_numbers if layer_num in geoclim_layer_ranges["clim"]]
+        clim_raster_sample_info["bands"] = madaclim_info.get_bandnums_from_layers(clim_raster_sample_info["layers"])
+
+        env_raster_sample_info["layers"] = [layer_num for layer_num in layers_numbers if layer_num in geoclim_layer_ranges["env"]]
+        env_raster_sample_info["bands"] = madaclim_info.get_bandnums_from_layers(env_raster_sample_info["layers"])
 
         # # Validate if mada_geom_point attribute is of Point geom and not empty
         if not isinstance(self.mada_geom_point, shapely.geometry.point.Point):
@@ -556,10 +744,10 @@ class MadaclimPoint:
         print("\n" + "#" * 40 + f" \033[1mExtracting data for: {self.specimen_id}\033[0m " +"#" * 40)
         start_time = time.perf_counter()
         
-        if clim_raster_layers_to_sample:
-            total_clim_layers = len(clim_raster_layers_to_sample)
+        if clim_raster_sample_info["layers"]:
+            total_clim_layers = len(clim_raster_sample_info["layers"])
             
-            with rasterio.open(clim_raster_path or default_clim_raster_path) as clim_raster:
+            with rasterio.open(mada_raster.clim_raster) as clim_raster:
                 # Initialize reference and container to check for layers with nodata values
                 nodata_clim = clim_raster.nodata
                 
@@ -572,7 +760,7 @@ class MadaclimPoint:
                 ) as pbar :
                     
                     # Sample selected layers according to the coordinate
-                    for layer_num in clim_raster_layers_to_sample:
+                    for layer_num, band_num in zip(clim_raster_sample_info["layers"], clim_raster_sample_info["bands"]):
                         # Get layer info for pbar display and label key for sampled_data
                         layer_name = madaclim_info.fetch_specific_layers(layers_labels=layer_num, as_descriptive_labels=True, return_list=True)[0]
                         layer_description_display = layer_name.split('_')[-1]
@@ -580,8 +768,7 @@ class MadaclimPoint:
                         pbar.update()
                         
                         # Sample using the self.mada_geom_point attributes coordinates for the current layer
-                        band = madaclim_info.get_band_from_layer_number(layer_num, geoclim_types[0])
-                        data = list(clim_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band))[0]
+                        data = list(clim_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band_num))[0]
                         
                         # Save extracted data with specified layer info/name
                         if not layer_info:
@@ -590,11 +777,11 @@ class MadaclimPoint:
 
                         if data[0] == nodata_clim:    # Save layers where nodata at specimen location
                             nodata_layers.append(layer_name)
-                                    
-        if env_raster_layers_to_sample:
-            total_env_layers = len(env_raster_layers_to_sample)
+        
+        if env_raster_sample_info["layers"]:
+            total_env_layers = len(env_raster_sample_info["layers"])
             
-            with rasterio.open(env_raster_path or default_env_raster_path) as env_raster:
+            with rasterio.open(mada_raster.env_raster) as env_raster:
                 # Initialize reference and container to check for layers with nodata values
                 nodata_env = env_raster.nodata
                 
@@ -607,7 +794,7 @@ class MadaclimPoint:
                 ) as pbar :
                     
                     # Sample selected layers according to the coordinate
-                    for layer_num in env_raster_layers_to_sample:
+                    for layer_num, band_num in zip(env_raster_sample_info["layers"], env_raster_sample_info["bands"]):
                         # Get layer info for pbar display and label key for sampled_data
                         layer_name = madaclim_info.fetch_specific_layers(layers_labels=layer_num, as_descriptive_labels=True, return_list=True)[0]
                         layer_description_display = layer_name.split('_')[-1]
@@ -615,15 +802,14 @@ class MadaclimPoint:
                         pbar.update()
                         
                         # Sample using the self.mada_geom_point attributes coordinates for the current layer
-                        band = madaclim_info.get_band_from_layer_number(layer_num, geoclim_types[1])
-                        data = list(env_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band))[0]
+                        data = list(env_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band_num))[0]
                         
                         # Save extracted data with specified layer info/name
                         if not layer_info:
                             layer_name = f"layer_{layer_num}"
                         sampled_data[layer_name] = data[0]
 
-                        if data[0] == nodata_clim:    # Save layers where nodata at specimen location
+                        if data[0] == nodata_env:    # Save layers where nodata at specimen location
                             nodata_layers.append(layer_name)
                                     
 
@@ -644,51 +830,10 @@ class MadaclimPoint:
         return sampled_data
     
     def visualize_on_layer(layer: Union[int, str], **kwargs) -> None:
-        
-        # Create a MadaclimLayers instance to get layers labels and validate layers to sample
-        madaclim_info = MadaclimLayers()
-        all_layers_df = madaclim_info.all_layers
-        
-        # Validate layers to sample
-        possible_layers_num_format = madaclim_info.get_layers_labels()
-        possible_layers_desc_format = madaclim_info.get_layers_labels(as_descriptive_labels=True)
-
-        # viz
-        if isinstance(layer, str):
-            if layer in possible_layers_num_format:    # Check layer_<num> str format param
-                layer_num = int(layer.split("_")[1])
-
-            elif layer in possible_layers_desc_format:    # Check as_descriptive_labels str format param
-                layer_num = int(layer.split("_")[1])
-            else:
-                try:
-                    layer_num = int(layer)    # Check <int> param
-                except (ValueError, TypeError):
-                    raise TypeError("'layer' must be either a single int value or one of the output of 'get_layers_labels' method from the MadaclimLayers class")
-         
-        # Validate layer number range for layer_numbers as in
-        min_layer = min(all_layers_df["layer_number"])
-        max_layer = max(all_layers_df["layer_number"])
-
-        if not min_layer <= layer_num <= max_layer:
-            raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_num=} is not valid.")
-        
-        # Assign raster and get band number from layer
-        clim_layer_nums = all_layers_df[all_layers_df["geoclim_type"] == "clim"]["layer_number"].to_list()
-        env_layer_nums = all_layers_df[all_layers_df["geoclim_type"] == "env"]["layer_number"].to_list()
-        
-        if layer_num in clim_layer_nums:
-            geoclim_type = "clim"
-            raster_file = default_clim_raster_path
-        
-        if layer_num in env_layer_nums:
-            geoclim_type = "env"
-            raster_file = default_env_raster_path
-        
-        band_num = madaclim_info.get_band_from_layer_number(layer_num, geoclim_type)
-
-        # TODO IMPLEMENT MATPLOTLIB / GEOPANDAS PLOT
-
+        pass
+        # TODO: GET BAND NUMS FROM LAYER
+        # TODO: IMPLEMENT MATPLOTLIB / GEOPANDAS PLOT
+        # TODO: IMPLEMENT MATPLOTLIB CUSTOM
     
     def _get_additional_attributes(self) -> dict:
         """
@@ -725,14 +870,7 @@ class MadaclimPoint:
         Raises:
             ValueError: If the climate and environmental rasters have different CRS, which is unexpected.
         """
-        # Get the crs' from both rasters of the Madaclim db
-        madaclim_info = MadaclimLayers()
-        madaclim_crs = madaclim_info.clim_crs if madaclim_info.clim_crs == madaclim_info.env_crs else None
-
-        # Sanity check for crs
-        if madaclim_crs is None:
-            raise ValueError("Beware, the clim and env rasters have different projections/CRS which is unexpected.")
-        
+        madaclim_crs = Constants.MADACLIM_CRS
         
         # Create a Point object in the source CRS
         point = Point(longitude, latitude)
