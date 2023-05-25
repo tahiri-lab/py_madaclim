@@ -92,11 +92,11 @@
             "forestcover"
         ],
         "layer_description": [
-            "Altitude in meters",
-            "Slope in degrees", 
-            "Aspect clockwise from North in degrees",
-            "Solar radiation (in Wh.m-2.day-1) computed from altitude, slope and aspect",
-            "Percentage of forest cover in 1 km by 1 km grid cells"
+            "Altitude (meters)",
+            "Slope (degrees)", 
+            "Aspect; clockwise from North (degrees)",
+            "Solar radiation; computed from altitude, slope and aspect (Wh.m-2.day-1)",
+            "Percentage of forest cover in 1 km by 1 km grid cells (%)"
         ]
     }
 }
