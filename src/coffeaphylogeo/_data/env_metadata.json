@@ -85,11 +85,11 @@
     
     "table_4": {
         "layer_name": [
-            "altitude", 
-            "slope",
-            "aspect",
-            "solar",
-            "forestcover"
+            "alt", 
+            "slo",
+            "asp",
+            "solrad",
+            "forcov"
         ],
         "layer_description": [
             "Altitude (meters)",
