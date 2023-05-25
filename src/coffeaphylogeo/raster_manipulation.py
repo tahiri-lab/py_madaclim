@@ -19,6 +19,8 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import seaborn as sns
 
 
 class MadaclimRaster:
@@ -184,7 +186,136 @@ class MadaclimRaster:
     def __repr__(self) -> str:
         return self.__str__()
     
+    def visualize_layer(self, layer: Union[str, int], figsize: Tuple[int, int]=(10, 5), **kwargs) -> None:
+        """
+        Visualizes a specific layer in a raster image, plotting both the raster map and a histogram 
+        of pixel values. The appearance of the plot can be customized with additional arguments.
 
+        Args:
+            layer (str, int): Identifier for the layer to visualize. This can be an integer 
+                            representing the layer number, or a string in the format 
+                            'layer_<number>' or '<description>'.
+            figsize (tuple, optional): A tuple specifying the size of the figure. It should contain
+                                    two integers representing width and height. Defaults to (10, 5).
+            **kwargs : Arbitrary keyword arguments for customizable matplotlib plots:
+                imshow_<arg>: Arguments to be passed to `plt.imshow()`.
+                cax_<arg>: Arguments to be passed to `cax`.
+                histplot_<arg>: Arguments to be passed to `sns.histplot()`.
+
+        Raises:
+            TypeError: If 'layer' is not a str or an int, or if 'figsize' is not a tuple, 
+                    or if elements of 'figsize' are not ints.
+            ValueError: If 'figsize' does not contain exactly two elements, 
+                        or if 'layer' does not fall within the valid range.
+
+        Example:
+            #TODO EXAMPLE WITH COMMENTS
+            mada_raster.visualize_layer('layer_2', figsize=(12, 6), imshow_cmap='hot', 
+                            cax_size='7%', histplot_bins=30, histplot_color='blue')
+        """
+        # Check if figsize is a tuple of size 2 with proper types
+        if not isinstance(figsize, tuple):
+            raise TypeError("'figsize' must be a tuple.")
+        if not len(figsize) == 2:
+            raise ValueError("'figsize' must be a tuple of 2 elements.")
+        for ele in figsize:
+            if not isinstance(ele, int):
+                raise TypeError(f"{ele} is not an int. 'figsize' is a tuple of integers.")    
+        
+        # Get customizable matplotlib kwargs for both axes
+        imshow_args = {k[7:]: v for k, v in kwargs.items() if k.startswith("imshow_")}
+        cax_args = {k[4:]: v for k, v in kwargs.items() if k.startswith("cax_")}
+        histplot_args = {k[9:]: v for k, v in kwargs.items() if k.startswith("histplot_")}
+
+        # Set defaults for raster map + cbar
+        imshow_cmap = imshow_args.pop("cmap", "inferno")
+        cax_position = cax_args.pop("position", "right")
+        cax_size = cax_args.pop("size", "5%")
+        cax_pad = cax_args.pop("pad", 0.10)
+
+        # Set defaults for histplot
+        histplot_color = histplot_args.pop("color", "grey")
+        histplot_bins = histplot_args.pop("bins", "auto")
+        histplot_kde = histplot_args.pop("kde", True)
+        histplot_stat = histplot_args.pop("stat", "percent")
+        histplot_line_kws = histplot_args.pop("line_kws", {"linestyle" : "--"})
+    
+        # Fetch metadata and layer nums with a MadaclimLayers instance
+        madaclim_info = MadaclimLayers(clim_raster=self.clim_raster, env_raster=self.env_raster)
+        all_layers_df = madaclim_info.all_layers
+        
+        # Validate layers to sample
+        possible_layers_num_format = madaclim_info.get_layers_labels()
+        possible_layers_desc_format = madaclim_info.get_layers_labels(as_descriptive_labels=True)
+
+
+        if not isinstance(layer, (str, int)):
+            raise TypeError("'layer' must be a str or an int.")
+        
+        if layer in possible_layers_num_format or layer in possible_layers_desc_format:    # Check layer_<num> or descriptive format
+            layer_num = int(layer.split("_")[1])
+        else:
+            try:
+                layer_num = int(layer)    # As single item int list
+            except (ValueError, TypeError):
+                raise TypeError("layer must be either a single int value or a string that can be converted to an int")
+  
+        # Validate layer number range for layer_numbers as in
+        min_layer = min(all_layers_df["layer_number"])
+        max_layer = max(all_layers_df["layer_number"])
+
+        if not min_layer <= layer_num <= max_layer:
+            raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_num=} is not valid.")
+
+        # Get geoclim type from layer_num for raster IO selection            
+        geoclim_types = ["clim", "env"]
+        geoclim_type = next((geotype for geotype in geoclim_types 
+                     if layer in madaclim_info.select_geoclim_type_layers(geotype)["layer_number"]), None)
+        chosen_raster = self.clim_raster if geoclim_type == "clim" else self.env_raster
+
+        # Plotting the raster map with distribution data for the selected layer
+        band_num = madaclim_info.get_bandnums_from_layers(layer_num)[0]
+        layer_description = madaclim_info.fetch_specific_layers(layer_num)['layer_description'].values[0]
+
+        with rasterio.open(chosen_raster) as raster:
+            band_data = raster.read(band_num, masked=True)
+
+            # Plotting both map and distributions of raster values
+            fig, axes = plt.subplots(1, 2, figsize=figsize)
+
+            # Raster map
+            im = axes[0].imshow(band_data.squeeze(), cmap=imshow_cmap, **imshow_args)    # Draw raster map from masked array
+            
+            divider = make_axes_locatable(axes[0])    # colorbar customization
+            cax = divider.append_axes(position=cax_position, size=cax_size, pad=cax_pad, **cax_args)
+            cbar = plt.colorbar(im, cax=cax)
+
+            axes[0].set_title(f"Madagascar {geoclim_type.capitalize()} Raster Map", fontsize=10)
+            axes[0].set_yticks([])
+            axes[0].set_xticks([])
+            axes[0].axis("off")
+
+            # Pixel vals distributions
+            sns.histplot(
+                data=band_data.compressed(),
+                ax=axes[1], 
+                color=histplot_color, 
+                bins=histplot_bins, 
+                kde=histplot_kde, 
+                stat=histplot_stat,
+                line_kws=histplot_line_kws,
+                **histplot_args
+            )
+            axes[1].lines[0].set_color("black")
+            axes[1].set_title("Distribution of raster values at 1km resolution", fontsize=10)
+
+            fig.suptitle(
+                f"Layer {layer_num} (band={band_num}): {layer_description}",
+                fontsize=16,
+                ha="center"
+            )
+
+            fig.tight_layout()
 
 
 class MadaclimPoint:
@@ -676,7 +807,7 @@ class MadaclimPoint:
         all_layers_df = madaclim_info.all_layers
         
         # Validate layers to sample
-        possible_layers_num_format = [f"layer_{num}" for num in all_layers_df["layer_number"].to_list()]
+        possible_layers_num_format = madaclim_info.get_layers_labels()
         possible_layers_desc_format = madaclim_info.get_layers_labels(as_descriptive_labels=True)
 
 
@@ -702,7 +833,7 @@ class MadaclimPoint:
             if layers_to_sample == "all":    # Get all layers as default
                 layers_numbers = all_layers_df["layer_number"].to_list()
             
-            elif layers_to_sample in possible_layers_num_format:    # Check layer_<num> str format
+            elif layers_to_sample in possible_layers_num_format or layers_to_sample in possible_layers_desc_format:    # Check layer_<num> or desc str format
                 layers_numbers = [int(layers_to_sample.split("_")[1])]
             else:
                 try:
