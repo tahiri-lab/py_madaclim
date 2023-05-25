@@ -916,6 +916,21 @@ class MadaclimLayers:
 
             return merged_df
         
+        # Define your function to extract units
+        def extract_units(row):
+            if row["units"] is None: 
+                match = re.search(r'\((.*?)\)', row["layer_description"])
+                return match.group(1) if match else "No units"
+            else:
+                return row["units"] 
+
+            
+        def remove_units_from_desc(row):
+            if isinstance(row["units"], list):  # Apply only non-categorical (null) entries
+                return row["layer_description"]
+            else:
+                return re.sub(r'\(.*?\)', "", row["layer_description"])
+        
         
         # Extract climate data and format it using the metadata
         df_clim = pd.read_json(self._clim_dataformat["table_0"])
@@ -963,6 +978,7 @@ class MadaclimLayers:
         # Merge meta_dfs with original clim_df for class attribute
         meta_dfs = [bio_monthly_feats, bioclim_feats, evap_feats, biowater_feats]
         df_clim = meta_merge_clim_df(df_clim, meta_dfs)
+        df_clim["units"] = None
 
 
         # Extract environmental data and format it using its related metadata
@@ -976,34 +992,42 @@ class MadaclimLayers:
         # Generate layer_name since absent from metadata
         df_env["layer_name"] = df_env["geoclim_feature"].str.split(" ").str[0].str.lower()
         df_env.loc[df_env["layer_number"] == 79, "layer_name"] = "forestcover"    # Fix first word with more informative info
-        df_env["layer_description"] = None
 
         # Assign dummy var int-val to information for all categorical data layers
         env_meta_geol = json.loads(self._env_metadata["table_0"])    # env-raster band num 5 == 'geology'
-        geology_description = []
+        geology_categorical = []
 
         for i, val in env_meta_geol["Raster value"].items():
-            rock_type = env_meta_geol["Rock type"][i]
+            rock_type = env_meta_geol[list(env_meta_geol.keys())[1]][i]
             rock_type = "_".join(rock_type.split(" "))
-            rock_type_categorical = f"{val}={rock_type}"
-            geology_description.append(rock_type_categorical)
+            rock_vals_type = f"{val}={rock_type}"
+            geology_categorical.append(rock_vals_type)
 
 
         env_meta_soil = list(zip(*self._env_metadata["table_1"].values()))    # env-raster band num 6 == 'soil'
-        soil_description = [f"{val}={'_'.join(soil.split(' '))}" for val, soil in env_meta_soil]
+        soil_categorical = [f"{val}={'_'.join(soil.split(' '))}" for val, soil in env_meta_soil]
 
         env_meta_vegetation = list(zip(*self._env_metadata["table_2"].values()))    # env-raster band num 7 == 'vegetation'
-        vege_description = [f"{val}={'_'.join(vege.split(' '))}" for val, vege in env_meta_vegetation]
+        vege_categorical = [f"{val}={'_'.join(vege.split(' '))}" for val, vege in env_meta_vegetation]
 
         env_meta_watersheds = list(zip(*self._env_metadata["table_3"].values()))    # env-raster band num 7 == 'vegetation'
-        watersheds_description = [f"{val}={'_'.join(watershed.split(' '))}" for val, watershed in env_meta_watersheds]
+        watersheds_categorical = [f"{val}={'_'.join(watershed.split(' '))}" for val, watershed in env_meta_watersheds]
         
+        # put placeholder nones for desc and units
+        df_env["layer_description"] = None
+        df_env["units"] = None
+
+        # Add categorical values to units col
+        df_env.at[(df_env["layer_name"] == "geology").idxmax(), "units"] = geology_categorical
+        df_env.at[(df_env["layer_name"] == "soil").idxmax(), "units"] = soil_categorical
+        df_env.at[(df_env["layer_name"] == "vegetation").idxmax(), "units"] = vege_categorical
+        df_env.at[(df_env["layer_name"] == "watersheds").idxmax(), "units"] = watersheds_categorical
         
-        # Add to layer_description col
-        df_env.at[(df_env["layer_name"] == "geology").idxmax(), "layer_description"] = geology_description
-        df_env.at[(df_env["layer_name"] == "soil").idxmax(), "layer_description"] = soil_description
-        df_env.at[(df_env["layer_name"] == "vegetation").idxmax(), "layer_description"] = vege_description
-        df_env.at[(df_env["layer_name"] == "watersheds").idxmax(), "layer_description"] = watersheds_description
+        # Add layer_description entries to 'null' categoricals
+        df_env.at[(df_env["layer_name"] == "geology").idxmax(), "layer_description"] = list(env_meta_geol.keys())[1]
+        df_env.at[(df_env["layer_name"] == "soil").idxmax(), "layer_description"] = list(self._env_metadata["table_1"].keys())[1]
+        df_env.at[(df_env["layer_name"] == "vegetation").idxmax(), "layer_description"] = list(self._env_metadata["table_2"].keys())[1]
+        df_env.at[(df_env["layer_name"] == "watersheds").idxmax(), "layer_description"] = list(self._env_metadata["table_3"].keys())[1]
 
         # Add description to None numerical environmental vars
         env_meta_others = list(zip(*self._env_metadata["table_4"].values()))
@@ -1013,6 +1037,12 @@ class MadaclimLayers:
         # Concat both clim and env final dfs
         df = pd.concat([df_clim, df_env])
         df = df.reset_index().drop(columns="index")
+
+        # Extract the units to final col except unitless + categorical
+        df["units"] = df.apply(extract_units, axis=1)
+        
+        # Remove units from layer_description
+        df["layer_description"] = df.apply(remove_units_from_desc, axis=1)
 
         return df
     
