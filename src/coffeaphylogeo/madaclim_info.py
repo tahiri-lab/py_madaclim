@@ -6,6 +6,7 @@ import time
 from calendar import month_name
 from pathlib import Path
 from typing import List, Union, Optional
+from itertools import zip_longest
 
 import pandas as pd
 import rasterio
@@ -39,21 +40,23 @@ class MadaclimLayers:
             >>> # Access the all layers df
             >>> all_layers_df = madaclim_info.all_layers
             >>> all_layers_df.shape
-            (79, 5)
+            (79, 6)
             >>> all_layers_df
-                layer_number                                    geoclim_feature geoclim_type   layer_name                                  layer_description
-            0              1              Monthly minimum temperature (°C x 10)         clim        tmin1    Monthly minimum temperature (°C x 10) - January
-            1              2              Monthly minimum temperature (°C x 10)         clim        tmin2   Monthly minimum temperature (°C x 10) - February
-            2              3              Monthly minimum temperature (°C x 10)         clim        tmin3      Monthly minimum temperature (°C x 10) - March
-            3              4              Monthly minimum temperature (°C x 10)         clim        tmin4      Monthly minimum temperature (°C x 10) - April
-            4              5              Monthly minimum temperature (°C x 10)         clim        tmin5        Monthly minimum temperature (°C x 10) - May
-            ..           ...                                                ...          ...          ...                                                ...
-            74            75               Geology (Kew Botanical Garden, 1997)          env      geology  [1=Alluvial_&_Lake_deposits, 2=Unconsolidated_...
-            75            76                             Soil (Pelletier, 1981)          env         soil  [1=Bare_Rocks, 2=Raw_Lithic_Mineral_Soils, 3=P...
-            76            77            Vegetation (Kew Botanical Garden, 2007)          env   vegetation  [1=VegCat_1, 2=VegCat_2, 3=VegCat_3, 4=VegCat_...
-            77            78                         Watersheds (Pearson, 2009)          env   watersheds  [1=N-Bemarivo, 2=S-Bemarivo,_N-Mangoro, 3=S-Ma...
-            78            79  Percentage of forest cover for the year 2010 (%).          env  forestcover  Percentage of forest cover in 1 km by 1 km gri...
-            
+            geoclim_type  layer_number layer_name                                  layer_description  is_categorical                                              units
+            0          clim             1      tmin1              Monthly minimum temperature - January           False                                            °C x 10
+            1          clim             2      tmin2             Monthly minimum temperature - February           False                                            °C x 10
+            2          clim             3      tmin3                Monthly minimum temperature - March           False                                            °C x 10
+            3          clim             4      tmin4                Monthly minimum temperature - April           False                                            °C x 10
+            4          clim             5      tmin5                  Monthly minimum temperature - May           False                                            °C x 10
+            ..          ...           ...        ...                                                ...             ...                                                ...
+            74          env            75        geo                                         Rock types            True  [1=Alluvial_&_Lake_deposits, 2=Unconsolidated_...
+            75          env            76        soi                                         Soil types            True  [1=Bare_Rocks, 2=Raw_Lithic_Mineral_Soils, 3=P...
+            76          env            77        veg                                   Vegetation types            True  [1=VegCat_1, 2=VegCat_2, 3=VegCat_3, 4=VegCat_...
+            77          env            78        wat                                         Watersheds            True  [1=N-Bemarivo, 2=S-Bemarivo,_N-Mangoro, 3=S-Ma...
+            78          env            79     forcov  Percentage of forest cover in 1 km by 1 km gri...           False                                                  %
+
+            [79 rows x 6 columns]
+
             >>> # 'clim_raster' and 'env_raster' attributes are empty by default
             >>> print(madaclim_info.clim_raster)
             None
@@ -63,15 +66,18 @@ class MadaclimLayers:
             >>> # Certain attributes and methods need a valid 'clim_raster' or 'env_raster' attribute a-priori
             >>> madaclim_info.clim_crs
             Traceback (most recent call last):
-            ...
+            File "<stdin>", line 1, in <module>
+            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaPhyloGeo/src/coffeaphylogeo/madaclim_info.py", line 223, in clim_crs
+                self._validate_raster("clim_raster")
+            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaPhyloGeo/src/coffeaphylogeo/madaclim_info.py", line 1111, in _validate_raster
                 raise ValueError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
             ValueError: Undefined attribute: 'clim_raster'. You need to assign a valid pathlib.Path to the related raster attribute first.
-
+            
             >>> # You can download the rasters using the 'download_data' method
             >>> madaclim_info.download_data()    # Defaults to current working dir otherwise specify save_dir pathlib.Path
-            
-            >>> madaclim_info.clim_raster = Path("madaclim_current.tif")
-            >>> madaclim_info.env_raster = Path("madaclim_enviro.tif")
+        
+            >>> madaclim_info.clim_raster = "madaclim_current.tif"
+            >>> madaclim_info.env_raster = "madaclim_enviro.tif"
             >>> madaclim_info.clim_raster
             PosixPath('madaclim_current.tif')
             >>> madaclim_info.clim_crs
@@ -89,6 +95,7 @@ class MadaclimLayers:
             Datum: World Geodetic System 1984 ensemble
             - Ellipsoid: WGS 84
             - Prime Meridian: Greenwich
+
         """
         self.clim_raster = clim_raster
         self.env_raster = env_raster
@@ -314,13 +321,13 @@ class MadaclimLayers:
             >>> madaclim_info = MadaclimLayers()
             >>> clim_df = madaclim_info.select_geoclim_type_layers(geoclim_type="clim")
             >>> clim_df.head()
-            layer_number                        geoclim_feature geoclim_type layer_name                                 layer_description
-            0             1  Monthly minimum temperature (°C x 10)         clim      tmin1   Monthly minimum temperature (°C x 10) - January
-            1             2  Monthly minimum temperature (°C x 10)         clim      tmin2  Monthly minimum temperature (°C x 10) - February
-            2             3  Monthly minimum temperature (°C x 10)         clim      tmin3     Monthly minimum temperature (°C x 10) - March
-            3             4  Monthly minimum temperature (°C x 10)         clim      tmin4     Monthly minimum temperature (°C x 10) - April
-            4             5  Monthly minimum temperature (°C x 10)         clim      tmin5       Monthly minimum temperature (°C x 10) - May
-        
+            geoclim_type  layer_number layer_name                       layer_description  is_categorical    units
+            0         clim             1      tmin1   Monthly minimum temperature - January           False  °C x 10
+            1         clim             2      tmin2  Monthly minimum temperature - February           False  °C x 10
+            2         clim             3      tmin3     Monthly minimum temperature - March           False  °C x 10
+            3         clim             4      tmin4     Monthly minimum temperature - April           False  °C x 10
+            4         clim             5      tmin5       Monthly minimum temperature - May           False  °C x 10
+
         """
         all_layers_df = self.all_layers.copy()
         # Validate geoclim_type
@@ -364,22 +371,30 @@ class MadaclimLayers:
             >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> all_layers = madaclim_info.get_layers_labels()
-            
+            >>> len(all_layers)
+            79
+            >>> # Basic format 'layer_<num>'
+            >>> all_layers[:5]
+            ['layer_1', 'layer_2', 'layer_3', 'layer_4', 'layer_5']
+
             >>> # Specify a geoclim subset
             >>> env_layers = madaclim_info.get_layers_labels(layers_subset="env")
             >>> env_layers
             ['layer_71', 'layer_72', 'layer_73', 'layer_74', 'layer_75', 'layer_76', 'layer_77', 'layer_78', 'layer_79']
             
-            >>> # Extract more information (can also be the input for 'fetch_specific_layers' method)
+            >>> # Extract more information
+            >>> # Format is a list of 'type_num_uniqname_description (units)' elements
             >>> informative_labels = madaclim_info.get_layers_labels(as_descriptive_labels=True)
             >>> informative_labels[:5]
-            ['clim_1_tmin1 (Monthly minimum temperature (°C x 10) - January)', 'clim_2_tmin2 (Monthly minimum temperature (°C x 10) - February)', 'clim_3_tmin3 (Monthly minimum temperature (°C x 10) - March)', 'clim_4_tmin4 (Monthly minimum temperature (°C x 10) - April)', 'clim_5_tmin5 (Monthly minimum temperature (°C x 10) - May)']
+            >>> informative_labels[:2]
+            ['clim_1_tmin1_Monthly minimum temperature - January (°C x 10)', 'clim_2_tmin2_Monthly minimum temperature - February (°C x 10)']
+            >>> # Any output from `get_layers_labels` can be used as input for other methods in other classes such as `fetch_specific_layers` from `MadaclimLayers`
 
             >>> # Specify a single layer or a subset of layers
             >>> madaclim_info.get_layers_labels(37, as_descriptive_labels=True)
-            ['clim_37_bio1 (Annual mean temperature)']
+            ['clim_37_bio1_Annual mean temperature (degrees)']
             >>> madaclim_info.get_layers_labels([68, 75], as_descriptive_labels=True)
-            ['clim_68_pet (Annual potential evapotranspiration from the Thornthwaite equation (mm))', 'env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))']
+            ['clim_68_pet_Annual potential evapotranspiration from the Thornthwaite equation (mm)', 'env_75_geo_Rock types (categ_vals: 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 13)']
 
             >>> # Example to get bioclim layers only
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
@@ -429,10 +444,21 @@ class MadaclimLayers:
         select_df = all_layers_df[all_layers_df["layer_number"].isin(layers_subset)]
         
         # Fetch layer_<num> and descriptive labels
-        sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
-        layers_description = {
-            f"layer_{num}": f"{geoclim}_{num}_{name} ({', '.join(desc) if type(desc) == list else desc})" for num, geoclim, name, desc in sub_selection
-        }
+        sub_selection = list(
+            zip(
+                select_df["layer_number"], 
+                select_df["geoclim_type"], 
+                select_df["layer_name"], 
+                select_df["layer_description"], 
+                select_df["units"]
+            )
+        )
+        layers_description = {}
+        for num, geoclim, name, desc, unit in sub_selection:
+            # Simplify units from 'all_layers' for categorical
+            if isinstance(unit, list):
+                unit = "categ_vals: " + ", ".join([ele.split('=')[0] for ele in unit])
+            layers_description[f"layer_{num}"] = f"{geoclim}_{num}_{name}_{desc} ({unit})"
         
         if as_descriptive_labels:
             unique_labels = list(layers_description.values())
@@ -442,66 +468,104 @@ class MadaclimLayers:
         return unique_labels
         
 
-    def fetch_specific_layers(self, layers_labels: Union[int, str, List[Union[int, str]]], as_descriptive_labels: bool=False, return_list: bool=False) -> Union[dict, pd.DataFrame, list]:
+    def fetch_specific_layers(self, layers_labels: Union[int, str, List[Union[int, str]]], *args: str) -> Union[dict, pd.DataFrame]:
         """
-        Fetches specific layers from the `all_layers` DataFrame based on the given input.
+        Fetches specific layers from the `all_layers` DataFrame based on the given input and returns either the entire rows or 
+        certain columns as a dictionary. 
 
         Args:
-            layers_labels (Union[int, str, List[Union[int, str]]]): The layer labels to fetch. Can be a single int or str value, or a list of int or str values.
-                The input can also be in the format "layer_{num}" or "{geotype}_{num}_{name}_({description})" (output from `get_layers_labels(as_descriptive_labels=True)` method).
-            as_descriptive_labels (bool): If True, only the layer descriptions are returned. Defaults to False.
+            layers_labels (Union[int, str, List[Union[int, str]]]): The layer labels to fetch. Can be a single int or str value,
+                or a list of int or str values. The input can also be in the format "layer_{num}" or 
+                "{geotype}_{num}_{name}_({description})" (output from `get_layers_labels(as_descriptive_labels=True)` method).
+            args (List[str]): Optional. A list of column names in `all_layers` DataFrame. If specified, only these columns
+                will be returned as a dictionary.
 
         Returns:
-            Union[dict, pd.DataFrame]: If `as_descriptive_labels` is True, returns a dictionary with the layer descriptions.
+            Union[dict, pd.DataFrame]: If `args` is specified, returns a nested dictionary with the format:
+                {
+                    layer_<num>: {
+                        <arg1>: <value>,
+                        <arg2>: <value>,
+                        ...
+                    },
+                    ...
+                }
                 Otherwise, returns a DataFrame with the specified layers.
 
         Raises:
             TypeError: If any value in layers_labels cannot be converted to an int or is not in the "layer_{num}" format.
             ValueError: If any layer_number does not fall between the minimum and maximum layer numbers.
+            KeyError: If any value in args is not a column in `all_layers` DataFrame.
 
         Example:
             >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
-            >>> madaclim_info.fetch_specific_layers([1, 15, 55, 71])    # Output is a pd.DataFrame
-                layer_number                        geoclim_feature geoclim_type layer_name                                layer_description
-            0              1  Monthly minimum temperature (°C x 10)         clim      tmin1  Monthly minimum temperature (°C x 10) - January
-            14            15  Monthly maximum temperature (°C x 10)         clim      tmax3    Monthly maximum temperature (°C x 10) - March
-            54            55        Bioclimatic variables (bioclim)         clim      bio19                 Precipitation of coldest quarter
-            70            71                           Altitude (m)          env   altitude                               Altitude in meters
-            
-            >>> # Using the output from get_layers_labels() method
+            >>> madaclim_info.fetch_specific_layers([1, 15, 55, 71])
+            geoclim_type  layer_number layer_name                      layer_description  is_categorical         units
+            0          clim             1      tmin1  Monthly minimum temperature - January           False       °C x 10
+            14         clim            15      tmax3    Monthly maximum temperature - March           False       °C x 10
+            54         clim            55      bio19       Precipitation of coldest quarter           False  mm.3months-1
+            70          env            71        alt                               Altitude           False        meters
+
+            >>> # Using the output from `get_layers_labels` method
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
             >>> bio1_to_bio5_labels = bioclim_labels[0:6]
             >>> madaclim_info.fetch_specific_layers(bio1_to_bio5_labels)
-                layer_number                  geoclim_feature geoclim_type layer_name                                  layer_description
-            36            37  Bioclimatic variables (bioclim)         clim       bio1                            Annual mean temperature
-            37            38  Bioclimatic variables (bioclim)         clim       bio2  Mean diurnal range (mean of monthly (max temp ...
-            38            39  Bioclimatic variables (bioclim)         clim       bio3                  Isothermality (BIO2/BIO7) (x 100)
-            39            40  Bioclimatic variables (bioclim)         clim       bio4  Temperature seasonality (standard deviation x ...
-            40            41  Bioclimatic variables (bioclim)         clim       bio5                   Max temperature of warmest month
-            
-            >>> # Or from descriptive_labels as well
-            >>> monthly_layers = [layer for layer in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "Monthly" in layer]
-            >>> monthly_layers[:3]
-            ['clim_1_tmin1 (Monthly minimum temperature (°C x 10) - January)', 'clim_2_tmin2 (Monthly minimum temperature (°C x 10) - February)', 'clim_3_tmin3 (Monthly minimum temperature (°C x 10) - March)']
-            >>> madaclim_info.fetch_specific_layers(monthly)[:5]
-            layer_number  ...                                 layer_description
-            0             1  ...   Monthly minimum temperature (°C x 10) - January
-            1             2  ...  Monthly minimum temperature (°C x 10) - February
-            2             3  ...     Monthly minimum temperature (°C x 10) - March
-            3             4  ...     Monthly minimum temperature (°C x 10) - April
-            4             5  ...       Monthly minimum temperature (°C x 10) - May
+            geoclim_type  layer_number layer_name                 layer_description  is_categorical                                       units
+            36         clim            37       bio1           Annual mean temperature           False                                     degrees
+            37         clim            38       bio2                Mean diurnal range           False  mean of monthly max temp - monthy min temp
+            38         clim            39       bio3   Isothermality = BIO2/BIO7 x 100           False                                    No units
+            39         clim            40       bio4           Temperature seasonality           False                    standard deviation x 100
+            40         clim            41       bio5  Max temperature of warmest month           False                                     degrees
+            41         clim            42       bio6  Min temperature of coldest month           False                                     degrees
 
-            
-            >>> # Fetch description only with output as dict (instead of pd.DataFrame)
-            >>> madaclim_info.fetch_specific_layers(bio1_to_bio5_labels, as_descriptive_labels=True)
-            {'layer_37': 'clim_37_bio1 (Annual mean temperature)', 'layer_38': 'clim_38_bio2 (Mean diurnal range (mean of monthly (max temp - min temp)))', 'layer_39': 'clim_39_bio3 (Isothermality (BIO2/BIO7) (x 100))', 'layer_40': 'clim_40_bio4 (Temperature seasonality (standard deviation x 100))', 'layer_41': 'clim_41_bio5 (Max temperature of warmest month)'}
+            >>> # Or from descriptive_labels as well
+            >>> len(pet_layers)
+            13
+            >>> pet_layers[-1]
+            'clim_68_pet_Annual potential evapotranspiration from the Thornthwaite equation (mm)'
+            >>> madaclim_info.fetch_specific_layers(pet_layers)
+            geoclim_type  layer_number layer_name                                  layer_description  is_categorical       units
+            55         clim            56       pet1  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            56         clim            57       pet2  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            57         clim            58       pet3  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            58         clim            59       pet4  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            59         clim            60       pet5  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            60         clim            61       pet6  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            61         clim            62       pet7  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            62         clim            63       pet8  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            63         clim            64       pet9  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            64         clim            65      pet10  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            65         clim            66      pet11  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            66         clim            67      pet12  Monthly potential evapotranspiration from the ...           False  mm.month-1
+            67         clim            68        pet  Annual potential evapotranspiration from the T...           False          mm
+
+            >>> # Fetch as dict with keys as layer_<num> and vals of choice using 
+            >>> madaclim_info.fetch_specific_layers([15, 55, 75], "geoclim_type", "layer_name", "is_categorical")
+            {'layer_15': {'geoclim_type': 'clim',
+            'layer_name': 'tmax3',
+            'is_categorical': False},
+            'layer_55': {'geoclim_type': 'clim',
+            'layer_name': 'bio19',
+            'is_categorical': False},
+            'layer_75': {'geoclim_type': 'env',
+            'layer_name': 'geo',
+            'is_categorical': True}}
+            >>> # Only col names will be accepted as additionnal args
+            >>> bio1 = next((layer for layer in mada_info.get_layers_labels(as_descriptive_labels=True) if "bio1" in layer), None)
+            >>> madaclim_info.fetch_specific_layers(bio1, "band_number")
+            Traceback (most recent call last):
+            File "<stdin>", line 1, in <module>
+            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaPhyloGeo/src/coffeaphylogeo/madaclim_info.py", line 604, in fetch_specific_layers
+                if not min_layer <= layer_number <= max_layer:
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            KeyError: "Invalid args: ['band_number']. Args must be one of a key of ['geoclim_type', 'layer_number', 'layer_name', 'layer_description', 'is_categorical', 'units']"
 
         """
         all_layers_df = self.all_layers.copy()    # Reference to all clim and env metadata df
 
         # Validate layers_labels
-        possible_layers_num_format = [f"layer_{num}" for num in all_layers_df["layer_number"].to_list()]
+        possible_layers_num_format = self.get_layers_labels()
         possible_layers_desc_format = self.get_layers_labels(as_descriptive_labels=True)
 
         if isinstance(layers_labels, list):
@@ -522,13 +586,21 @@ class MadaclimLayers:
         
         # Single layers_labels type check 
         else:
-            if layers_labels in possible_layers_num_format:    # Check layer_<num> str format
-                layers_numbers = [int(layers_labels.split("_")[1])]
-            try:
-                layers_numbers = [int(layers_labels)]
-            except (ValueError, TypeError):
-                raise TypeError("layers_labels must be either a single int value (or a str that can be converted to an int) or in the output format from the 'get_layers_labels' method.")
-  
+            if isinstance(layers_labels, str):
+                if layers_labels in possible_layers_num_format or layers_labels in possible_layers_desc_format:    # Check layer_<num> or desc str format
+                    layers_numbers = [int(layers_labels.split("_")[1])]
+                else:
+                    raise TypeError("layers_labels must be in the output format from the 'get_layers_labels' method if it is a string.")
+            
+            elif isinstance(layers_labels, int):
+                try:
+                    layers_numbers = [layers_labels]
+                except (ValueError, TypeError):
+                    raise TypeError("layers_labels must be an int if not in string format.")
+            
+            else:
+                raise TypeError("layers_labels must be either a single int value, a string that can be converted to an int, or in the output format from the 'get_layers_labels' method.")
+
         # Validate layer number range for layer_numbers as in
         min_layer = min(all_layers_df["layer_number"])
         max_layer = max(all_layers_df["layer_number"])
@@ -540,17 +612,21 @@ class MadaclimLayers:
         # Fetch rows according to layer selection
         select_df = all_layers_df[all_layers_df["layer_number"].isin(layers_numbers)]
 
-        if as_descriptive_labels:
-            # Generate dict with key as layer_<num> and values containing layer information
-            sub_selection = list(zip(select_df["layer_number"], select_df["geoclim_type"], select_df["layer_name"], select_df["layer_description"]))
-            layers_description = {
-                f"layer_{num}": f"{geoclim}_{num}_{name} ({', '.join(desc) if type(desc) == list else desc})" for num, geoclim, name, desc in sub_selection
-            }
-            
-            if return_list:
-                return list(layers_description.values())
-            else:
-                return layers_description
+        # Validate args for presence in `all_layers` attr
+        if len(args) > 0:
+            missing_args = list(set(args) - set(select_df.columns))
+            if missing_args:
+                raise KeyError(f"Invalid args: {missing_args}. Args must be one of a key of {list(select_df.columns)}")
+
+            # Return nested dicts with values of specified arg for the fetched layers
+            if not missing_args:
+                select_layers_dict = {}
+                for layer_num in layers_numbers:
+                    layer_label = f"layer_{layer_num}"
+                    select_layers_dict[layer_label] = {}
+                    for arg in args:
+                        select_layers_dict[layer_label][arg] = select_df[select_df["layer_number"] == layer_num][arg].values[0]    
+                return select_layers_dict
         
         else:    # Save whole row of df
             return select_df
@@ -896,6 +972,26 @@ class MadaclimLayers:
 
             return df
         
+        def get_env_layer_name(row: pd.Series) -> str:
+            """
+            Generate an environment layer name based on the `geoclim_feature` field in the given row.
+            
+            Args:
+                row (pd.Series): A row of the DataFrame.
+            
+            Returns:
+                str: The generated environment layer name.
+            """
+            sourceless_unitless = row["geoclim_feature"].split(" (")[0]
+            sless_uless_list = sourceless_unitless.split(" ")
+            if len(sless_uless_list) > 2:
+                name = f"{sless_uless_list[2][:3]}" + f"{sless_uless_list[3][:3]}"
+            elif len(sless_uless_list) > 1:
+                name = f"{sless_uless_list[0][:3]}" + f"{sless_uless_list[1][:3]}"
+            else:
+                name = sourceless_unitless[:3]
+            return name.lower()
+        
         def meta_merge_clim_df(clim_df: pd.DataFrame, meta_dfs: List[pd.DataFrame]) -> pd.DataFrame:
             """Merges a the original clim_df dataframe with multiple metadata dataframes.
 
@@ -917,7 +1013,17 @@ class MadaclimLayers:
             return merged_df
         
         # Define your function to extract units
-        def extract_units(row):
+        def extract_units(row: pd.Series) -> Union[str, list]:
+            """
+            Extract units from the `layer_description` field if the `units` field is None.
+            Otherwise, return the value in the `units` field.
+            
+            Args:
+                row (pd.Series): A row of the DataFrame.
+                
+            Returns:
+                Union[str, list]: The extracted units or the original value in the `units` field.
+            """
             if row["units"] is None: 
                 match = re.search(r'\((.*?)\)', row["layer_description"])
                 return match.group(1) if match else "No units"
@@ -925,11 +1031,22 @@ class MadaclimLayers:
                 return row["units"] 
 
             
-        def remove_units_from_desc(row):
+        def remove_units_from_desc(row: pd.Series) -> str:
+            """
+            Remove units from the `layer_description` field if `units` field is not a list.
+            Otherwise, return the original `layer_description`.
+            
+            Args:
+                row (pd.Series): A row of the DataFrame.
+                
+            Returns:
+                str: The processed `layer_description` without units if `units` is not a list, 
+                    otherwise the original `layer_description`.
+            """
             if isinstance(row["units"], list):  # Apply only non-categorical (null) entries
                 return row["layer_description"]
             else:
-                return re.sub(r'\(.*?\)', "", row["layer_description"])
+                return re.sub(r' \(.*?\)', "", row["layer_description"])
         
         
         # Extract climate data and format it using the metadata
@@ -990,8 +1107,7 @@ class MadaclimLayers:
         df_env["layer_number"] = range(current_start_layer, current_start_layer + len(df_env))
 
         # Generate layer_name since absent from metadata
-        df_env["layer_name"] = df_env["geoclim_feature"].str.split(" ").str[0].str.lower()
-        df_env.loc[df_env["layer_number"] == 79, "layer_name"] = "forestcover"    # Fix first word with more informative info
+        df_env["layer_name"] = df_env.apply(get_env_layer_name, axis=1)
 
         # Assign dummy var int-val to information for all categorical data layers
         env_meta_geol = json.loads(self._env_metadata["table_0"])    # env-raster band num 5 == 'geology'
@@ -1003,14 +1119,16 @@ class MadaclimLayers:
             rock_vals_type = f"{val}={rock_type}"
             geology_categorical.append(rock_vals_type)
 
-
-        env_meta_soil = list(zip(*self._env_metadata["table_1"].values()))    # env-raster band num 6 == 'soil'
+        env_meta_soil_vals = [v for k, v in self._env_metadata["table_1"].items() if k != "source"]
+        env_meta_soil = list(zip(*env_meta_soil_vals))    # env-raster band num 6 == 'soil'
         soil_categorical = [f"{val}={'_'.join(soil.split(' '))}" for val, soil in env_meta_soil]
 
-        env_meta_vegetation = list(zip(*self._env_metadata["table_2"].values()))    # env-raster band num 7 == 'vegetation'
+        env_meta_vege_vals = [v for k, v in self._env_metadata["table_2"].items() if k != "source"]
+        env_meta_vegetation = list(zip(*env_meta_vege_vals))    # env-raster band num 7 == 'vegetation'
         vege_categorical = [f"{val}={'_'.join(vege.split(' '))}" for val, vege in env_meta_vegetation]
-
-        env_meta_watersheds = list(zip(*self._env_metadata["table_3"].values()))    # env-raster band num 7 == 'vegetation'
+        
+        env_meta_watersheds_vals = [v for k, v in self._env_metadata["table_3"].items() if k != "source"]
+        env_meta_watersheds = list(zip(*env_meta_watersheds_vals))    # env-raster band num 7 == 'vegetation'
         watersheds_categorical = [f"{val}={'_'.join(watershed.split(' '))}" for val, watershed in env_meta_watersheds]
         
         # put placeholder nones for desc and units
@@ -1018,16 +1136,16 @@ class MadaclimLayers:
         df_env["units"] = None
 
         # Add categorical values to units col
-        df_env.at[(df_env["layer_name"] == "geology").idxmax(), "units"] = geology_categorical
-        df_env.at[(df_env["layer_name"] == "soil").idxmax(), "units"] = soil_categorical
-        df_env.at[(df_env["layer_name"] == "vegetation").idxmax(), "units"] = vege_categorical
-        df_env.at[(df_env["layer_name"] == "watersheds").idxmax(), "units"] = watersheds_categorical
+        df_env.at[(df_env["layer_name"] == "geo").idxmax(), "units"] = geology_categorical
+        df_env.at[(df_env["layer_name"] == "soi").idxmax(), "units"] = soil_categorical
+        df_env.at[(df_env["layer_name"] == "veg").idxmax(), "units"] = vege_categorical
+        df_env.at[(df_env["layer_name"] == "wat").idxmax(), "units"] = watersheds_categorical
         
         # Add layer_description entries to 'null' categoricals
-        df_env.at[(df_env["layer_name"] == "geology").idxmax(), "layer_description"] = list(env_meta_geol.keys())[1]
-        df_env.at[(df_env["layer_name"] == "soil").idxmax(), "layer_description"] = list(self._env_metadata["table_1"].keys())[1]
-        df_env.at[(df_env["layer_name"] == "vegetation").idxmax(), "layer_description"] = list(self._env_metadata["table_2"].keys())[1]
-        df_env.at[(df_env["layer_name"] == "watersheds").idxmax(), "layer_description"] = list(self._env_metadata["table_3"].keys())[1]
+        df_env.at[(df_env["layer_name"] == "geo").idxmax(), "layer_description"] = list(env_meta_geol.keys())[1]
+        df_env.at[(df_env["layer_name"] == "soi").idxmax(), "layer_description"] = list(self._env_metadata["table_1"].keys())[1]
+        df_env.at[(df_env["layer_name"] == "veg").idxmax(), "layer_description"] = list(self._env_metadata["table_2"].keys())[1]
+        df_env.at[(df_env["layer_name"] == "wat").idxmax(), "layer_description"] = list(self._env_metadata["table_3"].keys())[1]
 
         # Add description to None numerical environmental vars
         env_meta_others = list(zip(*self._env_metadata["table_4"].values()))
@@ -1040,9 +1158,18 @@ class MadaclimLayers:
 
         # Extract the units to final col except unitless + categorical
         df["units"] = df.apply(extract_units, axis=1)
+        df["units"] = df["units"].apply(lambda x: x.strip() if isinstance(x, str) else x)
         
         # Remove units from layer_description
         df["layer_description"] = df.apply(remove_units_from_desc, axis=1)
+        df["layer_description"] = df["layer_description"].str.strip()
+
+        # Add categorical col for easier id
+        df["is_categorical"] = df["units"].apply(lambda x: isinstance(x, list))
+
+
+        # Reorder cols
+        df = df.loc[:, ["geoclim_type", "layer_number", "layer_name", "layer_description", "is_categorical", "units"]]
 
         return df
     
