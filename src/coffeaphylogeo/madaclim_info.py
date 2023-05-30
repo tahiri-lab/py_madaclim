@@ -5,7 +5,7 @@ import requests
 import time
 from calendar import month_name
 from pathlib import Path
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict
 from itertools import zip_longest
 
 import pandas as pd
@@ -15,23 +15,27 @@ import pyproj
 from coffeaphylogeo._constants import Constants
 
 class MadaclimLayers:
-    """A class that represents all of the information and data from the climate and environmental variable layers that can be found from the rasters of the Madaclim database.
+    """A class that represents all of the information and data from the climate and environmental variable layers 
+        that can be found from the rasters of the Madaclim database.
 
     The main metadata retrieval tool for the Madaclim database. Access all layers information with the `all_layers` attribute.
-    Also provides methods to filter, generate unique labels from all_layers and also access the crs and band number from the climate and environmental rasters.
+        Also provides methods to filter, generate unique labels from the `all_layers` attr.
+        Access the crs and band number from the climate and environmental rasters when they are provided in the constructor.
+        Categorical data can be explored in details with the `categorical_layers` attribute and the value:category pairs with the `get_categorical_combinations`.
     
     Attributes:
         clim_raster (pathlib.Path): The path to the Madaclim climate raster GeoTiff file. Defaults to None if not specified.
         env_raster (pathlib.Path): The path to the Madaclim environmental raster GeoTif file. Defaults to None if not specified.
         all_layers (pd.DataFrame): A DataFrame containing a complete and formatted version of all Madaclim layers.
+        categorical_layers (pd.DataFrame):  A DataFrame containing the in depth information about the layers with categorical data.
     
     """
     def __init__(self, clim_raster: Optional[pathlib.Path]=None, env_raster: Optional[pathlib.Path]=None):
         """Initializes a new instance of the MadaclimLayers class.
 
         This constructor generates a DataFrame containing all Madaclim layers' information though the `all_layers` attribute.
-        If given the current climate or environmental raster from the Madaclim db, it will also get the CRS for each raster.
-        The instance can also access various methods to extract relevant information from the Madaclim database.
+            If given the current climate or environmental raster from the Madaclim db, it will also get the CRS for each raster.
+            The instance can also access various methods to extract relevant information from the Madaclim database.
 
         
         Example:
@@ -56,6 +60,24 @@ class MadaclimLayers:
             78          env            79     forcov  Percentage of forest cover in 1 km by 1 km gri...           False                                                  %
 
             [79 rows x 6 columns]
+
+            >>> # Categorical layers only df
+            >>> madaclim_info.categorical_layers
+            geoclim_type  layer_number layer_name layer_description value                              category
+            0           env            75        geo        Rock types     1              Alluvial_&_Lake_deposits
+            1           env            75        geo        Rock types     2                  Unconsolidated_Sands
+            2           env            75        geo        Rock types     4                        Mangrove_Swamp
+            3           env            75        geo        Rock types     5  Tertiary_Limestones_+_Marls_&_Chalks
+            4           env            75        geo        Rock types     6                            Sandstones
+            ..          ...           ...        ...               ...   ...                                   ...
+            73          env            78        wat        Watersheds    20                  ret-disp_Tsiribihina
+            74          env            78        wat        Watersheds    21                    ret-disp_Betsiboka
+            75          env            78        wat        Watersheds    22            ret-disp_Maevarana_(1/2_N)
+            76          env            78        wat        Watersheds    23                    ret-disp_Sambirano
+            77          env            78        wat        Watersheds    24                     ret-disp_Mahavavy
+
+            [78 rows x 6 columns]
+
 
             >>> # 'clim_raster' and 'env_raster' attributes are empty by default
             >>> print(madaclim_info.clim_raster)
@@ -107,15 +129,16 @@ class MadaclimLayers:
         self._env_metadata = self._load_metadata(Constants.ENV_METADATA_FILE)
         
         self.all_layers = self._get_madaclim_layers()
+        self.categorical_layers = self._get_categorical_df()
 
     @property
     def clim_raster(self) -> pathlib.Path:
         """pathlib.Path: Get or set the path to the climate raster file.
 
         This property allows you to get the current path to the climate raster file, or set a new
-        path. If setting a new path, the value must be a pathlib.Path object or a str. If the value 
-        is a str, it will be converted to a pathlib.Path object. The path must exist, otherwise a 
-        FileNotFoundError will be raised.
+            path. If setting a new path, the value must be a pathlib.Path object or a str. If the value 
+            is a str, it will be converted to a pathlib.Path object. The path must exist, otherwise a 
+            FileNotFoundError will be raised.
 
         Returns:
             The current path to the climate raster file.
@@ -153,9 +176,9 @@ class MadaclimLayers:
         """pathlib.Path: Get or set the path to the environment raster file.
 
         This property allows you to get the current path to the environment raster file, or set a new
-        path. If setting a new path, the value must be a pathlib.Path object or a str. If the value 
-        is a str, it will be converted to a pathlib.Path object. The path must exist, otherwise a 
-        FileNotFoundError will be raised.
+            path. If setting a new path, the value must be a pathlib.Path object or a str. If the value 
+            is a str, it will be converted to a pathlib.Path object. The path must exist, otherwise a 
+            FileNotFoundError will be raised.
 
         Returns:
             The current path to the environment raster file.
@@ -193,8 +216,8 @@ class MadaclimLayers:
         Retrieves the Coordinate Reference System (CRS) from the Madaclim climate raster.
 
         This property first validates the `clim_raster` attribute, ensuring its integrity and existence. 
-        It then opens the raster file and retrieves the CRS in EPSG format. The EPSG code is used to 
-        create and return a pyproj CRS object.
+            It then opens the raster file and retrieves the CRS in EPSG format. The EPSG code is used to 
+            create and return a pyproj CRS object.
 
         Returns:
             pyproj.crs.crs.CRS: The CRS object derived from the EPSG code of the climate raster.
@@ -811,7 +834,113 @@ class MadaclimLayers:
                 band_nums += (select_df.loc[select_df["geoclim_type"] == geoclim_type, "layer_number"] - total_clim_layers).to_list()
         
         return band_nums
+    
+    def get_categorical_combinations(self, layers_labels: Optional[Union[int, str, List[Union[int, str]]]]=None) -> Union[dict, Dict[str, Dict[int, str]]]:
+        """
+        Returns a dictionary representation of the specified categorical layers corresponding the the categorical value encoding.
 
+        Args:
+            layers_labels (Optional[Union[int, str, List[Union[int, str]]]]): The layer labels to fetch. Can be a single 
+            integer or string value, or a list of integer or string values. The input can also be in the format 
+            "layer_{num}" or "{geotype}_{num}_{name}_({description})" (output from `get_layers_labels(as_descriptive_labels=True)` method).
+            If `layers_labels` is `None`, all categorical layers are fetched.
+
+        Raises:
+            TypeError: If `layers_labels` is not a list of integers or strings, a single integer or a string 
+            that can be converted to an integer, or in the output format from the 'get_layers_labels' method.
+            ValueError: If a layer number in `layers_labels` is not a valid categorical layer number.
+
+        Returns:
+            Union[dict, Dict[str, Dict[int, str]]]: A dictionary of the specified categorical layers. 
+            If multiple layers were specified, the dictionary keys are 'layer_{num}', and the values are dictionaries 
+            with layer values as keys and their corresponding categories as values.
+            If a single layer was specified, the dictionary keys are the categorical values, and the values are the 
+            categories themselves. 
+
+        Example:
+            >>> # If multiple layers specified, it returns:
+            >>> madaclim_info = MadaclimLayers()
+            >>> >>> madaclim_info.get_categorical_combinations([75, 76])
+            {
+                'layer_75': {
+                    1: 'N-Bemarivo',
+                    2: 'S-Bemarivo,_N-Mangoro',
+                    ...
+                },
+                'layer_76': {
+                    1: 'Bare_Rocks',
+                    2: 'Raw_Lithic_Mineral_Soils',
+                    ...
+                },
+                ...
+            }
+            >>> # If a single layer is specified, it returns:
+            >>> madaclim_info.get_categorical_combinations("layer_76")
+            {
+                1: 'Bare_Rocks',
+                2: 'Raw_Lithic_Mineral_Soils',
+                ...
+            }
+        """
+        cat_df = self.categorical_layers.copy()
+        
+        # Validate layers_labels
+        possible_layers_num_format = self.get_layers_labels()
+        possible_layers_desc_format = self.get_layers_labels(as_descriptive_labels=True)
+
+        if isinstance(layers_labels, list):
+            # Check if all elements are in unique label format
+            layers_num_format = all([layer_label in possible_layers_num_format for layer_label in layers_labels])
+            layers_desc_format = all([layer_label in possible_layers_desc_format for layer_label in layers_labels])
+            
+            # Save as list of ints for later filtering
+            if layers_num_format or layers_desc_format:
+                layers_numbers = [int(layer_label.split("_")[1]) for layer_label in layers_labels]
+
+            # layers_labels as list of ints
+            else:
+                try:
+                    layers_numbers = [int(layer) for layer in layers_labels]
+                except (ValueError, TypeError):
+                    raise TypeError("layers_labels must be either a list of int values (or str that can be converted to int) or the output format from the 'get_layers_labels' method.")
+        
+        # Single layers_labels type check 
+        elif isinstance(layers_labels, str):
+            if layers_labels in possible_layers_num_format or layers_labels in possible_layers_desc_format:    # Check layer_<num> or desc str format
+                layers_numbers = [int(layers_labels.split("_")[1])]
+            else:
+                raise TypeError("layers_labels must be in the output format from the 'get_layers_labels' method if it is a string.")
+        
+        elif isinstance(layers_labels, int):
+            try:
+                layers_numbers = [layers_labels]
+            except (ValueError, TypeError):
+                raise TypeError("layers_labels must be an int if not in string format.")
+            
+        elif layers_labels is None:
+            layers_numbers = cat_df["layer_number"].astype(int).unique()
+
+        else:
+            raise ValueError("layers_labels must be either a single int value, a string that can be converted to an int, or in the output format from the 'get_layers_labels' method.")
+            
+        # Validate layer number range for layer_numbers as in
+        all_cat_layers_num = cat_df["layer_number"].unique()
+
+        for layer_number in layers_numbers:
+            if layer_number not in all_cat_layers_num:
+                raise ValueError(f"layer_number must be one of the categorical layers: {all_cat_layers_num}. {layer_number=} is not valid.")
+            
+        select_cat_df = cat_df[cat_df["layer_number"].isin(layers_numbers)]    # Fetch validated layers
+
+        # Save to dict
+        categorical_dict = {}
+        if len(layers_numbers) == 1:
+            categorical_dict = {int(row["value"]): row["category"] for _, row in select_cat_df.iterrows()}
+        else:
+            for layer_number in layers_numbers:
+                categorical_dict[f"layer_{layer_number}"] = {int(row["value"]): row["category"] for _, row in select_cat_df.iterrows()}
+        return categorical_dict
+    
     #! Deprecated: Unefficient method with raster.read I/O operation for each band
     def _get_band_from_layer_number(self, layer_number: Union[str, int], geoclim_type: str)->int:
         """Get the band number in a raster file corresponding to a given layer number and geoclim type.
@@ -1173,6 +1302,33 @@ class MadaclimLayers:
 
         return df
     
+    def _get_categorical_df(self) -> pd.DataFrame:
+        """
+        Private method to extract the categorical data from the metadata of all layers of a raster database 
+        related to climate and environment of Madagascar. It returns a DataFrame where each row represents a 
+        distinct category within each categorical layer.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing information for each categorical value in each layer. The DataFrame
+                has the following columns:
+                - 'geoclim_type': Type of geoclimatic data.
+                - 'layer_number': Numeric identifier of the layer.
+                - 'layer_name': Name of the layer.
+                - 'layer_description': Description of the layer.
+                - 'value': Numeric identifier of the category within the layer.
+                - 'category': Description of the category within the layer.
+        """
+        # Extract categorical only from all layers
+        all_layers_df = self.all_layers.copy()
+        cat_df = all_layers_df.loc[all_layers_df["is_categorical"] == True]
+
+        # Split units list into separate val, category columns
+        cat_df = cat_df.explode("units").reset_index().drop(columns=["index", "is_categorical"])
+        cat_df[["value", "category"]] = cat_df["units"].str.split("=", expand=True)
+        cat_df = cat_df.drop(columns="units")
+
+        return cat_df
+
     def _load_dataformat(self, filepath: pathlib.Path) -> dict:
         """Parse the json dataformat (either clim or env) file into a dictionary.
 
