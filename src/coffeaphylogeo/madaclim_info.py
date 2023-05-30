@@ -34,7 +34,7 @@ class MadaclimLayers:
         The instance can also access various methods to extract relevant information from the Madaclim database.
 
         
-        Examples:
+        Example:
             >>> from coffeaphylogeo.madaclim_info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> # Access the all layers df
@@ -199,7 +199,7 @@ class MadaclimLayers:
         Returns:
             pyproj.crs.crs.CRS: The CRS object derived from the EPSG code of the climate raster.
 
-        Examples:
+        Example:
             >>> # You need to have a valid 'clim_raster' attribute before
             >>> madaclim_info = MadaclimLayers()
             >>> madaclim_info.clim_crs
@@ -247,7 +247,7 @@ class MadaclimLayers:
         Returns:
             pyproj.crs.crs.CRS: The CRS object derived from the EPSG code of the environmental raster.
         
-        Examples:
+        Example:
             >>> # You need to have a valid 'env_raster' attribute
             >>> madaclim_info = MadaclimLayers()
             >>> madaclim_info.env_crs
@@ -316,7 +316,7 @@ class MadaclimLayers:
             TypeError: If geoclim_type is not a string.
             ValueError: If geoclim_type does not corresponds to a valid geoclim type.
         
-        Examples:
+        Example:
             >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> clim_df = madaclim_info.select_geoclim_type_layers(geoclim_type="clim")
@@ -645,7 +645,7 @@ class MadaclimLayers:
         Raises:
             ValueError: If save_dir is not a directory.
 
-        Examples:
+        Example:
             >>> madaclim_info.download_data()    # Defaults to current working directory
 
             ####   Trying get request to Madaclim website...   ####
