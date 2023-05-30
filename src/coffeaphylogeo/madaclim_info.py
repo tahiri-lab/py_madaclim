@@ -477,8 +477,8 @@ class MadaclimLayers:
             layers_labels (Union[int, str, List[Union[int, str]]]): The layer labels to fetch. Can be a single int or str value,
                 or a list of int or str values. The input can also be in the format "layer_{num}" or 
                 "{geotype}_{num}_{name}_({description})" (output from `get_layers_labels(as_descriptive_labels=True)` method).
-            args (List[str]): Optional. A list of column names in `all_layers` DataFrame. If specified, only these columns
-                will be returned as a dictionary.
+            *args (str): Optional. One or more column names in `all_layers` DataFrame. If specified, only these columns
+            will be returned as a dictionary.
 
         Returns:
             Union[dict, pd.DataFrame]: If `args` is specified, returns a nested dictionary with the format:
