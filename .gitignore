@@ -14,8 +14,4 @@ layers.ipynb
 gbs_trimmed/
 
 # sphinx documentation
-src/make.bat
-src/Makefile
-src/source
-src/build
-src/docs
+docs/
