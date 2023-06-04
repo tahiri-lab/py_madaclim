@@ -25,10 +25,13 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 class MadaclimRaster:
-    """Handles operations on Madaclim climate and environmental raster files.
+    """
+    Handles operations on Madaclim climate and environmental raster files. 
+        Also provides a method to visualize the raster layers (map) and distribution of the raster values.
 
     Attributes:
         clim_raster (pathlib.Path): Path to the climate raster file.
+        clim_crs ()
         env_raster (pathlib.Path): Path to the environmental raster file.
     """
 
@@ -156,7 +159,7 @@ class MadaclimRaster:
         create and return a pyproj CRS object.
 
         Returns:
-            pyproj.crs.
+            pyproj.crs.crs.CRS: The CRS derived of the climate raster file.
         """
         # Get epsg from clim_raster
         with rasterio.open(self.clim_raster) as clim_raster:
@@ -172,7 +175,7 @@ class MadaclimRaster:
         create and return a pyproj CRS object.
 
         Returns:
-            pyproj.crs.
+            pyproj.crs.crs.CRS: The CRS derived of the environmental raster file.
         """
         # Get epsg from clim_raster
         with rasterio.open(self.env_raster) as env_raster:
@@ -442,6 +445,8 @@ class MadaclimPoint:
         latitude (float): The latitude of the point.
         longitude (float): The longitude of the point.
         #TODO CLIM/ENV_CRS + CLIM/ENV_RASTER ATTRS
+        #TODO IMPLEMENT VIZ METHODS
+        #TODO FIX METHODS USING MadaclimLayers with updated class methods
         source_crs (pyproj.crs.crs.CRS): The coordinate reference system of the point.
         mada_geom_point (shapely.geometry.point.Point): A Shapely Point object representing the point projected in the Madaclim rasters' CRS.
         ___base_attr (dict): A dictionary containing the base attributes names as keys and their values as values.
