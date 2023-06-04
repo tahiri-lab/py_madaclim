@@ -215,21 +215,26 @@ class MadaclimRaster:
             ValueError: If 'layer' is not found within the range of layers, or if 'figsize' is not a tuple of 2 elements.
             ValueError: If the keys from `get_categorical_combinations` do not match raster values.
 
-        #TODO FINISH EXAMPLES
         Example:
             >>> # Extract environmental layers labels
             >>> from coffeaphylogeo.madaclim_info import MadaclimLayers
             >>> mada_info = MadaclimLayers(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
-            >>> env_layers_labels = mada_info.get_layers_labels("env", as_descriptive_labels=True)
-            >>> >>> env_layers_labels[0]    # Using alttitude as our example
+            >>> env_labels = mada_info.get_layers_labels("env", as_descriptive_labels=True)
+            >>> >>> env_labels[0]    # Using altitude as our example
             'env_71_altitude (Altitude in meters)'
             
             >>> # Default visualization of the raster map
             >>> from coffeaphylogeo.raster_manipulation import MadaclimRaster
             >>> mada_rasters = MadaclimRaster(clim_raster=mada_info.clim_raster, env_raster=mada_info.env_raster)    # Using common attr btw the instances
-            >>> mada_rasters.v
-            mada_raster.visualize_layer('layer_2', figsize=(12, 6), imshow_cmap='hot', 
-                            cax_size='7%', histplot_bins=30, histplot_color='blue')
+            >>> mada_rasters.visualize_layer(env_layers_labels[0])
+
+            >>> # Pass in any number of kwargs to the imshow or cax (raster + colorbarax) or histplot for customization
+            >>> mada_rasters.visualize_layer(env_labels[0], imshow_cmap="terrain", histplot_binwidth=100, histplot_stat="count")
+
+            >>> # Some layers are categorical data so the figure formatting will change (no cbar)
+            >>> # Rock types example
+            >>> geo_rock_label = next(label for label in env_labels if "geo" in label)
+            >>> mada_rasters.visualize_layer(geo_rock_label, figsize=(12, 8))
         """
     
         # Fetch metadata and layer nums with a MadaclimLayers instance
@@ -380,7 +385,6 @@ class MadaclimRaster:
                 fig, axes = plt.subplots(1, 2, figsize=figsize)
 
                 # Raster map with cbar
-                imshow_cmap = imshow_args.pop("cmap", "inferno")
                 im = axes[0].imshow(band_data.squeeze(), cmap=imshow_cmap, **imshow_args)    # Draw raster map from masked array
                 
                 # Colorbar customization
