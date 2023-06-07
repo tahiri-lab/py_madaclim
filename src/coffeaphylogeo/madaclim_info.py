@@ -565,15 +565,23 @@ class MadaclimLayers:
 
             >>> # Fetch as dict with keys as layer_<num> and vals of choice using 
             >>> madaclim_info.fetch_specific_layers([15, 55, 75], "geoclim_type", "layer_name", "is_categorical")
-            {'layer_15': {'geoclim_type': 'clim',
-            'layer_name': 'tmax3',
-            'is_categorical': False},
-            'layer_55': {'geoclim_type': 'clim',
-            'layer_name': 'bio19',
-            'is_categorical': False},
-            'layer_75': {'geoclim_type': 'env',
-            'layer_name': 'geo',
-            'is_categorical': True}}
+            {
+                'layer_15': {
+                    'geoclim_type': 'clim',
+                    'layer_name': 'tmax3',
+                    'is_categorical': False
+                },
+                'layer_55': {
+                    'geoclim_type': 'clim',
+                    'layer_name': 'bio19',
+                    'is_categorical': False
+                },
+                'layer_75': {
+                    'geoclim_type': 'env',
+                    'layer_name': 'geo',
+                    'is_categorical': True}
+                }
+            }
             >>> # Only col names will be accepted as additionnal args
             >>> bio1 = next((layer for layer in mada_info.get_layers_labels(as_descriptive_labels=True) if "bio1" in layer), None)
             >>> madaclim_info.fetch_specific_layers(bio1, "band_number")
@@ -582,7 +590,19 @@ class MadaclimLayers:
             File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaPhyloGeo/src/coffeaphylogeo/madaclim_info.py", line 604, in fetch_specific_layers
                 if not min_layer <= layer_number <= max_layer:
                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            KeyError: "Invalid args: ['band_number']. Args must be one of a key of ['geoclim_type', 'layer_number', 'layer_name', 'layer_description', 'is_categorical', 'units']"
+            KeyError: "Invalid args: ['band_number']. Args must be one of a key of ['geoclim_type', 'layer_number', 'layer_name', 'layer_description', 'is_categorical', 'units'] or 'all'"
+            >>> # Get all keys with the `all` argument
+            >>> madaclim_info.fetch_specific_layers(bio1, "all")
+            {
+                'layer_37': {
+                    'geoclim_type': 'clim',
+                    'layer_number': 37,
+                    'layer_name': 'bio1',
+                    'layer_description': 'Annual mean temperature',
+                    'is_categorical': False,
+                    'units': 'degrees'
+                }
+            }
 
         """
         all_layers_df = self.all_layers.copy()    # Reference to all clim and env metadata df
@@ -635,20 +655,23 @@ class MadaclimLayers:
         # Fetch rows according to layer selection
         select_df = all_layers_df[all_layers_df["layer_number"].isin(layers_numbers)]
 
-        # Validate args for presence in `all_layers` attr
+        # Validate args for presence in `all_layers` attr or for `all` possible keys
         if len(args) > 0:
-            missing_args = list(set(args) - set(select_df.columns))
+            missing_args = list(set(args) - set(list(select_df.columns) + ["all"]))
             if missing_args:
-                raise KeyError(f"Invalid args: {missing_args}. Args must be one of a key of {list(select_df.columns)}")
-
+                raise KeyError(f"Invalid args: {missing_args}. Args must be one of a key of {list(select_df.columns)} or 'all'")
+            if "all" in args and len(args) > 1:
+                raise ValueError("Cannot have additional arguments when 'all' is specified")
+            
+            cols = select_df.columns if "all" in args else args
             # Return nested dicts with values of specified arg for the fetched layers
             if not missing_args:
                 select_layers_dict = {}
                 for layer_num in layers_numbers:
                     layer_label = f"layer_{layer_num}"
                     select_layers_dict[layer_label] = {}
-                    for arg in args:
-                        select_layers_dict[layer_label][arg] = select_df[select_df["layer_number"] == layer_num][arg].values[0]    
+                    for col in cols:
+                        select_layers_dict[layer_label][col] = select_df[select_df["layer_number"] == layer_num][col].values[0]    
                 return select_layers_dict
         
         else:    # Save whole row of df
