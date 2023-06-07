@@ -449,9 +449,7 @@ class MadaclimPoint:
         specimen_id (str): An identifier for the point.
         latitude (float): The latitude of the point.
         longitude (float): The longitude of the point.
-        #TODO CLIM/ENV_CRS + CLIM/ENV_RASTER ATTRS
         #TODO IMPLEMENT VIZ METHODS
-        #TODO FIX METHODS USING MadaclimLayers with updated class methods
         source_crs (pyproj.crs.crs.CRS): The coordinate reference system of the point.
         mada_geom_point (shapely.geometry.point.Point): A Shapely Point object representing the point projected in the Madaclim rasters' CRS.
         ___base_attr (dict): A dictionary containing the base attributes names as keys and their values as values.
@@ -917,15 +915,15 @@ class MadaclimPoint:
             )
         """
         # Create a MadaclimRaster to validate both rasters
-        mada_raster = MadaclimRaster(clim_raster=clim_raster, env_raster=env_raster)
-        if mada_raster.clim_crs != Constants.MADACLIM_CRS:
+        mada_rasters = MadaclimRaster(clim_raster=clim_raster, env_raster=env_raster)
+        if mada_rasters.clim_crs != Constants.MADACLIM_CRS:
             raise ValueError(f"The provided clim_raster's CRS does not corresponds to Madaclim db's expected crs: {Constants.MADACLIM_CRS}")
 
-        if mada_raster.env_crs != Constants.MADACLIM_CRS:
+        if mada_rasters.env_crs != Constants.MADACLIM_CRS:
             raise ValueError(f"The provided env_raster's CRS does not corresponds to Madaclim db's expected crs: {Constants.MADACLIM_CRS}")
         
         # Create a MadaclimLayers instance to get layers labels and validate layers to sample
-        madaclim_info = MadaclimLayers(clim_raster=mada_raster.clim_raster, env_raster=mada_raster.env_raster)
+        madaclim_info = MadaclimLayers(clim_raster=mada_rasters.clim_raster, env_raster=mada_rasters.env_raster)
         all_layers_df = madaclim_info.all_layers
         
         # Validate layers to sample
@@ -1000,7 +998,7 @@ class MadaclimPoint:
         if clim_raster_sample_info["layers"]:
             total_clim_layers = len(clim_raster_sample_info["layers"])
             
-            with rasterio.open(mada_raster.clim_raster) as clim_raster:
+            with rasterio.open(mada_rasters.clim_raster) as clim_raster:
                 # Initialize reference and container to check for layers with nodata values
                 nodata_clim = clim_raster.nodata
                 
@@ -1014,27 +1012,29 @@ class MadaclimPoint:
                     
                     # Sample selected layers according to the coordinate
                     for layer_num, band_num in zip(clim_raster_sample_info["layers"], clim_raster_sample_info["bands"]):
-                        # Get layer info for pbar display and label key for sampled_data
-                        layer_name = madaclim_info.fetch_specific_layers(layers_labels=layer_num, as_descriptive_labels=True, return_list=True)[0]
-                        layer_description_display = layer_name.split('_')[-1]
-                        pbar.set_description(f"Extracting layer {layer_num}: {layer_description_display}")
+                        # Get layer metadata for pbar display and label key for sampled_data
+                        layer_metadata = madaclim_info.fetch_specific_layers(layer_num)
+                        pbar.set_description(f"Extracting layer {layer_num}: {layer_metadata['layer_description'].values[0]}")
                         pbar.update()
                         
                         # Sample using the self.mada_geom_point attributes coordinates for the current layer
                         data = list(clim_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band_num))[0]
                         
                         # Save extracted data with specified layer info/name
-                        if not layer_info:
-                            layer_name = f"layer_{layer_num}"
-                        sampled_data[layer_name] = data[0]
+                        layer_label = (
+                            madaclim_info.get_layers_labels(layer_num)[0] 
+                            if not layer_info 
+                            else madaclim_info.get_layers_labels(layer_num, as_descriptive_labels=True)[0]
+                        )
+                        sampled_data[layer_label] = data[0]
 
                         if data[0] == nodata_clim:    # Save layers where nodata at specimen location
-                            nodata_layers.append(layer_name)
+                            nodata_layers.append(layer_label)
         
         if env_raster_sample_info["layers"]:
             total_env_layers = len(env_raster_sample_info["layers"])
             
-            with rasterio.open(mada_raster.env_raster) as env_raster:
+            with rasterio.open(mada_rasters.env_raster) as env_raster:
                 # Initialize reference and container to check for layers with nodata values
                 nodata_env = env_raster.nodata
                 
@@ -1048,22 +1048,24 @@ class MadaclimPoint:
                     
                     # Sample selected layers according to the coordinate
                     for layer_num, band_num in zip(env_raster_sample_info["layers"], env_raster_sample_info["bands"]):
-                        # Get layer info for pbar display and label key for sampled_data
-                        layer_name = madaclim_info.fetch_specific_layers(layers_labels=layer_num, as_descriptive_labels=True, return_list=True)[0]
-                        layer_description_display = layer_name.split('_')[-1]
-                        pbar.set_description(f"Extracting layer {layer_num}: {layer_description_display}")
+                        # Get layer metadata for pbar display and label key for sampled_data
+                        layer_metadata = madaclim_info.fetch_specific_layers(layer_num)
+                        pbar.set_description(f"Extracting layer {layer_num}: {layer_metadata['layer_description'].values[0]}")
                         pbar.update()
                         
                         # Sample using the self.mada_geom_point attributes coordinates for the current layer
                         data = list(env_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band_num))[0]
                         
                         # Save extracted data with specified layer info/name
-                        if not layer_info:
-                            layer_name = f"layer_{layer_num}"
-                        sampled_data[layer_name] = data[0]
+                        layer_label = (
+                            madaclim_info.get_layers_labels(layer_num)[0] 
+                            if not layer_info 
+                            else madaclim_info.get_layers_labels(layer_num, as_descriptive_labels=True)[0]
+                        )
+                        sampled_data[layer_label] = data[0]
 
                         if data[0] == nodata_env:    # Save layers where nodata at specimen location
-                            nodata_layers.append(layer_name)
+                            nodata_layers.append(layer_label)
                                     
 
         if len(nodata_layers) > 0:    # No raising exception, just warning print
