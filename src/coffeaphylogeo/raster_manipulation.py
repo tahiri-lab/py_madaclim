@@ -238,6 +238,9 @@ class MadaclimRaster:
             >>> # Rock types example
             >>> geo_rock_label = next(label for label in env_labels if "geo" in label)
             >>> mada_rasters.visualize_layer(geo_rock_label, figsize=(12, 8))
+
+            >>> # For numerical features with highly skewed distribution, specify vmin or vmax for the raster map
+            >>> mada_rasters.visualize_layer(env_labels[3], imshow_vmin=6000)
         """
     
         # Fetch metadata and layer nums with a MadaclimLayers instance
@@ -388,7 +391,9 @@ class MadaclimRaster:
                 fig, axes = plt.subplots(1, 2, figsize=figsize)
 
                 # Raster map with cbar
-                im = axes[0].imshow(band_data.squeeze(), cmap=imshow_cmap, **imshow_args)    # Draw raster map from masked array
+                imshow_vmin = imshow_args.pop("vmin", np.nanmin(band_data.squeeze()))
+                imshow_vmax = imshow_args.pop("vmax", np.nanmax(band_data.squeeze()))
+                im = axes[0].imshow(band_data.squeeze(), cmap=imshow_cmap, vmin=imshow_vmin, vmax=imshow_vmax, **imshow_args)    # Draw raster map from masked array
                 
                 # Colorbar customization
                 divider = make_axes_locatable(axes[0])
