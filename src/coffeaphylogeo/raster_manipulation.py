@@ -1800,21 +1800,24 @@ class MadaclimCollection:
 
     def sample_from_rasters(
             self,
+            clim_raster: pathlib.Path, 
+            env_raster: pathlib.Path,
             layers_to_sample: Union[int, str, List[Union[int, str]]]="all", 
             layer_info: bool=False,
             return_nodata_layers: bool=False,
-            clim_raster_path: Optional[pathlib.Path]=None, 
-            env_raster_path: Optional[pathlib.Path]=None
         ) -> Union[Dict[str, Dict[str, float]], Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, List[str]]]]]:
+        
         """
-        Sample the given raster layers for all points in the MadaclimCollection.
-
+        Samples geoclimatic data from raster files for specified layers at the location of each point belonging to the MadaclimCollection's instance.
+        
         Args:
-            layers_to_sample (Union[int, str, List[Union[int, str]]], optional): The raster layers to sample. Can be an integer (layer index), a string (layer name), or a list of integers or strings. If 'all', all layers are sampled. Defaults to 'all'.
-            layer_info (bool, optional): If True, return detailed information about each layer. Defaults to False.
-            return_nodata_layers (bool, optional): If True, return layers where the sampled value is nodata. Defaults to False.
-            clim_raster_path (Optional[pathlib.Path], optional): Path to the climate raster file. If not provided, the default path is used. Defaults to None.
-            env_raster_path (Optional[pathlib.Path], optional): Path to the environmental raster file. If not provided, the default path is used. Defaults to None.
+            clim_raster_path (pathlib.Path): Path to the climate raster file.
+            env_raster_path (pathlib.Path): Path to the environment raster file.
+            layers_to_sample (Union[int, str, List[Union[int, str]]], optional): The layer number(s) to sample from the raster files.
+                Can be a single int, a single string in the format 'layer_<num>', or a list of ints or such strings. Defaults to 'all'.
+            layer_info (bool, optional): Whether to use descriptive labels for the returned dictionary keys. Defaults to False.
+            return_nodata_layers (bool, optional): Whether to return a list of layers with nodata values at the specimen location.
+                Defaults to False.
 
         Returns:
             Union[Dict[str, Dict[str, float]], Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, List[str]]]]]: 
@@ -1844,28 +1847,35 @@ class MadaclimCollection:
             >>> bio1
             'clim_37_bio1 (Annual mean temperature)'
 
+            >>> # Validating the rasters
+            mada_rasters = MadaclimRaster(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
+
             >>> # Sample the current_climate raster
             >>> collection    # sampled status set to False
             MadaclimCollection = [
                     MadaclimPoint(specimen_id=spe1_aren, mada_geom_point=POINT (837072.9150244407 7903496.320897499),sampled=False),
                     MadaclimPoint(specimen_id=spe2_humb, mada_geom_point=POINT (507237.57495924993 8594195.741515966),sampled=False)
             ]
-            >>> collection_bioclim_data = collection.sample_from_rasters(bioclim_labels)
+            >>> collection_bioclim_data = collection.sample_from_rasters(
+                    mada_rasters.clim_raster, 
+                    mada_rasters.env_raster,
+                    layers_to_sample=bioclim_labels
+                )
 
             ######################################## Extracting data for: spe1_aren ########################################
 
             Sampling 19 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 55: bio19 (Precipitation of coldest quarter):  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
+            Extracting layer 55: Precipitation of coldest quarter:  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
 
-            Finished raster sampling operation in 7.39 seconds.
+            Finished raster sampling operation in 0.01 seconds.
 
 
             ######################################## Extracting data for: spe2_humb ########################################
 
             Sampling 19 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 55: bio19 (Precipitation of coldest quarter):  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
+            Extracting layer 55: bio19 Precipitation of coldest quarter:  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
 
-            Finished raster sampling operation in 7.29 seconds.
+            Finished raster sampling operation in 0.02 seconds.
 
             >>> collection    # sampled status updated
             MadaclimCollection = [
@@ -1892,7 +1902,7 @@ class MadaclimCollection:
             Sampling 9 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
             Extracting layer 79: forestcover (None):  100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
 
-            Finished raster sampling operation in 25.37 seconds.
+            Finished raster sampling operation in 0.43 seconds.
 
 
             ######################################## Extracting data for: spe2_humb ########################################
@@ -1904,7 +1914,7 @@ class MadaclimCollection:
             Extracting layer 79: forestcover (None):  100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
             BEWARE! 5 layer(s) contain a nodata value at the specimen location
 
-            Finished raster sampling operation in 25.22 seconds.
+            Finished raster sampling operation in 0.41 seconds.
 
             >>> len(collection_nodata_layers)
             1
@@ -1917,9 +1927,8 @@ class MadaclimCollection:
             ['env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))', 'env_76_soil (None)', 'env_77_vegetation (None)', 'env_78_watersheds (None)', 'env_79_forestcover (None)']
 
 
-            >>> # layers_to_sample also accepts a single layer
+            >>> # layers_to_sample also accepts a single layer, or multiple layers as the output from the `get_layers_labels` method in MadaclimLayers
             >>> collection.sample_from_rasters(37)
-
             {'spe1_aren': {'layer_37': 196}, 'spe2_humb': {'layer_37': 238}}
         """
         
@@ -1933,11 +1942,11 @@ class MadaclimCollection:
         # Sample rasters for whole collection
         for point in self.__all_points:
             sampled_data_point, nodata_layers_point = point.sample_from_rasters(
+                clim_raster=clim_raster,
+                env_raster=env_raster,
                 layers_to_sample=layers_to_sample,
                 layer_info=layer_info,
                 return_nodata_layers=True,
-                clim_raster_path=clim_raster_path,
-                env_raster_path=env_raster_path
             )
 
             # Save sampled raster data (nested dicts)
