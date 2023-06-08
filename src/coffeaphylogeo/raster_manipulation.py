@@ -624,21 +624,33 @@ class MadaclimPoint:
 
     @property
     def base_attr(self) -> dict:
-        """Get the base attributes when constructing the instance.
+        """
+        Get the base attributes when constructing the instance.
 
         Returns:
             dict: A dictionary containing the base attributes names as keys and their values as values.
         """
         return self.__base_attr
     
-    # @property
-    # def gdf(self) -> gpd.GeoDataFrame:
-    #     """Get the geodataframe using mada_geom_point as geometry.
+    @property
+    def sampled_data(self) -> Dict[str, int]:
+        """
+        Get the data obtained from the `sampled_from_rasters` method.
 
-    #     Returns:
-    #         gpd.GeoDataFrame: A Geopandas GeoDataFrame generated from instance attributes and Point geometry.
-    #     """
-    #     return self.__gdf
+        Return:
+            dict: A dictionary containing the layers labels as keys and their values as int.
+        """
+        pass
+    
+    @property
+    def gdf(self) -> gpd.GeoDataFrame:
+        """Get the geodataframe using mada_geom_point as geometry.
+
+        Returns:
+            gpd.GeoDataFrame: A Geopandas GeoDataFrame generated from instance attributes and Point geometry.
+        """
+        gdf = gpd.GeoDataFrame(self.mada_geom_point)
+        return self.__gdf
 
     def __str__(self) -> str:
         
@@ -799,7 +811,7 @@ class MadaclimPoint:
             layers_to_sample: Union[int, str, List[Union[int, str]]]="all", 
             layer_info: bool=False,
             return_nodata_layers: bool=False,
-        ) -> Union[dict, list]:
+        ) -> Union[Dict[str, int], list]:
         """
         Samples geoclimatic data from raster files for specified layers at the location of the instances's lat/lon coordinates from the mada_geom_point attribute.
 
@@ -817,7 +829,7 @@ class MadaclimPoint:
             ValueError: If the layer_number is out of range or if the mada_geom_point object is empty.
 
         Returns:
-            Union[dict, list]: A dictionary containing the sampled data, with keys being layer names or numbers depending
+            Union[Dict[str, int], list]: A dictionary containing the sampled data, with keys being layer names or numbers depending
                 on the layer_info parameter. If return_nodata_layers is True, also returns a list of layers with nodata values
                 at the specimen location.
         Exmaples:
@@ -870,10 +882,10 @@ class MadaclimPoint:
             ######################################## Extracting data for: spe2_humb ########################################
 
             Sampling 70 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 70: ndm (Number of dry months in the year):  100%|██████████████████████████████████████████████████████████████████████████████████████| layer 70/70 [Time remaining: 00:00]
+            Extracting layer 70: ndm (Number of dry months in the year):  100%|████| layer 70/70 [Time remaining: 00:00]
 
             Sampling 9 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
-            Extracting layer 79: forestcover (Percentage of forest cover in 1 km by 1 km grid cells):  100%|███████████████████████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
+            Extracting layer 79: forestcover (Percentage of forest cover in 1 km by 1 km grid cells):  100%|████| layer 9/9 [Time remaining: 00:00]
             BEWARE! 5 layer(s) contain a nodata value at the specimen location
 
             Finished raster sampling operation in 0.09 seconds.
@@ -1245,14 +1257,14 @@ class MadaclimCollection:
         return self.__all_points
     
     @property
-    def sampled_raster_data(self) -> Union[None, Dict[str, Dict[str, float]]]:
+    def sampled_raster_data(self) -> Union[None, Dict[str, Dict[str, int]]]:
         """Get the sampled_raster_data attribute.
 
         This attribute is a nested dictionary. The outer dictionary uses the MadaclimPoint.specimen_id as keys. 
         The corresponding value for each key is another dictionary, which uses layer_names as keys and sampled values from rasters as values.
 
         Returns:
-            Union[None, Dict[str, Dict[str, float]]]: A dictionary with MadaclimPoint.specimen_id as keys and a dictionary of layer_names (str) and sampled values (float) as values.
+            Union[None, Dict[str, Dict[str, int]]]: A dictionary with MadaclimPoint.specimen_id as keys and a dictionary of layer_names (str) and sampled values (int) as values.
                 None if Collection has not been sampled yet.
         """
         return self.__sampled_raster_data
@@ -1865,7 +1877,7 @@ class MadaclimCollection:
             ######################################## Extracting data for: spe1_aren ########################################
 
             Sampling 19 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 55: Precipitation of coldest quarter:  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
+            Extracting layer 55: Precipitation of coldest quarter:  100%|████| layer 19/19 [Time remaining: 00:00]
 
             Finished raster sampling operation in 0.01 seconds.
 
@@ -1873,7 +1885,7 @@ class MadaclimCollection:
             ######################################## Extracting data for: spe2_humb ########################################
 
             Sampling 19 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 55: bio19 Precipitation of coldest quarter:  100%|████████████████████████████████████████████████████████████████████████████████████| layer 19/19 [Time remaining: 00:00]
+            Extracting layer 55: bio19 Precipitation of coldest quarter:  100%|████| layer 19/19 [Time remaining: 00:00]
 
             Finished raster sampling operation in 0.02 seconds.
 
@@ -1897,10 +1909,10 @@ class MadaclimCollection:
             ######################################## Extracting data for: spe1_aren ########################################
 
             Sampling 70 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 70: ndm (Number of dry months in the year):  100%|██████████████████████████████████████████████████████████████████████████████████████| layer 70/70 [Time remaining: 00:00]
+            Extracting layer 70: ndm (Number of dry months in the year):  100%|████| layer 70/70 [Time remaining: 00:00]
 
             Sampling 9 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
-            Extracting layer 79: forestcover (None):  100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
+            Extracting layer 79: forestcover (None):  100%|████| layer 9/9 [Time remaining: 00:00]
 
             Finished raster sampling operation in 0.43 seconds.
 
@@ -1908,10 +1920,10 @@ class MadaclimCollection:
             ######################################## Extracting data for: spe2_humb ########################################
 
             Sampling 70 layer(s) from madaclim_current.tif (geoclim_type=clim)...
-            Extracting layer 70: ndm (Number of dry months in the year):  100%|██████████████████████████████████████████████████████████████████████████████████████| layer 70/70 [Time remaining: 00:00]
+            Extracting layer 70: ndm (Number of dry months in the year):  100%|████| layer 70/70 [Time remaining: 00:00]
 
             Sampling 9 layer(s) from madaclim_enviro.tif (geoclim_type=env)...
-            Extracting layer 79: forestcover (None):  100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| layer 9/9 [Time remaining: 00:00]
+            Extracting layer 79: forestcover (None):  100%|████| layer 9/9 [Time remaining: 00:00]
             BEWARE! 5 layer(s) contain a nodata value at the specimen location
 
             Finished raster sampling operation in 0.41 seconds.
