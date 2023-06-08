@@ -27,7 +27,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 class MadaclimRaster:
     """
     Handles operations on Madaclim climate and environmental raster files. 
-        Also provides a method to visualize the raster layers (map) and distribution of the raster values.
+    Also provides a method to visualize the raster layers (map) and distribution of the raster values.
 
     Attributes:
         clim_raster (pathlib.Path): Path to the climate raster file.
@@ -439,6 +439,7 @@ class MadaclimRaster:
 
 
 class MadaclimPoint:
+        #TODO IMPLEMENT VIZ METHODS
     
     """
     A class representing a specimen as a geographic point with a specific coordinate reference system (CRS)
@@ -449,10 +450,13 @@ class MadaclimPoint:
         specimen_id (str): An identifier for the point.
         latitude (float): The latitude of the point.
         longitude (float): The longitude of the point.
-        #TODO IMPLEMENT VIZ METHODS
         source_crs (pyproj.crs.crs.CRS): The coordinate reference system of the point.
         mada_geom_point (shapely.geometry.point.Point): A Shapely Point object representing the point projected in the Madaclim rasters' CRS.
-        ___base_attr (dict): A dictionary containing the base attributes names as keys and their values as values.
+        sampled_data (Union[None, Dict[str, int]]): A dictionary containing the layers labels as keys and their values as int.
+            None if data has not been sampled yet.
+        nodata_layers (Union[None, List[str]]): A list containing the layers labels.
+            None if data has not been sampled yet or no layers sampled containined `nodata` values.
+        gdf (gpd.GeoDataFrame): A Geopandas GeoDataFrame generated from instance attributes and mada_geom_point geometry
         
     """
 
@@ -465,10 +469,12 @@ class MadaclimPoint:
             **kwargs
         ) -> None:
         """
-        Initialize a MadaclimPoint object with the given `specimen_id`, `latitude`, `longitude`, `clim_raster, `env_raster` and `source_crs`.
+        Initialize a MadaclimPoint object with the given `specimen_id`, `latitude`, `longitude`, and `source_crs`.
         The coordinates provided should respect the nature of the given source CRS native units' (i.e. degrees WGS84 or meters for EPSG:3857).
-        The path to both climate and environmental rasters have to be provided to properly construc the `mada_geom_point` attribute and use other methods.
+        Upon instantiation, a `mada_geom_point` is created in the projection of the rasters of Madaclim db if `source_crs` differs.
         Optionally, provide additional keyword arguments to store as instance attributes.
+        A GeoDataFrame is also created and updated taking the object's attribute and using the `mada_geom_point` for geometry.
+
         
         Args:
             specimen_id (str): An identifier for the point.
@@ -506,17 +512,24 @@ class MadaclimPoint:
             True
             >>> specimen_1
             MadaclimPoint(
-                specimen_id = spe1_aren,
-                source_crs = 4326,
-                latitude = -18.9333,
-                longitude = 48.2,
-                mada_geom_point = POINT (837072.9150244407 7903496.320897499),
-                sampled_data = None,
-                nodata_layers = None,
-                genus = Coffea,
-                species = arenesiana,
-                has_sequencing = True
+                    specimen_id = spe1_aren,
+                    source_crs = 4326,
+                    latitude = -18.9333,
+                    longitude = 48.2,
+                    mada_geom_point = POINT (837072.9150244407 7903496.320897499),
+                    sampled_data = None (Not sampled yet),
+                    nodata_layers = None (Not sampled yet),
+                    genus = Coffea,
+                    species = arenesiana,
+                    has_sequencing = True,
+                    gdf.shape = (1, 10)
             )
+
+            >>> # Core and additionnal attributes are save to a GeoDataFrame with `mada_geom_point` for geometry
+            >>> specimen1.gdf
+              specimen_id  source_crs  latitude  longitude                 mada_geom_point sampled_data nodata_layers   genus     species  has_sequencing
+            0   spe1_aren        4326  -18.9333       48.2  POINT (837072.915 7903496.321)         None          None  Coffea  arenesiana            True
+
         """
         
         self.specimen_id = specimen_id
@@ -541,7 +554,9 @@ class MadaclimPoint:
         for key in additional_args:
             setattr(self, key, kwargs[key])
 
+        # Construct the GeoPandas DataFrame with all attrs and `mada_geom_point` for geometry
         self._gdf = self._construct_geodataframe()
+        self.__initial_attributes = self.__dict__.copy()    # For dealing with newly set attr post-instantiation
     
     @property
     def specimen_id(self) -> str:
@@ -576,8 +591,8 @@ class MadaclimPoint:
     def latitude(self, value: float):
         value = self.validate_lat(value, crs=self.source_crs)
         self._latitude = value
-        # Update `mada_geom_point` when latitude is updated
-        self._update_mada_geom_point()
+        
+        self._update_mada_geom_point()   # Update `mada_geom_point` when latitude is updated
     
     @property
     def longitude(self) -> float:
@@ -596,8 +611,8 @@ class MadaclimPoint:
     def longitude(self, value: float):
         value = self.validate_lon(value, crs=self.source_crs)
         self._longitude = value
-        # Update `mada_geom_point` when longitude is updated
-        self._update_mada_geom_point()
+        
+        self._update_mada_geom_point()   # Update `mada_geom_point` when longitude is updated
     
     @property
     def source_crs(self) -> pyproj.crs.CRS:
@@ -617,8 +632,7 @@ class MadaclimPoint:
         value = self.validate_crs(value)
         self._source_crs = value
         
-        # Update `mada_geom_point` when crs is updated
-        self._update_mada_geom_point()
+        self._update_mada_geom_point()   # Update `mada_geom_point` when source_crs is updated
 
     @property
     def mada_geom_point(self) -> shapely.geometry.point.Point:
@@ -658,7 +672,7 @@ class MadaclimPoint:
     
     @property
     def gdf(self) -> gpd.GeoDataFrame:
-        """Get the geodataframe using `mada_geom_point` as geometry.
+        """Get the GeoPandas DataFrame using `mada_geom_point` as geometry.
 
         Returns:
             gpd.GeoDataFrame: A Geopandas GeoDataFrame generated from instance attributes and Point geometry.
@@ -666,25 +680,65 @@ class MadaclimPoint:
         return self._gdf
 
     def __str__(self) -> str:
-        
-        # # Fetch base and additional attributes at construction
-        # base_attr = self.base_attr
-        # add_attr = self._get_additional_attributes()
-        # all_attr = {**base_attr, **add_attr}    # Append attr dictionaries
-        
-        # Get the current state of all attributes
-        all_attr = {k: v for k, v in self.__dict__.items() if k != "_MadaclimPoint__base_attr"}  # Remove the recursiveness of __base_attr
+        # Get the current state of all attributes (remove recursiveness of __base/initial attrs)
+        show_attributes = {}
+        for k, v in self.__dict__.items():
+            
+            if k not in ["_MadaclimPoint__base_attr", "_MadaclimPoint__initial_attributes"]:
+                
+                if k == "_source_crs":    # Display EPSG code for readability
+                    show_attributes[k] = v.to_epsg()
+                
+                elif k == "_sampled_data":    # Display number of sampled layers or status of sampling
+                    if self._sampled_data:
+                        show_attributes["_len(sampled_data)"] = f"{len(v)} layer(s)"
+                    else:
+                        show_attributes["_sampled_data"] = "None (Not sampled yet)"
 
-        
+                elif k == "_nodata_layers":    # Display number of nodata layers or status of sampling
+                    if self._sampled_data:
+                        show_attributes["_len(nodata_layers)"] = f"{len(v)} layer(s)" if self._nodata_layers else "None (0 layers)"
+                    else:
+                        show_attributes["_nodata_layers"] = "None (Not sampled yet)"
+
+                elif k == "_gdf":    # gdf shape readability
+                    show_attributes["_gdf.shape"] = (self._gdf).shape
+                
+                else:
+                    show_attributes[k] = v
+
         # Pretty format
-        all_attr_list = [f"{k.lstrip('_')} = {v.to_epsg() if k == '_source_crs' else v}" for k, v in all_attr.items()]
-        all_attr_str = ",\n\t".join(all_attr_list)
-        madapoint_obj = f"MadaclimPoint(\n\t{all_attr_str}\n)"
+        show_attr_list = [f"{k.lstrip('_')} = {v}" for k, v in show_attributes.items()]
+        show_attr_str = ",\n\t".join(show_attr_list)
+        madapoint_obj = f"MadaclimPoint(\n\t{show_attr_str}\n)"
         
         return madapoint_obj
 
     def __repr__(self) -> str:
         return self.__str__()
+    
+    def __setattr__(self, name, value):
+        """
+        Overrides the __setattr__ method to update GeoDataFrame when attributes are set.
+
+        This method overrides the standard `__setattr__` method. When an attribute 
+        is set on the instance, it checks if it's a new attribute (not one of 
+        the instance's initial attributes). If it's new, the GeoDataFrame 
+        (represented by the `_gdf` attribute) is updated to reflect the new attribute. 
+
+        Args:
+            name (str): The name of the attribute being set.
+            value (Any): The value being assigned to the attribute.
+
+        Raises:
+            AttributeError: If the attribute being set is '_initial_attributes', 
+                as this attribute is meant to remain constant after object creation.
+
+        """
+        super().__setattr__(name, value)  # Call the parent class's __setattr__ first
+        if hasattr(self, "_MadaclimPoint__initial_attributes") and name not in self.__initial_attributes:
+            # Update the `gdf` attribute with the newly added attribute
+            self._update_gdf()
     
     @staticmethod
     def get_args_names() -> Tuple[list, list]:
@@ -830,7 +884,8 @@ class MadaclimPoint:
             return_nodata_layers: bool=False,
         ) -> Union[Dict[str, int], list]:
         """
-        Samples geoclimatic data from raster files for specified layers at the location of the instances's lat/lon coordinates from the `mada_geom_point` attribute.
+        Samples geoclimatic data from raster files for specified layers at the location of the instances's 
+        lat/lon coordinates from the `mada_geom_point` attribute.
 
         Args:
             clim_raster_path (pathlib.Path): Path to the climate raster file.
@@ -929,19 +984,24 @@ class MadaclimPoint:
             ...     env_raster="madaclim_enviro.tif",
             ...     layers_to_sample=[37, 75]
             ... )
-            >>> specimen_2
             MadaclimPoint(
                     specimen_id = spe2_humb,
                     source_crs = 4326,
                     latitude = -12.716667,
                     longitude = 45.066667,
                     mada_geom_point = POINT (507237.57495924993 8594195.741515966),
-                    sampled_data = {'layer_37': 238, 'layer_75': -32768},
-                    nodata_layers = ['layer_75'],
+                    len(sampled_data) = 2 layer(s),
+                    len(nodata_layers) = 1 layer(s),
                     genus = Coffea,
                     species = humblotiana,
-                    has_sequencing = True
+                    has_sequencing = True,
+                    gdf.shape = (1, 10)
             )
+            >>> specimen_2.sampled_data
+            {'layer_37': 238, 'layer_75': -32768}
+            >>> specimen_2.nodata_layers
+            ['layer_75']
+
         """
         # Create a MadaclimRaster to validate both rasters
         mada_rasters = MadaclimRaster(clim_raster=clim_raster, env_raster=env_raster)
@@ -1107,6 +1167,7 @@ class MadaclimPoint:
         # Update instance attributes
         self._sampled_data = sampled_data
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
+        self._update_gdf()
 
         if return_nodata_layers:
             return sampled_data, nodata_layers
@@ -1170,9 +1231,10 @@ class MadaclimPoint:
     
     def _update_mada_geom_point(self):
         """
-        Update the `mada_geom_point` attribute by reconstructing the point with the current latitude, longitude, and source_crs.
+        Update the `mada_geom_point` attribute by reconstructing the point 
+        with the current latitude, longitude, and source_crs.
         """
-        if hasattr(self, '_latitude') and hasattr(self, '_longitude'):
+        if hasattr(self, "_latitude") and hasattr(self, "_longitude"):
             self._mada_geom_point = self._construct_point(
                 latitude=self.latitude,
                 longitude=self.longitude,
@@ -1180,8 +1242,52 @@ class MadaclimPoint:
             )
 
     def _construct_geodataframe(self) -> gpd.geopandas:
-        # print(self.base_attr)
-        pass
+        """
+        Constructs a GeoPandas DataFrame using the instance's attributes.
+
+        This method constructs a GeoPandas DataFrame using the attributes of 
+        the instance, excluding base attributes and initial attributes. The 
+        DataFrame uses `mada_geom_point` as its geometry. 
+
+        Note:
+            This is a private method, indicated by the underscore prefix. 
+            It's intended for internal use within the class, not for use 
+            by external code.
+
+        Returns:
+            gpd.geopandas: A GeoPandas DataFrame constructed using the 
+                instance's attributes.
+        """
+        # Extract the `MadaclimPoint` instance current state attributes
+        point_attributes = {
+            k.lstrip("_"): [v.to_epsg() if k == "_source_crs" else v] 
+            for k, v in self.__dict__.items() 
+            if k != "_MadaclimPoint__base_attr" 
+            and k != "_MadaclimPoint__initial_attributes"
+        }
+        
+        if hasattr(self, "_gdf"):    # Remove gdf to avoid recursiveness
+            point_attributes.pop("gdf")
+
+        # Split the sampled layers and mark the sample
+        gdf = gpd.GeoDataFrame(data=point_attributes, geometry="mada_geom_point")
+
+        return gdf
+    
+    def _update_gdf(self):
+        """
+        Updates the instance's `_gdf` attribute using `_construct_geodataframe`.
+
+        This method updates the _gdf attribute of the instance by calling 
+        the `_construct_geodataframe` method, which constructs a new 
+        GeoPandas DataFrame using the instance's attributes.
+
+        Note:
+            This is a private method, indicated by the underscore prefix. 
+            It's intended for internal use within the class, not for use 
+            by external code.
+        """
+        self._gdf = self._construct_geodataframe()
     
     
 class MadaclimCollection:
