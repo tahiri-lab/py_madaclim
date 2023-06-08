@@ -523,7 +523,7 @@ class MadaclimPoint:
         self.source_crs = self.validate_crs(source_crs)
         self.latitude = self.validate_lat(latitude, crs=self.source_crs)
         self.longitude = self.validate_lon(longitude, crs=self.source_crs)
-        self.mada_geom_point = self._construct_point(
+        self._mada_geom_point = self._construct_point(
             latitude=self.latitude, 
             longitude=self.longitude,
             source_crs=self.source_crs
@@ -541,9 +541,7 @@ class MadaclimPoint:
         for key in additional_args:
             setattr(self, key, kwargs[key])
 
-        # self.gdf = {
-        #     "test": "geopandas_gdf"
-        # }
+        self._gdf = self._construct_geodataframe()
     
     @property
     def specimen_id(self) -> str:
@@ -578,7 +576,7 @@ class MadaclimPoint:
     def latitude(self, value: float):
         value = self.validate_lat(value, crs=self.source_crs)
         self._latitude = value
-        # Update mada_geom_point when latitude is updated
+        # Update `mada_geom_point` when latitude is updated
         self._update_mada_geom_point()
     
     @property
@@ -598,7 +596,7 @@ class MadaclimPoint:
     def longitude(self, value: float):
         value = self.validate_lon(value, crs=self.source_crs)
         self._longitude = value
-        # Update mada_geom_point when longitude is updated
+        # Update `mada_geom_point` when longitude is updated
         self._update_mada_geom_point()
     
     @property
@@ -619,8 +617,12 @@ class MadaclimPoint:
         value = self.validate_crs(value)
         self._source_crs = value
         
-        # Update mada_geom_point when crs is updated
+        # Update `mada_geom_point` when crs is updated
         self._update_mada_geom_point()
+
+    @property
+    def mada_geom_point(self) -> shapely.geometry.point.Point:
+        return self._mada_geom_point
 
     @property
     def base_attr(self) -> dict:
@@ -656,20 +658,23 @@ class MadaclimPoint:
     
     @property
     def gdf(self) -> gpd.GeoDataFrame:
-        """Get the geodataframe using mada_geom_point as geometry.
+        """Get the geodataframe using `mada_geom_point` as geometry.
 
         Returns:
             gpd.GeoDataFrame: A Geopandas GeoDataFrame generated from instance attributes and Point geometry.
         """
-        gdf = gpd.GeoDataFrame(self.mada_geom_point)
-        return self.__gdf
+        return self._gdf
 
     def __str__(self) -> str:
         
-        # Fetch base and additional attributes at construction
-        base_attr = self.base_attr
-        add_attr = self._get_additional_attributes()
-        all_attr = {**base_attr, **add_attr}    # Append attr dictionaries
+        # # Fetch base and additional attributes at construction
+        # base_attr = self.base_attr
+        # add_attr = self._get_additional_attributes()
+        # all_attr = {**base_attr, **add_attr}    # Append attr dictionaries
+        
+        # Get the current state of all attributes
+        all_attr = {k: v for k, v in self.__dict__.items() if k != "_MadaclimPoint__base_attr"}  # Remove the recursiveness of __base_attr
+
         
         # Pretty format
         all_attr_list = [f"{k.lstrip('_')} = {v.to_epsg() if k == '_source_crs' else v}" for k, v in all_attr.items()]
@@ -825,7 +830,7 @@ class MadaclimPoint:
             return_nodata_layers: bool=False,
         ) -> Union[Dict[str, int], list]:
         """
-        Samples geoclimatic data from raster files for specified layers at the location of the instances's lat/lon coordinates from the mada_geom_point attribute.
+        Samples geoclimatic data from raster files for specified layers at the location of the instances's lat/lon coordinates from the `mada_geom_point` attribute.
 
         Args:
             clim_raster_path (pathlib.Path): Path to the climate raster file.
@@ -837,8 +842,8 @@ class MadaclimPoint:
                 Defaults to False.
 
         Raises:
-            TypeError: If the layers_to_sample is not valid, or if the mada_geom_point attribute is not a Point object.
-            ValueError: If the layer_number is out of range or if the mada_geom_point object is empty.
+            TypeError: If the layers_to_sample is not valid, or if the `mada_geom_point` attribute is not a Point object.
+            ValueError: If the layer_number is out of range or if the `mada_geom_point` object is empty.
 
         Returns:
             Union[Dict[str, int], list]: A dictionary containing the sampled data, with keys being layer names or numbers depending
@@ -1006,10 +1011,10 @@ class MadaclimPoint:
         env_raster_sample_info["bands"] = madaclim_info.get_bandnums_from_layers(env_raster_sample_info["layers"])
 
         # # Validate if mada_geom_point attribute is of Point geom and not empty
-        if not isinstance(self.mada_geom_point, shapely.geometry.point.Point):
+        if not isinstance(self._mada_geom_point, shapely.geometry.point.Point):
             raise TypeError("The 'mada_geom_point' attribute must be a shapely.geometry.point.Point object.")
         
-        if self.mada_geom_point.is_empty:
+        if self._mada_geom_point.is_empty:
             raise ValueError("The 'mada_geom_point' object cannot be empty.")
         
         # Sample climate and env raster on demand
@@ -1041,8 +1046,8 @@ class MadaclimPoint:
                         pbar.set_description(f"Extracting layer {layer_num}: {layer_metadata['layer_description'].values[0]}")
                         pbar.update()
                         
-                        # Sample using the self.mada_geom_point attributes coordinates for the current layer
-                        data = list(clim_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band_num))[0]
+                        # Sample using the `mada_geom_point`` attributes coordinates for the current layer
+                        data = list(clim_raster.sample([(self._mada_geom_point.x, self._mada_geom_point.y)], indexes=band_num))[0]
                         
                         # Save extracted data with specified layer info/name
                         layer_label = (
@@ -1077,8 +1082,8 @@ class MadaclimPoint:
                         pbar.set_description(f"Extracting layer {layer_num}: {layer_metadata['layer_description'].values[0]}")
                         pbar.update()
                         
-                        # Sample using the self.mada_geom_point attributes coordinates for the current layer
-                        data = list(env_raster.sample([(self.mada_geom_point.x, self.mada_geom_point.y)], indexes=band_num))[0]
+                        # Sample using the `mada_geom_point`` attributes coordinates for the current layer
+                        data = list(env_raster.sample([(self._mada_geom_point.x, self._mada_geom_point.y)], indexes=band_num))[0]
                         
                         # Save extracted data with specified layer info/name
                         layer_label = (
@@ -1165,14 +1170,18 @@ class MadaclimPoint:
     
     def _update_mada_geom_point(self):
         """
-        Update the mada_geom_point attribute by reconstructing the point with the current latitude, longitude, and source_crs.
+        Update the `mada_geom_point` attribute by reconstructing the point with the current latitude, longitude, and source_crs.
         """
         if hasattr(self, '_latitude') and hasattr(self, '_longitude'):
-            self.mada_geom_point = self._construct_point(
+            self._mada_geom_point = self._construct_point(
                 latitude=self.latitude,
                 longitude=self.longitude,
                 source_crs=self.source_crs
             )
+
+    def _construct_geodataframe(self) -> gpd.geopandas:
+        # print(self.base_attr)
+        pass
     
     
 class MadaclimCollection:
