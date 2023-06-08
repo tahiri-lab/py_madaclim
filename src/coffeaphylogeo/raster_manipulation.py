@@ -633,14 +633,26 @@ class MadaclimPoint:
         return self.__base_attr
     
     @property
-    def sampled_data(self) -> Dict[str, int]:
+    def sampled_data(self) -> Union[None, Dict[str, int]]:
         """
         Get the data obtained from the `sampled_from_rasters` method.
 
         Return:
-            dict: A dictionary containing the layers labels as keys and their values as int.
+            Union[None, Dict[str, int]]: A dictionary containing the layers labels as keys and their values as int.
+                Returns None if data has not been sampled yet.
         """
-        pass
+        return self._sampled_data
+    
+    @property
+    def nodata_layers(self) -> Union[None, List[str]]:
+        """
+        Get the layers labels containing `nodata` values when calling the`sampled_from_rasters` method.
+
+        Return:
+            Union[None, List[str]]: A list containing the layers labels (either layer_<num> or more descriptive).
+                Returns None if data has not been sampled yet or no layers sampled containined `nodata` values.
+        """
+        return self._nodata_layers
     
     @property
     def gdf(self) -> gpd.GeoDataFrame:
