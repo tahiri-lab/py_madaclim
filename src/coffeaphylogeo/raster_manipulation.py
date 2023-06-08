@@ -1002,6 +1002,16 @@ class MadaclimPoint:
             >>> specimen_2.nodata_layers
             ['layer_75']
 
+            >>> # Calling the `sample_from_rasters` dynamically updates the `gdf` attributes with the extracted data for easier viz and manipulation
+            >>> specimen_2.gdf
+            specimen_id  source_crs   latitude  longitude  ...      species  has_sequencing  clim_37_bio1_Annual mean temperature (degrees) env_75_geo_Rock types (categ_vals: 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 13)
+            0   spe2_humb        4326 -12.716667  45.066667  ...  humblotiana            True                                             238                                             -32768                     
+
+            [1 rows x 12 columns]
+            >>> {k:v for k,v in specimen_2.gdf[["sampled_data", "nodata_layers"]].iterrows()}[0]    # Updated values for sample status attr
+            sampled_data     2
+            nodata_layers    1
+
         """
         # Create a MadaclimRaster to validate both rasters
         mada_rasters = MadaclimRaster(clim_raster=clim_raster, env_raster=env_raster)
@@ -1257,20 +1267,53 @@ class MadaclimPoint:
         Returns:
             gpd.geopandas: A GeoPandas DataFrame constructed using the 
                 instance's attributes.
-        """
-        # Extract the `MadaclimPoint` instance current state attributes
-        point_attributes = {
-            k.lstrip("_"): [v.to_epsg() if k == "_source_crs" else v] 
-            for k, v in self.__dict__.items() 
-            if k != "_MadaclimPoint__base_attr" 
-            and k != "_MadaclimPoint__initial_attributes"
-        }
-        
-        if hasattr(self, "_gdf"):    # Remove gdf to avoid recursiveness
-            point_attributes.pop("gdf")
 
-        # Split the sampled layers and mark the sample
+        Example:
+            >>> from coffeaphylogeo.raster_manipulation import MadaclimRaster, MadaclimPoint
+            >>> mada_rasters = MadaclimRaster("madaclim_current.tif", "madaclim_enviro.tif")
+            >>> spe2 = MadaclimPoint(
+            ... specimen_id="spe2_humb", 
+            ... latitude=-12.716667, 
+            ... longitude=45.066667, 
+            ... source_crs=4326
+            ... genus="Coffea", 
+            ... species="humblotiana", 
+            ... has_sequencing=True,
+            )
+            >>> spe2.gdf
+            specimen_id  source_crs   latitude  ...  clim_37_bio1_Annual mean temperature (degrees) clim_69_cwd_Annual climatic water deficit (mm)  env_75_geo_Rock types (categ_vals: 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 13)
+            0   spe2_humb        4326 -12.716667  ...                                             238                                            321                                             -32768                      
+
+            [1 rows x 13 columns]
+        """
+         # Get the current state of all attributes (remove recursiveness of __base/initial attrs)
+        point_attributes = {}
+        for k, v in self.__dict__.items():
+            
+            if k not in ["_gdf", "_MadaclimPoint__base_attr", "_MadaclimPoint__initial_attributes"]:
+                
+                if k == "_source_crs":    # Display EPSG code for readability
+                    point_attributes[k.lstrip("_")] = [v.to_epsg()]
+                
+                elif k == "_sampled_data":    # Display number of sampled layers or None if not sampled yet
+                    point_attributes[k.lstrip("_")] = [len(v) if self._sampled_data else v]    
+
+                elif k == "_nodata_layers":    # Display number of nodata layers or status of sampling
+                    if self._sampled_data:
+                        point_attributes[k.lstrip("_")] = [len(v) if self._nodata_layers else 0]
+                    else:
+                        point_attributes[k.lstrip("_")] = [v]
+
+                else:
+                    point_attributes[k.lstrip("_")] = [v]
+        
+        # Construct gdf with raster sampling state/len
         gdf = gpd.GeoDataFrame(data=point_attributes, geometry="mada_geom_point")
+
+        # Add separate cols for sampled layers in gdf
+        if self._sampled_data:
+            for layer, data in self._sampled_data.items():
+                gdf[layer] = data
 
         return gdf
     
