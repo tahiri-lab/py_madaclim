@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Optional, Union, List, Optional, Tuple, Dict
 import time
 from tqdm import tqdm
+import re
 
+import coffeaphylogeo
 from coffeaphylogeo._constants import Constants
 from coffeaphylogeo.madaclim_info import MadaclimLayers
 
@@ -23,6 +25,394 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap, BoundaryNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+class _PlotConfig:
+    """
+    A class that handles the additional keyword arguments to pass to the LayerPlotter instances.
+
+    This class provides properties that filter a dictionary of arguments based on specified prefixes.
+    The prefix "imshow_", "cax_", "histplot_" corresponds to the properties `imshow_args`, `cax_args`, `histplot_args` respectively.
+    The properties return a dictionary that consists of only the key-value pairs where the key starts with the specified prefix, 
+    with the prefix removed from the keys.
+
+    Attributes:
+        POSSIBLE_PREFIXES (list[str]): The list of prefixes that can be used in the plot_element_args dictionary.
+        _plot_element_args (dict): The original dictionary passed during the object initialization.
+
+    Example:
+        >>> arg_dict = {
+            "imshow_data": 123,
+            "imshow_plot": True,
+            "cax_color": "red",
+            "histplot_bins": 500,
+        }
+        >>> pltcfg = _PlotConfig(arg_dict)
+        >>> imshow_args = pltcfg.imshow_args
+        >>> print(imshow_args)
+        {'data': 123, 'plot': True}
+    """
+
+    POSSIBLE_PREFIXES = ["imshow_", "cax_", "histplot_", "subplots_"]
+
+    def __init__(self, plot_element_args: Optional[dict]=None) -> None:
+        """
+        Args:
+            plot_element_args (dict, optional): The dictionary of plot element arguments. 
+                The keys should start with one of the prefixes in POSSIBLE_PREFIXES. 
+                If not provided, an empty dictionary will be used.
+            imshow_args (dict): The dictionary of the imshow arguments stripped of the prefix.
+            cax_args (dict): The dictionary of the cax arguments stripped of the prefix.
+            histplot_args (dict): The dictionary of the histplot arguments stripped of the prefix.
+            subplots_args (dict): The dictionary of the subplots arguments stripped of the prefix.
+        """
+        self._plot_element_args = plot_element_args if plot_element_args else {}
+        
+        self._imshow_args = self._classify_args(prefix="imshow_", args=self._plot_element_args)
+        self._cax_args = self._classify_args(prefix="cax_", args=self._plot_element_args)
+        self._histplot_args = self._classify_args(prefix="histplot_", args=self._plot_element_args)
+        self._subplots_args = self._classify_args(prefix="subplots_", args=self._plot_element_args)
+
+    @property
+    def imshow_args(self) -> dict:
+        """Get the arguments for imshow, stripped of the 'imshow_' prefix.
+
+        Returns:
+            dict: A dictionary containing the imshow arguments with 'imshow_' prefix removed.
+                Empty if no args with prefix.
+        """
+        return self._imshow_args
+    
+    @property
+    def cax_args(self) -> dict:
+        """Get the arguments for cax, stripped of the 'cax_' prefix.
+
+        Returns:
+            dict: A dictionary containing the cax arguments with 'cax_' prefix removed.
+                Empty if no args with prefix.
+        """
+        return self._cax_args
+    
+    @property
+    def histplot_args(self) -> dict:
+        """Get the arguments for histplot, stripped of the 'histplot_' prefix.
+
+        Returns:
+            dict: A dictionary containing the histplot arguments with 'histplot_' prefix removed.
+                Empty if no args with prefix.
+        """
+        return self._histplot_args
+    
+    @property
+    def subplots_args(self) -> dict:
+        """Get the arguments for histplot, stripped of the 'subplots_' prefix.
+
+        Returns:
+            dict: A dictionary containing the histplot arguments with 'subplots_' prefix removed.
+                Empty if no args with prefix.
+        """
+        return self._subplots_args
+
+    def _classify_args(self, prefix: str, args: dict):
+        """Private helper method that classifies (filters and strips prefixes from) arguments.
+
+        Args:
+            prefix (str): The prefix to use for filtering and stripping.
+            args (dict): The dictionary of arguments.
+
+        Raises:
+            TypeError: If the prefix is not a string or if args is not a dictionary.
+            ValueError: If the prefix is not in POSSIBLE_PREFIXES or if a key in args doesn't start with a prefix in POSSIBLE_PREFIXES.
+
+        Returns:
+            dict: A dictionary containing the arguments with the specified prefix removed.
+        """
+        args_dict = args.copy()    # Copy to avoid inplace-changes outside method
+        
+        
+        if not isinstance(prefix, str):
+            raise TypeError("'prefix' must be a str.")
+        
+        if prefix not in self.POSSIBLE_PREFIXES:
+            raise ValueError(f"Specified 'prefix' must be one of {self.POSSIBLE_PREFIXES}")
+        
+        if not isinstance(args_dict, dict):
+            raise TypeError("'args' must be a dictionary.")
+
+        classified_args = {}    # Args with specified prefix container
+        for k, v in args_dict.items():
+            
+            # Check if the key starts with the specified prefix
+            if k.startswith(prefix):
+                if not re.match(r"\w+_", k):
+                    raise ValueError(f"'args' must be prefixed by at least 1 alphanum char and an underscore (i.e. 'prefix_argument'): {k}")
+                
+                arg_prefix = k.split("_", 1)[0] + "_"    # First underscore encounter for args with native underscores
+                if arg_prefix not in self.POSSIBLE_PREFIXES:
+                    raise ValueError(f"{arg_prefix} (derived from {k}) must be one of {self.POSSIBLE_PREFIXES}")
+                if arg_prefix == prefix:    # Prefix elimination
+                    new_key = k[len(arg_prefix):]    # strip prefix by slicing the string
+                    classified_args[new_key] = v
+        
+        return classified_args
+
+
+class _LayerPlotter:
+    """
+    A helper class for the visualization of layers from the Madaclim database. This class handles the plotting 
+    of either categorical or continuous raster data, along with their respective distribution plots.
+    
+    Attributes:
+        layer_num (int): The number of the layer to be plotted.
+        madaclim_layers (MadaclimLayers): An instance of the MadaclimLayers class, which contains layers' information 
+            and their raster data.
+        plot_args (dict): A dictionary containing optional arguments for the plot.
+    """
+    def __init__(self, layer_num: int, madaclim_layers: coffeaphylogeo.madaclim_info.MadaclimLayers, plot_args: dict) -> None:
+        """
+        Initialize _LayerPlotter with a specific layer number, a MadaclimLayers object, and plot arguments.
+        
+        Args:
+            layer_num (int): The number of the layer to be plotted.
+            madaclim_layers (MadaclimLayers): An instance of the MadaclimLayers class.
+            plot_args (dict): A dictionary containing optional arguments for the plot.
+        """
+        self.layer_num = layer_num
+        self._madaclim_layers = self._validate_madaclim_layers(madaclim_layers)
+        self.plot_args = plot_args
+
+    @property
+    def madaclim_layers(self) -> coffeaphylogeo.madaclim_info.MadaclimLayers:
+        """
+        Gets or sets for the '_madaclim_layers' attribute.
+
+        Args:
+            new_instance (MadaclimLayers): New instance of the MadaclimLayers class.
+
+        Returns:
+            MadaclimLayers: An instance of the MadaclimLayers class.
+        """
+        return self._madaclim_layers
+    
+    @madaclim_layers.setter
+    def madaclim_layers(self, new_instance: coffeaphylogeo.madaclim_info.MadaclimLayers):
+        self._validate_madaclim_layers(madaclim_layers=new_instance)
+        self._madaclim_layers = new_instance
+
+    def plot_layer(self):
+        """
+        Plots the raster map of the specified geoclimatic layer, along with a 
+        distribution histogram of the layer values. The distribution can be plotted 
+        as categorical or continuous based on the nature of the layer data.
+
+        For a categorical layer, the function creates a bar plot displaying the
+        frequency of each category in the layer. The raster map is plotted with 
+        different colors representing each category. A custom legend with categorical 
+        labels is also created.
+
+        For a continuous layer, the function plots a histogram representing the 
+        frequency distribution of the layer's values. The raster map is plotted with
+        a color gradient based on the range of the layer values. A colorbar is 
+        provided for reference.
+
+        Both types of plots also include a histogram showing the distribution of 
+        raster values at 1km resolution, plotted as a bar graph for categorical 
+        data, and a histogram with optional kernel density estimation for continuous data.
+
+        The appearance of the plots can be customized using the 'plot_args' attribute (see _PlotConfig).
+
+        Raises:
+            TypeError: If 'subplots_figsize' is not a tuple.
+            ValueError: If 'subplots_figsize' does not contain 2 elements.
+            TypeError: If elements of 'subplots_figsize' are not integers.
+            ValueError: If the keys from `get_categorical_combinations` do not match 
+                        the raster values for categorical layer data.
+
+        """
+        
+        # Create an instance of PlotConfig to separate categories of kwargs plot config
+        plot_cfg = _PlotConfig(self.plot_args)
+        
+        # Set defaults for subplots
+        subplots_figsize = plot_cfg.subplots_args.pop("figsize", None)
+        subplots_nrows = plot_cfg.subplots_args.pop("nrows", 1)
+        subplots_ncols = plot_cfg.subplots_args.pop("ncols", 2)
+        
+        if subplots_figsize:    # Better exception hints than matplotlib
+            if not isinstance(subplots_figsize, tuple):
+                raise TypeError("'subplots_figsize' must be a tuple.")
+            if not len(subplots_figsize) == 2:
+                raise ValueError("'subplots_figsize' must be a tuple of 2 elements.")
+            for ele in subplots_figsize:
+                if not isinstance(ele, int):
+                    raise TypeError(f"{ele} is not an int. 'subplots_figsize' is a tuple of integers.")    
+        
+        # Set default for imshow
+        imshow_cmap = plot_cfg.imshow_args.pop("cmap", "inferno")
+
+        # Set defaults cbar
+        cax_position = plot_cfg.cax_args.pop("position", "right")
+        cax_size = plot_cfg.cax_args.pop("size", "5%")
+        cax_pad = plot_cfg.cax_args.pop("pad", 0.10)
+
+        # Set defaults for histplot
+        histplot_color = plot_cfg.histplot_args.pop("color", "grey")
+        histplot_bins = plot_cfg.histplot_args.pop("bins", "auto")
+        histplot_kde = plot_cfg.histplot_args.pop("kde", True)
+        histplot_stat = plot_cfg.histplot_args.pop("stat", "percent")
+        histplot_line_kws = plot_cfg.histplot_args.pop("line_kws", {"linestyle" : "--"})
+        
+        # Plotting the raster map with distribution data for the selected layer
+        band_num = self._madaclim_layers.get_bandnums_from_layers(self.layer_num)[0]
+        layer_info = self._madaclim_layers.fetch_specific_layers(self.layer_num, "layer_description", "is_categorical", "units")
+        layer_key = list(layer_info.keys())[0]
+        layer_info = layer_info[layer_key]    # Eliminate redundancy
+
+        layer_units = "Categorical values" if layer_info["is_categorical"] else layer_info["units"]    # Simplify xlabel for categorical units
+        layer_description = layer_info["layer_description"]
+
+        # Get geoclim type from layer_num for raster IO selection            
+        geoclim_types = ["clim", "env"]
+        geoclim_type = [
+            geotype for geotype in geoclim_types 
+            if self.layer_num in self._madaclim_layers.select_geoclim_type_layers(geotype)["layer_number"].values
+        ][0]
+        chosen_raster = self._madaclim_layers.clim_raster if geoclim_type == "clim" else self._madaclim_layers.env_raster
+
+        with rasterio.open(chosen_raster) as raster:
+            band_data = raster.read(band_num, masked=True)
+
+            # Categorical data multi plots
+            if layer_info["is_categorical"]:
+            
+                subplots_figsize = (20, 10) if subplots_figsize is None else subplots_figsize
+                fig, axes = plt.subplots(nrows=subplots_nrows, ncols=subplots_ncols, figsize=subplots_figsize)
+
+                # Custom categorical palette for over 20 categories
+                categ_combinations = self._madaclim_layers.get_categorical_combinations(self.layer_num)
+                categ_combinations = categ_combinations[self._madaclim_layers.get_layers_labels(self.layer_num)[0]]
+                categ_combinations = dict(sorted(categ_combinations.items(), key=lambda item: item[0]))   # Get categ dict {<numerical_val>:<category>}
+                if len(categ_combinations) > 20:    
+                    colors = [
+                        "#ff0000", "#3cb44b", "#ffe432", "#4363d8", "#f58231", "#911eb4", "#46f0f0", "#f032e6", 
+                        "#bcf60c", "#fabebe", "#008080", "#bbbbbb", "#9a6324", "#fffac8", "#800000", "#aaffc3",
+                        "#808000", "#ffd8b1", "#000075", "#e6beff", "#ffffff", "#000000", "#bda400", "#bd5447",
+                        "#354555" 
+                    ]
+                else:
+                    colors = sns.color_palette(palette="tab20", n_colors=len(categ_combinations))
+
+                # Exclude masked values
+                unmasked_values = [v for v in categ_combinations.keys() if v is not np.ma.masked]
+                unmasked_colors = colors[:len(unmasked_values)]
+
+                # Make sure categories are sorted and mapped to colors accordingly
+                sorted_categ_combinations = dict(sorted(zip(unmasked_values, unmasked_values)))
+                categ_colors = {category: color for category, color in zip(sorted_categ_combinations.values(), unmasked_colors)}
+                cmap = ListedColormap(categ_colors.values())
+
+                # Create boundaries based on your categories
+                bounds = list(sorted_categ_combinations.keys())
+                norm = BoundaryNorm(bounds, cmap.N)
+
+                # Plot the raster map
+                axes[0].imshow(band_data.squeeze(), cmap=cmap, norm=norm, **plot_cfg.imshow_args)    # Draw raster map from masked array
+
+                # Create the legend with categorical labels
+                categ_labels = [categ_combinations[cat] for cat in sorted_categ_combinations.keys()]
+                legend_elements = [Patch(facecolor=color, edgecolor=color, 
+                                        label=category) for color, category in zip(categ_colors.values(), categ_labels)]
+                axes[0].legend(handles=legend_elements, bbox_to_anchor=(1.05, 1), loc="upper left")
+                                
+                axes[0].set_title(f"Madagascar {geoclim_type.capitalize()} Raster Map (band={band_num})", fontsize=10)    # Raster map interface cleanup
+                axes[0].set_yticks([])
+                axes[0].set_xticks([])
+                axes[0].axis("off")
+                
+                # Compute categories counts, normalize and map colors
+                categ, counts = np.unique(band_data.compressed(), return_counts=True)
+                counts_percent = (counts / counts.sum()) * 100
+                categ = categ.astype(int)
+                sort_idx = np.argsort(categ)
+                categ = categ[sort_idx]
+                counts_percent = counts_percent[sort_idx]
+
+                mapped_categ_combinations = [sorted_categ_combinations[c] if c in sorted_categ_combinations else None for c in categ]
+                if None in mapped_categ_combinations:
+                    raise ValueError("Keys from `get_categorical_combinations` does not match raster values")
+
+                # Normalize counts to freq percent
+                df_cat = pd.DataFrame({"category":categ, "mapped_category": mapped_categ_combinations, "counts_percent": counts_percent})
+
+                # Categorical bar plot
+                axes[1].bar(df_cat["category"], df_cat["counts_percent"], color=categ_colors.values())
+                axes[1].set_title("Distribution of raster values at 1km resolution", fontsize=10)
+                xticks = list(set(df_cat["category"].tolist() + [1]))
+                axes[1].set_xticks(sorted(xticks))
+                axes[1].set_xlabel(layer_units)
+                axes[1].set_ylabel("Percent (%)")
+
+            # Continous data for multi plots
+            else:                  
+                subplots_figsize = (12, 6) if subplots_figsize is None else subplots_figsize
+                fig, axes = plt.subplots(nrows=subplots_nrows, ncols=subplots_ncols, figsize=subplots_figsize)
+
+                # Raster map with cbar
+                imshow_vmin = plot_cfg.imshow_args.pop("vmin", np.nanmin(band_data.squeeze()))
+                imshow_vmax = plot_cfg.imshow_args.pop("vmax", np.nanmax(band_data.squeeze()))
+                im = axes[0].imshow(band_data.squeeze(), cmap=imshow_cmap, vmin=imshow_vmin, vmax=imshow_vmax, **plot_cfg.imshow_args)    # Draw raster map from masked array
+                
+                # Colorbar customization
+                divider = make_axes_locatable(axes[0])
+                cax = divider.append_axes(position=cax_position, size=cax_size, pad=cax_pad, **plot_cfg.cax_args)
+                plt.colorbar(im, cax=cax)
+
+                axes[0].set_title(f"Madagascar {geoclim_type.capitalize()} Raster Map (band={band_num})", fontsize=10)
+                axes[0].set_yticks([])
+                axes[0].set_xticks([])
+                axes[0].axis("off")
+                
+                fig.text(    # Add units to raster map
+                    x=(cax.get_position().x0 + cax.get_position().x1) / 2,
+                    y=cax.get_position().y0 - 0.05, 
+                    s=layer_units, 
+                    ha="center", 
+                    va="center"
+                )
+                
+                # Plot histogram of raster vals
+                sns.histplot(
+                    data=band_data.compressed(),
+                    ax=axes[1], 
+                    color=histplot_color, 
+                    bins=histplot_bins, 
+                    kde=histplot_kde, 
+                    stat=histplot_stat,
+                    line_kws=histplot_line_kws,
+                    **plot_cfg.histplot_args
+                )
+                axes[1].lines[0].set_color("black")
+                axes[1].set_title("Distribution of raster values at 1km resolution", fontsize=10)
+                axes[1].set_xlabel(layer_units)
+
+            fig.suptitle(
+                f"Layer {self.layer_num}: {layer_description}",
+                fontsize=16,
+                weight="bold",
+                ha="center"
+            )
+
+            fig.tight_layout()
+
+
+    def _validate_madaclim_layers(self, madaclim_layers: coffeaphylogeo.madaclim_info.MadaclimLayers) -> coffeaphylogeo.madaclim_info.MadaclimLayers:
+        if not isinstance(madaclim_layers, coffeaphylogeo.madaclim_info.MadaclimLayers):
+            raise TypeError("'madaclim_layers' must be of an instance of coffeaphylogeo.madaclim_info.MadaclimLayers")
+        
+        if madaclim_layers.clim_raster is None or madaclim_layers.env_raster is None:
+            raise ValueError("The MadaclimLayers instance must have defined 'clim_raster' and 'env_raster attributes.")
+        
+        return madaclim_layers
+
 
 class MadaclimRaster:
     """
@@ -190,9 +580,9 @@ class MadaclimRaster:
     def __repr__(self) -> str:
         return self.__str__()
     
-    def visualize_layer(self, layer: Union[str, int], figsize: Optional[Tuple[int, int]]=None, **kwargs) -> None:
+    def plot_layer(self, layer: Union[str, int], **kwargs) -> None:
         """
-        Method to visualize a specific layer from the Madagascan climate/environmental raster datasets. The layer 
+        Method to plot a specific layer from the Madagascan climate/environmental raster datasets. The layer 
         is displayed as a raster map and its distribution is plotted in a histogram. 
 
         It accepts layer labels in the following formats: `layer_<num>` (e.g. "layer_1") and `<descriptive_layer_label>` 
@@ -202,21 +592,21 @@ class MadaclimRaster:
         layers, it will display a map using different colors for each category and a legend mapping categories to colors. 
         For continuous layers, it will display a color gradient map with a color bar.
         
-        This function does not return anything; it directly generates and displays the plots.
 
         Args:
-            layer (Union[str, int]): Layer to visualize. Accepts layer numbers as integers, or layer labels in 
+            layer (Union[str, int]): Layer to plot. Accepts layer numbers as integers, or layer labels in 
                                     descriptive or `layer_<num>` format.
-            figsize (Optional[Tuple[int, int]]): Tuple representing the size of the figure to be displayed. If not provided,
-                                                a default size is used based on data type.
-            **kwargs: Additional arguments to customize the imshow, colorbar and histplot. 
-                    Use "imshow_<arg>", "cax_<arg>", and "histplot_<arg>" formats to customize corresponding 
+            **kwargs: Additional arguments to customize the subplots, imshow, colorbar and histplot from matplotlib. 
+                    Use "subplots_<arg>", "imshow_<arg>", "cax_<arg>", and "histplot_<arg>" formats to customize corresponding 
                     matplotlib/sns arguments.
 
         Raises:
-            TypeError: If 'layer' is not a str or an int, or if 'figsize' is not a tuple of ints.
-            ValueError: If 'layer' is not found within the range of layers, or if 'figsize' is not a tuple of 2 elements.
-            ValueError: If the keys from `get_categorical_combinations` do not match raster values.
+            TypeError: If 'layer' is not a str or an int.
+            ValueError: If 'layer' is not found within the range of layers.
+        
+        Note:
+            This method does not return anything; it directly generates and displays the plots.
+            It uses the private _PlotConfig and _LayerPlotter utility classes for the checks and vizualisation.
 
         Example:
             >>> # Extract environmental layers labels
@@ -229,18 +619,22 @@ class MadaclimRaster:
             >>> # Default visualization of the raster map
             >>> from coffeaphylogeo.raster_manipulation import MadaclimRaster
             >>> mada_rasters = MadaclimRaster(clim_raster=mada_info.clim_raster, env_raster=mada_info.env_raster)    # Using common attr btw the instances
-            >>> mada_rasters.visualize_layer(env_layers_labels[0])
+            >>> mada_rasters.plot_layer(env_layers_labels[0])
 
             >>> # Pass in any number of kwargs to the imshow or cax (raster + colorbarax) or histplot for customization
-            >>> mada_rasters.visualize_layer(env_labels[0], imshow_cmap="terrain", histplot_binwidth=100, histplot_stat="count")
+            >>> mada_rasters.plot_layer(env_labels[0], imshow_cmap="terrain", histplot_binwidth=100, histplot_stat="count")
 
             >>> # Some layers are categorical data so the figure formatting will change (no cbar)
             >>> # Rock types example
             >>> geo_rock_label = next(label for label in env_labels if "geo" in label)
-            >>> mada_rasters.visualize_layer(geo_rock_label, figsize=(12, 8))
+            >>> mada_rasters.plot_layer(geo_rock_label, subplots_figsize=(12, 8))
 
             >>> # For numerical features with highly skewed distribution, specify vmin or vmax for the raster map
-            >>> mada_rasters.visualize_layer(env_labels[3], imshow_vmin=6000)
+            >>> mada_rasters.plot_layer(env_labels[3], imshow_vmin=6000)
+
+            >>> # To know which are the categorical data, use the MadaclimLayers utilities
+            >>> mada_info.categorical_layers    # as df
+            >>> mada_info.get_categorical_combinations()    # As dict, default selects all possibilities
         """
     
         # Fetch metadata and layer nums with a MadaclimLayers instance
@@ -269,174 +663,10 @@ class MadaclimRaster:
 
         if not min_layer <= layer_num <= max_layer:
             raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_num=} is not valid.")
-
-        # Check if figsize is a tuple of size 2 with proper types
-        if figsize:
-            if not isinstance(figsize, tuple):
-                raise TypeError("'figsize' must be a tuple.")
-            if not len(figsize) == 2:
-                raise ValueError("'figsize' must be a tuple of 2 elements.")
-            for ele in figsize:
-                if not isinstance(ele, int):
-                    raise TypeError(f"{ele} is not an int. 'figsize' is a tuple of integers.")    
         
-        # Get customizable matplotlib kwargs for both axes
-        imshow_args = {k[7:]: v for k, v in kwargs.items() if k.startswith("imshow_")}
-        cax_args = {k[4:]: v for k, v in kwargs.items() if k.startswith("cax_")}
-        histplot_args = {k[9:]: v for k, v in kwargs.items() if k.startswith("histplot_")}
-
-        # Set default for imshow
-        imshow_cmap = imshow_args.pop("cmap", "inferno")
-
-        # Set defaults cbar
-        cax_position = cax_args.pop("position", "right")
-        cax_size = cax_args.pop("size", "5%")
-        cax_pad = cax_args.pop("pad", 0.10)
-
-        # Set defaults for histplot
-        histplot_color = histplot_args.pop("color", "grey")
-        histplot_bins = histplot_args.pop("bins", "auto")
-        histplot_kde = histplot_args.pop("kde", True)
-        histplot_stat = histplot_args.pop("stat", "percent")
-        histplot_line_kws = histplot_args.pop("line_kws", {"linestyle" : "--"})
-        
-        # Plotting the raster map with distribution data for the selected layer
-        band_num = madaclim_info.get_bandnums_from_layers(layer_num)[0]
-        layer_info = madaclim_info.fetch_specific_layers(layer_num, "layer_description", "is_categorical", "units")
-        layer_key = list(layer_info.keys())[0]
-        layer_info = layer_info[layer_key]    # Eliminate redundancy
-
-        layer_units = "Categorical values" if layer_info["is_categorical"] else layer_info["units"]    # Simplify xlabel for categorical units
-        layer_description = layer_info["layer_description"]
-
-        # Get geoclim type from layer_num for raster IO selection            
-        geoclim_types = ["clim", "env"]
-        geoclim_type = [geotype for geotype in geoclim_types if layer_num in madaclim_info.select_geoclim_type_layers(geotype)["layer_number"].values][0]
-        chosen_raster = self.clim_raster if geoclim_type == "clim" else self.env_raster
-
-        with rasterio.open(chosen_raster) as raster:
-            band_data = raster.read(band_num, masked=True)
-
-            # Categorical data multi plots
-            if layer_info["is_categorical"]:
-            
-                figsize = (20, 10) if figsize is None else figsize
-                fig, axes = plt.subplots(1, 2, figsize=figsize)
-
-                # Custom categorical palette for over 20 categories
-                categ_combinations = dict(sorted(madaclim_info.get_categorical_combinations(layer_num).items(), key=lambda item: item[0]))   # Get categ dict {<numerical_val>:<category>}
-                if len(categ_combinations) > 20:    
-                    colors = [
-                        "#ff0000", "#3cb44b", "#ffe432", "#4363d8", "#f58231", "#911eb4", "#46f0f0", "#f032e6", 
-                        "#bcf60c", "#fabebe", "#008080", "#bbbbbb", "#9a6324", "#fffac8", "#800000", "#aaffc3",
-                        "#808000", "#ffd8b1", "#000075", "#e6beff", "#ffffff", "#000000", "#bda400", "#bd5447",
-                        "#354555" 
-                    ]
-                else:
-                    colors = sns.color_palette(palette="tab20", n_colors=len(categ_combinations))
-
-                # Exclude masked values
-                unmasked_values = [v for v in categ_combinations.keys() if v is not np.ma.masked]
-                unmasked_colors = colors[:len(unmasked_values)]
-
-                # Make sure categories are sorted and mapped to colors accordingly
-                sorted_categ_combinations = dict(sorted(zip(unmasked_values, unmasked_values)))
-                categ_colors = {category: color for category, color in zip(sorted_categ_combinations.values(), unmasked_colors)}
-                cmap = ListedColormap(categ_colors.values())
-
-                # Create boundaries based on your categories
-                bounds = list(sorted_categ_combinations.keys())
-                norm = BoundaryNorm(bounds, cmap.N)
-
-                # Plot the raster map
-                axes[0].imshow(band_data.squeeze(), cmap=cmap, norm=norm, **imshow_args)    # Draw raster map from masked array
-
-                # Create the legend with categorical labels
-                categ_labels = [categ_combinations[cat] for cat in sorted_categ_combinations.keys()]
-                legend_elements = [Patch(facecolor=color, edgecolor=color, 
-                                        label=category) for color, category in zip(categ_colors.values(), categ_labels)]
-                axes[0].legend(handles=legend_elements, bbox_to_anchor=(1.05, 1), loc="upper left")
-                                
-                axes[0].set_title(f"Madagascar {geoclim_type.capitalize()} Raster Map (band={band_num})", fontsize=10)    # Raster map interface cleanup
-                axes[0].set_yticks([])
-                axes[0].set_xticks([])
-                axes[0].axis("off")
-                
-                # Compute categories counts, normalize and map colors
-                categ, counts = np.unique(band_data.compressed(), return_counts=True)
-                counts_percent = (counts / counts.sum()) * 100
-                categ = categ.astype(int)
-                sort_idx = np.argsort(categ)
-                categ = categ[sort_idx]
-                counts_percent = counts_percent[sort_idx]
-
-                mapped_categ_combinations = [sorted_categ_combinations[c] if c in sorted_categ_combinations else None for c in categ]
-                if None in mapped_categ_combinations:
-                    raise ValueError("Keys from `get_categorical_combinations` does not match raster values")
-
-                # Normalize counts to freq percent
-                df_cat = pd.DataFrame({"category":categ, "mapped_category": mapped_categ_combinations, "counts_percent": counts_percent})
-
-                # Categorical bar plot
-                axes[1].bar(df_cat["category"], df_cat["counts_percent"], color=categ_colors.values())
-                axes[1].set_title("Distribution of raster values at 1km resolution", fontsize=10)
-                xticks = list(set(df_cat["category"].tolist() + [1]))
-                axes[1].set_xticks(sorted(xticks))
-                axes[1].set_xlabel(layer_units)
-                axes[1].set_ylabel("Percent (%)")
-
-            # Continous data for multi plots
-            else:                  
-                figsize = (12, 6) if figsize is None else figsize
-                fig, axes = plt.subplots(1, 2, figsize=figsize)
-
-                # Raster map with cbar
-                imshow_vmin = imshow_args.pop("vmin", np.nanmin(band_data.squeeze()))
-                imshow_vmax = imshow_args.pop("vmax", np.nanmax(band_data.squeeze()))
-                im = axes[0].imshow(band_data.squeeze(), cmap=imshow_cmap, vmin=imshow_vmin, vmax=imshow_vmax, **imshow_args)    # Draw raster map from masked array
-                
-                # Colorbar customization
-                divider = make_axes_locatable(axes[0])
-                cax = divider.append_axes(position=cax_position, size=cax_size, pad=cax_pad, **cax_args)
-                plt.colorbar(im, cax=cax)
-
-                axes[0].set_title(f"Madagascar {geoclim_type.capitalize()} Raster Map (band={band_num})", fontsize=10)
-                axes[0].set_yticks([])
-                axes[0].set_xticks([])
-                axes[0].axis("off")
-                
-                fig.text(    # Add units to raster map
-                    x=(cax.get_position().x0 + cax.get_position().x1) / 2,
-                    y=cax.get_position().y0 - 0.05, 
-                    s=layer_units, 
-                    ha="center", 
-                    va="center"
-                )
-                
-                # Plot histogram of raster vals
-                sns.histplot(
-                    data=band_data.compressed(),
-                    ax=axes[1], 
-                    color=histplot_color, 
-                    bins=histplot_bins, 
-                    kde=histplot_kde, 
-                    stat=histplot_stat,
-                    line_kws=histplot_line_kws,
-                    **histplot_args
-                )
-                axes[1].lines[0].set_color("black")
-                axes[1].set_title("Distribution of raster values at 1km resolution", fontsize=10)
-                axes[1].set_xlabel(layer_units)
-
-            fig.suptitle(
-                f"Layer {layer_num}: {layer_description}",
-                fontsize=16,
-                weight="bold",
-                ha="center"
-            )
-
-            fig.tight_layout()
-
+        # Use LayerPlotter instance helper class to handle customization + plot layer
+        plotter = _LayerPlotter(layer_num=layer_num, madaclim_layers=madaclim_info, plot_args=kwargs)
+        plotter.plot_layer()
 
 class MadaclimPoint:
         #TODO IMPLEMENT VIZ METHODS
@@ -1184,11 +1414,10 @@ class MadaclimPoint:
         
         return sampled_data
     
-    def visualize_on_layer(layer: Union[int, str], **kwargs) -> None:
+    def draw_on_layer(self, layer: Union[str, int], figsize: Optional[Tuple[int, int]]=None, **kwargs) -> None:
+    
         pass
-        # TODO: GET BAND NUMS FROM LAYER
-        # TODO: IMPLEMENT MATPLOTLIB / GEOPANDAS PLOT
-        # TODO: IMPLEMENT MATPLOTLIB CUSTOM
+        
     
     def _get_additional_attributes(self) -> dict:
         """
