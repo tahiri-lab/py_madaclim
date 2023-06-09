@@ -859,7 +859,11 @@ class MadaclimLayers:
         
         return band_nums
     
-    def get_categorical_combinations(self, layers_labels: Optional[Union[int, str, List[Union[int, str]]]]=None) -> Union[dict, Dict[str, Dict[int, str]]]:
+    def get_categorical_combinations(
+            self, 
+            layers_labels: Optional[Union[int, str, List[Union[int, str]]]]=None, 
+            as_descriptive_keys: bool=False
+        ) -> Union[dict, Dict[str, Dict[int, str]]]:
         """
         Returns a dictionary representation of the specified categorical layers corresponding the the categorical value encoding.
 
@@ -868,6 +872,7 @@ class MadaclimLayers:
             integer or string value, or a list of integer or string values. The input can also be in the format 
             "layer_{num}" or "{geotype}_{num}_{name}_({description})" (output from `get_layers_labels(as_descriptive_labels=True)` method).
             If `layers_labels` is `None`, all categorical layers are fetched.
+            as_descriptive_keys(bool)
 
         Raises:
             TypeError: If `layers_labels` is not a list of integers or strings, a single integer or a string 
@@ -902,6 +907,15 @@ class MadaclimLayers:
             >>> madaclim_info.get_categorical_combinations("layer_76")
             {
                 'layer_76: {
+                    1: 'Bare_Rocks',
+                    2: 'Raw_Lithic_Mineral_Soils',
+                ...
+                }
+            }
+            >>> # For more descriptive keys (same output from as_descriptive_labels)
+            >>> madaclim_info.get_categorical_combinations("layer_76", as_descriptive_keys=True)
+            {
+                'env_76_soi_Soil types (categ_vals: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)': {
                     1: 'Bare_Rocks',
                     2: 'Raw_Lithic_Mineral_Soils',
                 ...
@@ -960,7 +974,11 @@ class MadaclimLayers:
 
         categorical_dict = {}    # Nested container dict
         for layer_number in layers_numbers:
-            categorical_dict[self.get_layers_labels(layer_number)[0]] = {
+            if as_descriptive_keys:
+                categorical_key = self.get_layers_labels(layer_number, as_descriptive_labels=True)[0]
+            else:
+                categorical_key = self.get_layers_labels(layer_number)[0]
+            categorical_dict[categorical_key] = {
                 int(row["value"]): row["category"] 
                 for _, row in select_cat_df.loc[select_cat_df["layer_number"] == layer_number].iterrows()
             }
