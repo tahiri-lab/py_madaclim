@@ -9,6 +9,7 @@ from typing import List, Union, Optional, Dict
 from itertools import zip_longest
 
 import pandas as pd
+import numpy as np
 import rasterio
 import pyproj
 
@@ -435,7 +436,7 @@ class MadaclimLayers:
             except:
                 raise TypeError("'layers_subet' list elements must be int or can be converted to int.")
             
-        elif isinstance(layers_subset, (str, int)):
+        elif isinstance(layers_subset, (str, int, np.integer)):
             # Extract layer num if layers_subset is a geoclim_type
             if layers_subset in possible_geoclim_types:
                 layers_subset = all_layers_df.loc[all_layers_df["geoclim_type"] == layers_subset, "layer_number"].to_list()
@@ -635,7 +636,7 @@ class MadaclimLayers:
                 else:
                     raise TypeError("layers_labels must be in the output format from the 'get_layers_labels' method if it is a string.")
             
-            elif isinstance(layers_labels, int):
+            elif isinstance(layers_labels, (int, np.integer)):
                 try:
                     layers_numbers = [layers_labels]
                 except (ValueError, TypeError):
@@ -900,9 +901,11 @@ class MadaclimLayers:
             >>> # If a single layer is specified, it returns:
             >>> madaclim_info.get_categorical_combinations("layer_76")
             {
-                1: 'Bare_Rocks',
-                2: 'Raw_Lithic_Mineral_Soils',
+                'layer_76: {
+                    1: 'Bare_Rocks',
+                    2: 'Raw_Lithic_Mineral_Soils',
                 ...
+                }
             }
         """
         cat_df = self.categorical_layers.copy()
@@ -934,14 +937,14 @@ class MadaclimLayers:
             else:
                 raise TypeError("layers_labels must be in the output format from the 'get_layers_labels' method if it is a string.")
         
-        elif isinstance(layers_labels, int):
+        elif isinstance(layers_labels, (int, np.integer)):
             try:
                 layers_numbers = [layers_labels]
             except (ValueError, TypeError):
                 raise TypeError("layers_labels must be an int if not in string format.")
             
         elif layers_labels is None:
-            layers_numbers = cat_df["layer_number"].astype(int).unique()
+            layers_numbers = list(cat_df["layer_number"].unique())
 
         else:
             raise ValueError("layers_labels must be either a single int value, a string that can be converted to an int, or in the output format from the 'get_layers_labels' method.")
@@ -953,15 +956,14 @@ class MadaclimLayers:
             if layer_number not in all_cat_layers_num:
                 raise ValueError(f"layer_number must be one of the categorical layers: {all_cat_layers_num}. {layer_number=} is not valid.")
             
-        select_cat_df = cat_df[cat_df["layer_number"].isin(layers_numbers)]    # Fetch validated layers
+        select_cat_df = cat_df.loc[cat_df["layer_number"].isin(layers_numbers)]    # Fetch validated layers
 
-        # Save to dict
-        categorical_dict = {}
-        if len(layers_numbers) == 1:
-            categorical_dict = {int(row["value"]): row["category"] for _, row in select_cat_df.iterrows()}
-        else:
-            for layer_number in layers_numbers:
-                categorical_dict[f"layer_{layer_number}"] = {int(row["value"]): row["category"] for _, row in select_cat_df.iterrows()}
+        categorical_dict = {}    # Nested container dict
+        for layer_number in layers_numbers:
+            categorical_dict[self.get_layers_labels(layer_number)[0]] = {
+                int(row["value"]): row["category"] 
+                for _, row in select_cat_df.loc[select_cat_df["layer_number"] == layer_number].iterrows()
+            }
         return categorical_dict
     
     #! Deprecated: Unefficient method with raster.read I/O operation for each band
