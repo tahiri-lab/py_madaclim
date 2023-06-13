@@ -1739,6 +1739,7 @@ class MadaclimCollection:
         self._all_points = []
         if madaclim_points:
             self.add_points(madaclim_points)
+        
         self._sampled_layers = None
         self._nodata_layers = None
 
@@ -1756,7 +1757,7 @@ class MadaclimCollection:
             >>> # MadaclimPoints are stored in the .all_points attributes in a list
             >>> sample_A = MadaclimPoint()
             >>> collection = MadaclimCollection(sample_A)
-            
+            #TODO FIX EXAMPLE
             >>> collection.all_points[0]
             MadaclimPoint(
                 specimen_id = sample_A,
@@ -1773,7 +1774,7 @@ class MadaclimCollection:
     @property
     def sampled_layers(self) -> Optional[Dict[str, Dict[str, int]]]:
         """
-        Get the sampled_layers attribute.
+        Get the sampled_layers attribute of the collection generated from the `sampled_from_rasters` method.
 
         This attribute is a nested dictionary. The outer dictionary uses the MadaclimPoint.specimen_id as keys. 
         The corresponding value for each key is another dictionary, which uses layer_names as keys and sampled values from rasters as values.
@@ -1787,7 +1788,7 @@ class MadaclimCollection:
     @property
     def nodata_layers(self) -> Optional[Dict[str, Union[str, List[str]]]]:
         """
-        Get the nodata_layers attribute.
+        Get the nodata_layers attribute of the collection generated from the `sampled_from_rasters` method.
 
         This attribute is a dictionary that contains the MadaclimPoint.specimen_id as keys and the values as the 'nodata_layers' as str or list of str.
         
@@ -2332,11 +2333,15 @@ class MadaclimCollection:
             env_raster: pathlib.Path,
             layers_to_sample: Union[int, str, List[Union[int, str]]]="all", 
             layer_info: bool=False,
-            return_nodata_layers: bool=False,
-        ) -> Union[Dict[str, Dict[str, float]], Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, List[str]]]]]:
+        ) -> None:
         
         """
         Samples geoclimatic data from raster files for specified layers at the location of each point belonging to the MadaclimCollection's instance.
+
+        Calling this method will also update the `sampled_layers` attributes with the data
+        extracted from the layers_to_sample for every point in the collection. If sampled data containing 'nodata' values,
+        the `nodata_layers` attribute will be updated with the name of the layers accordingly.
+        Also, the `gdf` attribute GeoDataFrame will be updated with the `sampled_layers`.
         
         Args:
             clim_raster_path (pathlib.Path): Path to the climate raster file.
@@ -2344,14 +2349,10 @@ class MadaclimCollection:
             layers_to_sample (Union[int, str, List[Union[int, str]]], optional): The layer number(s) to sample from the raster files.
                 Can be a single int, a single string in the format 'layer_<num>', or a list of ints or such strings. Defaults to 'all'.
             layer_info (bool, optional): Whether to use descriptive labels for the returned dictionary keys. Defaults to False.
-            return_nodata_layers (bool, optional): Whether to return a list of layers with nodata values at the specimen location.
-                Defaults to False.
+            
 
         Returns:
-            Union[Dict[str, Dict[str, float]], Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, List[str]]]]]: 
-                If return_nodata_layers is False: Returns a dictionary where the keys are specimen_ids and the values are dictionaries of sampled data.
-                If return_nodata_layers is True: Returns a tuple where the first element is the same dictionary as when return_nodata_layers is False, and the second element is a dictionary where the keys are specimen_ids and the values are lists of layers where the sampled value is nodata.
-       
+            None
             
         Raises:
             ValueError: If the MadaclimCollection doesn't contain any MadaclimPoints.
@@ -2360,6 +2361,7 @@ class MadaclimCollection:
             This method also updates the 'sampled_layers' and 'nodata_layers' attributes of the MadaclimCollection instance.
 
         Examples:
+        #TODO FIX EXAMPLES
             >>> # Start with a collection
             >>> from coffeaphylogeo.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
@@ -2469,27 +2471,22 @@ class MadaclimCollection:
 
         # Sample rasters for whole collection
         for point in self._all_points:
-            sampled_data_point, nodata_layers_point = point.sample_from_rasters(
+            point.sample_from_rasters(
                 clim_raster=clim_raster,
                 env_raster=env_raster,
                 layers_to_sample=layers_to_sample,
                 layer_info=layer_info,
-                return_nodata_layers=True,
             )
 
             # Save sampled raster data (nested dicts)
-            sampled_layers[point.specimen_id] = sampled_data_point
+            sampled_layers[point.specimen_id] = point.sampled_layers
 
             # Save layers name only when val is nodata
-            if len(nodata_layers_point) > 0:
-                nodata_layers[point.specimen_id] = nodata_layers_point
+            nodata_layers[point.specimen_id] = point.nodata_layers if point.nodata_layers else None
                 
         # Update instance attributes
         self._sampled_layers = sampled_layers
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
 
-        if return_nodata_layers:
-            return sampled_layers, nodata_layers if len(nodata_layers) > 0 else None
-        else:
-            return sampled_layers
+        
         
