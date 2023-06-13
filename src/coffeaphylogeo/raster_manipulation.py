@@ -786,6 +786,7 @@ class MadaclimPoint:
         # Sampled/encoding states and values
         self._sampled_layers = None
         self._nodata_layers = None
+        
         self._is_categorical_encoded = False
         self._encoded_categ_layers = None
 
@@ -918,7 +919,7 @@ class MadaclimPoint:
 
         Returns:
             bool: The state of the `binary_encode_categorical` method. If True, the method has been called and a new set of binary features has been generated.
-                Otherwise, either the layers have not been sampled or the categorical features not been encoded.
+                Otherwise, either the layers have not been sampled or the categorical features have not been encoded.
         """
         return self._is_categorical_encoded 
     
@@ -1450,7 +1451,8 @@ class MadaclimPoint:
 
             
     def binary_encode_categorical(self) -> None:
-        """Binary encodes the categorical layers contained in the `sampled_layers` attribute.
+        """
+        Binary encodes the categorical layers contained in the `sampled_layers` attribute.
 
         This function performs binary encoding of categorical layers
         found in the raster data. It uses the `MadaclimLayers` object 
@@ -1740,8 +1742,12 @@ class MadaclimCollection:
         if madaclim_points:
             self.add_points(madaclim_points)
         
+        # Sampled/encoding states and values
         self._sampled_layers = None
         self._nodata_layers = None
+
+        self._is_categorical_encoded = False
+        self._encoded_categ_layers = None
 
     @property
     def all_points(self) -> list:
@@ -1797,6 +1803,32 @@ class MadaclimCollection:
                 None if Collection has not been sampled yet or all layers sampled contained valid data.
         """
         return self._nodata_layers
+    
+    @property
+    def is_categorical_encoded(self) -> bool:
+        """
+        Get the state of the binary encoding of the categorical layers of the collection.
+
+        Returns:
+            bool: The state of the `binary_encode_categorical` method. If True, the method has been called 
+                and a new set of binary features has been generated for the whole collection.
+                Otherwise, either the layers have not been sampled or the categorical features havenot been encoded.
+        """
+        return self._is_categorical_encoded 
+    
+    @property
+    def encoded_categ_layers(self) -> Optional[Dict[str, Dict[str, int]]]:
+        """
+        Get the binary encoded categorical layers values.
+
+        Returns:
+            Optional[Dict[str, int]]: A nested dictionary containing the set of binary encoded categorical features.
+                The outer dictionary uses the MadaclimPoint.specimen_id as keys. 
+                The corresponding value for each key is another dictionary where the keys are layer number
+                (or a more descriptive label) with the categorical feature.
+                Values correspond to the binary encoded value for that given category
+        """
+        return self._encoded_categ_layers
     
     def __str__(self) -> str:
         if len(self._all_points) == 0:
@@ -2463,11 +2495,13 @@ class MadaclimCollection:
         """
         
         if not len(self._all_points) > 0:
-            raise ValueError("Not MadaclimPoint to sample from in the Collection.")
+            raise ValueError("No MadaclimPoint to sample from in the Collection.")
         
-        # # Initialize containers for sampled data
-        sampled_layers = {}
-        nodata_layers = {}
+        # Reset categorical encoding
+        self._is_categorical_encoded = False    
+        self._encoded_categ_layers = None
+
+        sampled_layers, nodata_layers = {}, {}
 
         # Sample rasters for whole collection
         for point in self._all_points:
@@ -2488,5 +2522,42 @@ class MadaclimCollection:
         self._sampled_layers = sampled_layers
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
 
+    def binary_encode_categorical(self) -> None:
+        """
+        Binary encodes the categorical layers contained in the `sampled_layers` attribute.
+
+        This function performs binary encoding of categorical layers
+        found in the raster data for each of the Point in the collection.
+        After the encoding, the function updates the Collection instance's
+        attributes for the categorical encoding status, the encoded
+        layers and the gdf replacing the categorical columns by the binary encoded features.
+
+        Raises:
+            ValueError: If the MadaclimCollection doesn't contain any MadaclimPoints
+                or if the raster data has not been sampled yet.
+
+        Returns:
+            None
+
+        Notes:
+            See the `binary_encode_categorical` method for logic and possible raised exceptions.
+        """
+        if not len(self._all_points) > 0:
+            raise ValueError("No MadaclimPoint to sample from in the Collection.")
+        
+        if not self._sampled_layers:
+            raise ValueError(
+                "Raster data for each point of the collection have not been sampled yet"
+                "Use `sample_from_rasters` method prior to `binary_encode_categorical`."
+            )
+        
+        encoded_categ = {}
+        for point in self._all_points:
+            point.binary_encode_categorical()
+            encoded_categ[point.specimen_id] = point.encoded_categ_layers
+
+        # Update categorical layers-related attributes
+        self._is_categorical_encoded = True
+        self._encoded_categ_layers = encoded_categ
         
         
