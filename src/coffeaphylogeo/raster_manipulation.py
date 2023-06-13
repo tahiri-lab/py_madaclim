@@ -669,8 +669,7 @@ class MadaclimRaster:
         plotter.plot_layer()
 
 class MadaclimPoint:
-        #TODO IMPLEMENT VIZ METHODS
-    
+    #TODO IMPLEMENT VIZ METHODS
     """
     A class representing a specimen as a geographic point with a specific coordinate reference system (CRS)
     and additional attributes. The class provides methods for validating the point's coordinates
@@ -681,12 +680,21 @@ class MadaclimPoint:
         latitude (float): The latitude of the point.
         longitude (float): The longitude of the point.
         source_crs (pyproj.crs.crs.CRS): The coordinate reference system of the point.
-        mada_geom_point (shapely.geometry.point.Point): A Shapely Point object representing the point projected in the Madaclim rasters' CRS.
-        sampled_data (Union[None, Dict[str, int]]): A dictionary containing the layers labels as keys and their values as int.
+        mada_geom_point (shapely.geometry.point.Point): A Shapely Point object representing the point projected 
+            in the Madaclim rasters' CRS.
+        sampled_layers (Optional[Dict[str, int]]): A dictionary containing the layers labels as keys 
+            and their values from the sampled raster at the Point's position as int.
             None if data has not been sampled yet.
-        nodata_layers (Union[None, List[str]]): A list containing the layers labels.
+        nodata_layers (Optional[List[str]]): A list containing the layers labels.
             None if data has not been sampled yet or no layers sampled containined `nodata` values.
-        gdf (gpd.GeoDataFrame): A Geopandas GeoDataFrame generated from instance attributes and mada_geom_point geometry
+        is_categorical_encoded (bool): The state of the `binary_encode_categorical` method. If True, the method has been called 
+            and a new set of binary features has been generated.
+            Otherwise, either the layers have not been sampled or the categorical features not been encoded.
+        encoded_categ
+        encoded_categ_layers (Optional[Dict[str, int]]): A dictionary containing the set of 
+            binary encoded categorical features.
+        gdf (gpd.GeoDataFrame): A Geopandas GeoDataFrame generated from instance attributes 
+            and mada_geom_point geometry. Updates along any changes to the instance's attributes.
         
     """
 
@@ -747,7 +755,7 @@ class MadaclimPoint:
                     latitude = -18.9333,
                     longitude = 48.2,
                     mada_geom_point = POINT (837072.9150244407 7903496.320897499),
-                    sampled_data = None (Not sampled yet),
+                    sampled_layers = None (Not sampled yet),
                     nodata_layers = None (Not sampled yet),
                     genus = Coffea,
                     species = arenesiana,
@@ -757,7 +765,7 @@ class MadaclimPoint:
 
             >>> # Core and additionnal attributes are save to a GeoDataFrame with `mada_geom_point` for geometry
             >>> specimen1.gdf
-              specimen_id  source_crs  latitude  longitude                 mada_geom_point sampled_data nodata_layers   genus     species  has_sequencing
+              specimen_id  source_crs  latitude  longitude                 mada_geom_point sampled_layers nodata_layers   genus     species  has_sequencing
             0   spe1_aren        4326  -18.9333       48.2  POINT (837072.915 7903496.321)         None          None  Coffea  arenesiana            True
 
         """
@@ -775,8 +783,11 @@ class MadaclimPoint:
         # Store base attributes names/vals
         self.__base_attr = {k:v for k,v in self.__dict__.items()}
 
-        self._sampled_data = None
+        # Sampled/encoding states and values
+        self._sampled_layers = None
         self._nodata_layers = None
+        self._is_categorical_encoded = False
+        self._encoded_categ_layers = None
 
         # Store any additional keyword arguments as instance attributes
         base_args = self.get_args_names()[0] + [self.get_args_names()[1]]
@@ -879,26 +890,50 @@ class MadaclimPoint:
         return self.__base_attr
     
     @property
-    def sampled_data(self) -> Union[None, Dict[str, int]]:
+    def sampled_layers(self) -> Optional[Dict[str, int]]:
         """
-        Get the data obtained from the `sampled_from_rasters` method.
+        Get the instance's data obtained from the `sampled_from_rasters` method.
 
-        Return:
-            Union[None, Dict[str, int]]: A dictionary containing the layers labels as keys and their values as int.
+        Returns:
+            Optional[Dict[str, int]]: A dictionary containing the layers labels as keys and their values as int.
                 Returns None if data has not been sampled yet.
         """
-        return self._sampled_data
+        return self._sampled_layers
     
     @property
-    def nodata_layers(self) -> Union[None, List[str]]:
+    def nodata_layers(self) -> Optional[List[str]]:
         """
         Get the layers labels containing `nodata` values when calling the`sampled_from_rasters` method.
 
-        Return:
-            Union[None, List[str]]: A list containing the layers labels (either layer_<num> or more descriptive).
+        Returns:
+            Optional[List[str]]: A list containing the layers labels (either layer_<num> or more descriptive).
                 Returns None if data has not been sampled yet or no layers sampled containined `nodata` values.
         """
         return self._nodata_layers
+    
+    @property
+    def is_categorical_encoded(self) -> bool:
+        """
+        Get the state of the binary encoding of the categorical layers.
+
+        Returns:
+            bool: The state of the `binary_encode_categorical` method. If True, the method has been called and a new set of binary features has been generated.
+                Otherwise, either the layers have not been sampled or the categorical features not been encoded.
+        """
+        return self._is_categorical_encoded 
+    
+    @property
+    def encoded_categ_layers(self) -> Optional[Dict[str, int]]:
+        """
+        Get the binary encoded categorical layers values.
+
+        Returns:
+            Optional[Dict[str, int]]: A dictionary containing the set of binary encoded categorical features.
+                Keys are contain the layer number (or more description) and the categorical feature.
+                Values are the binary encoded value for that given category.
+        """
+        return self._encoded_categ_layers
+
     
     @property
     def gdf(self) -> gpd.GeoDataFrame:
@@ -914,19 +949,19 @@ class MadaclimPoint:
         show_attributes = {}
         for k, v in self.__dict__.items():
             
-            if k not in ["_MadaclimPoint__base_attr", "_MadaclimPoint__initial_attributes"]:
+            if k not in ["_MadaclimPoint__base_attr", "_MadaclimPoint__initial_attributes", "_encoded_categ_layers"]:
                 
                 if k == "_source_crs":    # Display EPSG code for readability
                     show_attributes[k] = v.to_epsg()
                 
-                elif k == "_sampled_data":    # Display number of sampled layers or status of sampling
-                    if self._sampled_data:
-                        show_attributes["_len(sampled_data)"] = f"{len(v)} layer(s)"
+                elif k == "_sampled_layers":    # Display number of sampled layers or status of sampling
+                    if self._sampled_layers:
+                        show_attributes["_len(sampled_layers)"] = f"{len(v)} layer(s)"
                     else:
-                        show_attributes["_sampled_data"] = "None (Not sampled yet)"
+                        show_attributes["_sampled_layers"] = "None (Not sampled yet)"
 
                 elif k == "_nodata_layers":    # Display number of nodata layers or status of sampling
-                    if self._sampled_data:
+                    if self._sampled_layers:
                         show_attributes["_len(nodata_layers)"] = f"{len(v)} layer(s)" if self._nodata_layers else "None (0 layers)"
                     else:
                         show_attributes["_nodata_layers"] = "None (Not sampled yet)"
@@ -966,7 +1001,7 @@ class MadaclimPoint:
 
         """
         super().__setattr__(name, value)  # Call the parent class's __setattr__ first
-        if hasattr(self, "_MadaclimPoint__initial_attributes") and name not in self.__initial_attributes:
+        if hasattr(self, "_MadaclimPoint__initial_attributes") and name != "_gdf":
             # Update the `gdf` attribute with the newly added attribute
             self._update_gdf()
     
@@ -1111,11 +1146,15 @@ class MadaclimPoint:
             env_raster: pathlib.Path,
             layers_to_sample: Union[int, str, List[Union[int, str]]]="all", 
             layer_info: bool=False,
-            return_nodata_layers: bool=False,
-        ) -> Union[Dict[str, int], list]:
+        ) -> None:
         """
         Samples geoclimatic data from raster files for specified layers at the location of the instances's 
         lat/lon coordinates from the `mada_geom_point` attribute.
+
+        Calling this method will also update the `sampled_layers` attributes with the data
+        extracted from the layers_to_sample. If sampled data containing 'nodata' values,
+        the `nodata_layers` attribute will be updated with the name of the layers accordingly.
+        Also, the `gdf` attribute GeoDataFrame will be updated with the `sampled_layers`.
 
         Args:
             clim_raster_path (pathlib.Path): Path to the climate raster file.
@@ -1123,18 +1162,15 @@ class MadaclimPoint:
             layers_to_sample (Union[int, str, List[Union[int, str]]], optional): The layer number(s) to sample from the raster files.
                 Can be a single int, a single string in the format 'layer_<num>', or a list of ints or such strings. Defaults to 'all'.
             layer_info (bool, optional): Whether to use descriptive labels for the returned dictionary keys. Defaults to False.
-            return_nodata_layers (bool, optional): Whether to return a list of layers with nodata values at the specimen location.
-                Defaults to False.
 
         Raises:
             TypeError: If the layers_to_sample is not valid, or if the `mada_geom_point` attribute is not a Point object.
             ValueError: If the layer_number is out of range or if the `mada_geom_point` object is empty.
 
         Returns:
-            Union[Dict[str, int], list]: A dictionary containing the sampled data, with keys being layer names or numbers depending
-                on the layer_info parameter. If return_nodata_layers is True, also returns a list of layers with nodata values
-                at the specimen location.
-        Exmaples:
+            None
+
+        Examples:
             >>> # Fetching bioclim layers from the MadaclimLayers class
             >>> from coffeaphylogeo.madaclim_info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
@@ -1173,7 +1209,7 @@ class MadaclimPoint:
             ...     layers_to_sample=[68, 71],
             ...     layer_info=True
             ... )
-
+            #TODO FIX EXAMPLE
             >>> spe1_l68_l71
             {'clim_68_pet (Annual potential evapotranspiration from the Thornthwaite equation (mm))': 891, 'env_71_altitude (Altitude in meters)': 899}
 
@@ -1208,7 +1244,7 @@ class MadaclimPoint:
             >>> spe2_nodata_layers[0]    # Example of a categorical feature description with raster-value/description associations
             'env_75_geology (1=Alluvial_&_Lake_deposits, 2=Unconsolidated_Sands, 4=Mangrove_Swamp, 5=Tertiary_Limestones_+_Marls_&_Chalks, 6=Sandstones, 7=Mesozoic_Limestones_+_Marls_(inc._"Tsingy"), 9=Lavas_(including_Basalts_&_Gabbros), 10=Basement_Rocks_(Ign_&_Met), 11=Ultrabasics, 12=Quartzites, 13=Marble_(Cipolin))'
 
-            >>> # Calling the sample_from_rasters method also updates the 'sampled_data' and 'nodata_layers' attributes
+            >>> # Calling the sample_from_rasters method also updates the 'sampled_layers' and 'nodata_layers' attributes
             >>> specimen_2.sample_from_rasters(
             ...     clim_raster="madaclim_current.tif",
             ...     env_raster="madaclim_enviro.tif",
@@ -1220,14 +1256,15 @@ class MadaclimPoint:
                     latitude = -12.716667,
                     longitude = 45.066667,
                     mada_geom_point = POINT (507237.57495924993 8594195.741515966),
-                    len(sampled_data) = 2 layer(s),
+                    len(sampled_layers) = 2 layer(s),
                     len(nodata_layers) = 1 layer(s),
+                    is_categorical_encoded = False
                     genus = Coffea,
                     species = humblotiana,
                     has_sequencing = True,
                     gdf.shape = (1, 10)
             )
-            >>> specimen_2.sampled_data
+            >>> specimen_2.sampled_layers
             {'layer_37': 238, 'layer_75': -32768}
             >>> specimen_2.nodata_layers
             ['layer_75']
@@ -1237,12 +1274,14 @@ class MadaclimPoint:
             specimen_id  source_crs   latitude  longitude  ...      species  has_sequencing  clim_37_bio1_Annual mean temperature (degrees) env_75_geo_Rock types (categ_vals: 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 13)
             0   spe2_humb        4326 -12.716667  45.066667  ...  humblotiana            True                                             238                                             -32768                     
 
-            [1 rows x 12 columns]
-            >>> {k:v for k,v in specimen_2.gdf[["sampled_data", "nodata_layers"]].iterrows()}[0]    # Updated values for sample status attr
-            sampled_data     2
+            [1 rows x 13 columns]
+            >>> {k:v for k,v in specimen_2.gdf[["sampled_layers", "nodata_layers"]].iterrows()}[0]    # Updated values for sample status attr
+            sampled_layers     2
             nodata_layers    1
 
         """
+        self._is_categorical_encoded = False    # Reset categorical encoding check
+
         # Create a MadaclimRaster to validate both rasters
         mada_rasters = MadaclimRaster(clim_raster=clim_raster, env_raster=env_raster)
         if mada_rasters.clim_crs != Constants.MADACLIM_CRS:
@@ -1318,7 +1357,7 @@ class MadaclimPoint:
             raise ValueError("The 'mada_geom_point' object cannot be empty.")
         
         # Sample climate and env raster on demand
-        sampled_data = {}
+        sampled_layers = {}
         nodata_layers = []
         
         print("\n" + "#" * 40 + f" \033[1mExtracting data for: {self.specimen_id}\033[0m " +"#" * 40)
@@ -1341,7 +1380,7 @@ class MadaclimPoint:
                     
                     # Sample selected layers according to the coordinate
                     for layer_num, band_num in zip(clim_raster_sample_info["layers"], clim_raster_sample_info["bands"]):
-                        # Get layer metadata for pbar display and label key for sampled_data
+                        # Get layer metadata for pbar display and label key for sampled_layers
                         layer_metadata = madaclim_info.fetch_specific_layers(layer_num)
                         pbar.set_description(f"Extracting layer {layer_num}: {layer_metadata['layer_description'].values[0]}")
                         pbar.update()
@@ -1355,7 +1394,7 @@ class MadaclimPoint:
                             if not layer_info 
                             else madaclim_info.get_layers_labels(layer_num, as_descriptive_labels=True)[0]
                         )
-                        sampled_data[layer_label] = data[0]
+                        sampled_layers[layer_label] = data[0]
 
                         if data[0] == nodata_clim:    # Save layers where nodata at specimen location
                             nodata_layers.append(layer_label)
@@ -1377,7 +1416,7 @@ class MadaclimPoint:
                     
                     # Sample selected layers according to the coordinate
                     for layer_num, band_num in zip(env_raster_sample_info["layers"], env_raster_sample_info["bands"]):
-                        # Get layer metadata for pbar display and label key for sampled_data
+                        # Get layer metadata for pbar display and label key for sampled_layers
                         layer_metadata = madaclim_info.fetch_specific_layers(layer_num)
                         pbar.set_description(f"Extracting layer {layer_num}: {layer_metadata['layer_description'].values[0]}")
                         pbar.update()
@@ -1391,7 +1430,7 @@ class MadaclimPoint:
                             if not layer_info 
                             else madaclim_info.get_layers_labels(layer_num, as_descriptive_labels=True)[0]
                         )
-                        sampled_data[layer_label] = data[0]
+                        sampled_layers[layer_label] = data[0]
 
                         if data[0] == nodata_env:    # Save layers where nodata at specimen location
                             nodata_layers.append(layer_label)
@@ -1405,17 +1444,64 @@ class MadaclimPoint:
         print(f"\nFinished raster sampling operation in {elapsed_time:.2f} seconds.\n")
         
         # Update instance attributes
-        self._sampled_data = sampled_data
+        self._sampled_layers = sampled_layers
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
         self._update_gdf()
 
-        if return_nodata_layers:
-            return sampled_data, nodata_layers
+            
+    def binary_encode_categorical(self) -> None:
+        """Binary encodes the categorical layers contained in the `sampled_layers` attribute.
+
+        This function performs binary encoding of categorical layers
+        found in the raster data. It uses the `MadaclimLayers` object 
+        to get information about possible categorical layers. If no
+        categorical layers are found in the data, a ValueError is raised.
+        After the encoding, the function updates the respective instance
+        attributes for the categorical encoding status, the encoded
+        layers and the gdf replacing the categorical columns by the binary encoded features.
+
+        Raises:
+            ValueError: If no categorical layers are found in the raster
+            data or if the raster data has not been sampled yet.
+
+        Returns:
+            None
+        """
+        if not self._sampled_layers:
+            raise ValueError("Raster data have not been sampled yet. Use `sample_from_rasters` method prior.")
         
-        return sampled_data
+        # Check if sampled_layers contains categorical data
+        madaclim_info = MadaclimLayers()
+        possible_categ_labels = madaclim_info.get_categorical_combinations()
+        possible_descriptive_categ_labels = madaclim_info.get_categorical_combinations(as_descriptive_keys=True)
+        
+        sampled_layers_labels = set(self._sampled_layers.keys())
+        categ_layers = set(possible_categ_labels.keys()) | set(possible_descriptive_categ_labels.keys())
+        intersect_layers = sampled_layers_labels & categ_layers
+
+        if not intersect_layers:
+            raise ValueError(
+                f"No categorical data to encode in 'sampled_layers'. It must contain at least one categorical layer.\n"
+                f"Either one of:\n{possible_categ_labels.keys()}\n Or one of:\n{possible_descriptive_categ_labels.keys()}\n"
+                f"See `get_categorical_combinations` from `MadaclimLayers`"
+            )
+
+        # Extract categorical data from sampled_layers and encode them into binary features
+        encoded_categ = {}
+        for layer in sorted(intersect_layers):
+            value = self._sampled_layers[layer]
+            layer_dict = possible_categ_labels.get(layer, {}) or possible_descriptive_categ_labels.get(layer, {})
+            
+            for k, v in layer_dict.items():
+                # layer = layer if layer in possible_categ_labels else layer.split("(")[0].strip()    !DEPRECATED
+                layer = re.sub(r"\(categ_vals:.*?\)", "", layer)    # Remove the category units from the descriptive label
+                encoded_categ[f"{layer}_{v}"] = 1 if value == k else 0
+        
+        # Update categorical layers-related attributes
+        self._is_categorical_encoded = True
+        self._encoded_categ_layers = encoded_categ    # Overridden `settr` will update `gdf`       
     
-    def draw_on_layer(self, layer: Union[str, int], figsize: Optional[Tuple[int, int]]=None, **kwargs) -> None:
-    
+    def plot_on_layer(self, layer: Union[str, int], **kwargs) -> None:
         pass
         
     
@@ -1487,6 +1573,10 @@ class MadaclimPoint:
         This method constructs a GeoPandas DataFrame using the attributes of 
         the instance, excluding base attributes and initial attributes. The 
         DataFrame uses `mada_geom_point` as its geometry. 
+        
+        Some of the object's attributes will be modified or ommitted completely
+        to improve readability and increase relevancy of the data saved to
+        the GeoDataFrame.
 
         Note:
             This is a private method, indicated by the underscore prefix. 
@@ -1513,37 +1603,53 @@ class MadaclimPoint:
             specimen_id  source_crs   latitude  ...  clim_37_bio1_Annual mean temperature (degrees) clim_69_cwd_Annual climatic water deficit (mm)  env_75_geo_Rock types (categ_vals: 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 13)
             0   spe2_humb        4326 -12.716667  ...                                             238                                            321                                             -32768                      
 
-            [1 rows x 13 columns]
+            [1 rows x 14 columns]
         """
          # Get the current state of all attributes (remove recursiveness of __base/initial attrs)
         point_attributes = {}
         for k, v in self.__dict__.items():
             
-            if k not in ["_gdf", "_MadaclimPoint__base_attr", "_MadaclimPoint__initial_attributes"]:
+            if k not in ["_gdf", "_encoded_categ_layers", "_MadaclimPoint__base_attr", "_MadaclimPoint__initial_attributes"]:
                 
                 if k == "_source_crs":    # Display EPSG code for readability
                     point_attributes[k.lstrip("_")] = [v.to_epsg()]
                 
-                elif k == "_sampled_data":    # Display number of sampled layers or None if not sampled yet
-                    point_attributes[k.lstrip("_")] = [len(v) if self._sampled_data else v]    
+                elif k == "_sampled_layers":    # Display number of sampled layers or None if not sampled yet
+                    point_attributes[k.lstrip("_")] = [len(v) if self._sampled_layers else v]    
 
                 elif k == "_nodata_layers":    # Display number of nodata layers or status of sampling
-                    if self._sampled_data:
+                    if self._sampled_layers:
                         point_attributes[k.lstrip("_")] = [len(v) if self._nodata_layers else 0]
                     else:
                         point_attributes[k.lstrip("_")] = [v]
 
-                else:
+                else:    # Remaining custom defined attributes at construction
                     point_attributes[k.lstrip("_")] = [v]
         
         # Construct gdf with raster sampling state/len
         gdf = gpd.GeoDataFrame(data=point_attributes, geometry="mada_geom_point")
 
         # Add separate cols for sampled layers in gdf
-        if self._sampled_data:
-            for layer, data in self._sampled_data.items():
+        if self._sampled_layers:
+            for layer, data in self._sampled_layers.items():
                 gdf[layer] = data
-
+        
+        # Replace categorical layers with binary encoding
+        if self._is_categorical_encoded and self._encoded_categ_layers:
+            # Find categorical layers within the `sampled_layers`
+            madaclim_info = MadaclimLayers()
+            possible_categ_labels = madaclim_info.get_categorical_combinations()
+            possible_descriptive_categ_labels = madaclim_info.get_categorical_combinations(as_descriptive_keys=True)
+            
+            sampled_layers_labels = set(self._sampled_layers.keys())
+            categ_layers = set(possible_categ_labels.keys()) | set(possible_descriptive_categ_labels.keys())
+            intersect_layers = sampled_layers_labels & categ_layers
+            
+            # Replace sampled_layers with binary encoded layers in categ-only
+            gdf = gdf.drop(columns=intersect_layers)
+            categ_encoded_df = pd.DataFrame([self._encoded_categ_layers])
+            gdf = pd.concat([gdf, categ_encoded_df], axis=1)
+           
         return gdf
     
     def _update_gdf(self):
@@ -1563,7 +1669,11 @@ class MadaclimPoint:
     
     
 class MadaclimCollection:
+    
     #TODO DOCSTRINGS CLS
+
+    #TODO CHECK IF SAMPLED_LAYERS + CATEGORICAL ENCODING WORKS
+    
     def __init__(self, madaclim_points: Optional[Union[MadaclimPoint, List[MadaclimPoint]]]=None) -> None:
         """Instantiate a collection of MadaclimPoint objects. By default, the MadaclimCollection is empty.
         It will populate the collection with a single instance or a list of MadaclimPoint instances by calling the add_points method with the given madaclim_points.
@@ -1620,7 +1730,7 @@ class MadaclimCollection:
                 latitude = -18.9333,
                 longitude = 48.2,
                 mada_geom_point = POINT (837072.9150244407 7903496.320897499),
-                sampled_data = None,
+                sampled_layers = None,
                 nodata_layers = None
             )
 
@@ -1628,7 +1738,7 @@ class MadaclimCollection:
         self.__all_points = []
         if madaclim_points:
             self.add_points(madaclim_points)
-        self.__sampled_raster_data = None
+        self.__sampled_layers = None
         self.__nodata_layers = None
 
     @property
@@ -1649,33 +1759,33 @@ class MadaclimCollection:
                 latitude = -18.9333,
                 longitude = 48.2,
                 mada_geom_point = POINT (837072.9150244407 7903496.320897499),
-                sampled_data = None,
+                sampled_layers = None,
                 nodata_layers = None
             )
         """
         return self.__all_points
     
     @property
-    def sampled_raster_data(self) -> Union[None, Dict[str, Dict[str, int]]]:
-        """Get the sampled_raster_data attribute.
+    def sampled_layers(self) -> Optional[Dict[str, Dict[str, int]]]:
+        """Get the sampled_layers attribute.
 
         This attribute is a nested dictionary. The outer dictionary uses the MadaclimPoint.specimen_id as keys. 
         The corresponding value for each key is another dictionary, which uses layer_names as keys and sampled values from rasters as values.
 
         Returns:
-            Union[None, Dict[str, Dict[str, int]]]: A dictionary with MadaclimPoint.specimen_id as keys and a dictionary of layer_names (str) and sampled values (int) as values.
+            Optional[Dict[str, Dict[str, int]]]: A dictionary with MadaclimPoint.specimen_id as keys and a dictionary of layer_names (str) and sampled values (int) as values.
                 None if Collection has not been sampled yet.
         """
-        return self.__sampled_raster_data
+        return self.__sampled_layers
 
     @property
-    def nodata_layers(self) -> Union[None, Dict[str, Union[str, List[str]]]]:
+    def nodata_layers(self) -> Optional[Dict[str, Union[str, List[str]]]]:
         """Get the nodata_layers attribute.
 
         This attribute is a dictionary that contains the MadaclimPoint.specimen_id as keys and the values as the 'nodata_layers' as str or list of str.
         
         Returns:
-            Dict[str, Union[str, List[str]]]: A dictionary with MadaclimPoint.specimen_id as keys and values of str or list of str of the layers_name with nodata values.
+            Optional[Dict[str, Union[str, List[str]]]]: A dictionary with MadaclimPoint.specimen_id as keys and values of str or list of str of the layers_name with nodata values.
                 None if Collection has not been sampled yet or all layers sampled contained valid data.
         """
         return self.__nodata_layers
@@ -1686,7 +1796,7 @@ class MadaclimCollection:
         else:
             # Raster sampling state of each object of the collection.
             sampled = False
-            if self.sampled_raster_data is not None:
+            if self.__sampled_layers is not None:
                 sampled = True
 
             all_points_short = [
@@ -1769,7 +1879,7 @@ class MadaclimCollection:
                 latitude = -19.9333,
                 longitude = 47.2,
                 mada_geom_point = POINT (730272.0056458472 7794391.966030249),
-                sampled_data = None,
+                sampled_layers = None,
                 nodata_layers = None,
                 has_sequencing = True,
                 specie = bojeri
@@ -1780,7 +1890,7 @@ class MadaclimCollection:
                 latitude = -18.295741,
                 longitude = 45.826763,
                 mada_geom_point = POINT (587378.6907481698 7976896.406900212),
-                sampled_data = None,
+                sampled_layers = None,
                 nodata_layers = None,
                 has_sequencing = False,
                 specie = periwinkle
@@ -1791,7 +1901,7 @@ class MadaclimCollection:
                 latitude = -21.223,
                 longitude = 44.5204,
                 mada_geom_point = POINT (450229.7195355138 7653096.609718417),
-                sampled_data = None,
+                sampled_layers = None,
                 nodata_layers = None,
                 has_sequencing = False,
                 specie = spectabilis
@@ -1888,7 +1998,7 @@ class MadaclimCollection:
                 latitude = -16.295741,
                 longitude = 46.826763,
                 mada_geom_point = POINT (695186.2170220022 8197477.647690434),
-                sampled_data = None,
+                sampled_layers = None,
                 nodata_layers = None
             )
 
@@ -1972,7 +2082,7 @@ class MadaclimCollection:
                 latitude = -23.574583,
                 longitude = 46.419806,
                 mada_geom_point = POINT (644890.8921103649 7392153.658976035),
-                sampled_data = None,
+                sampled_layers = None,
                 nodata_layers = None
             ) is already in the current MadaclimCollection instance.
 
@@ -2054,7 +2164,7 @@ class MadaclimCollection:
                 latitude = -16.295741,
                 longitude = 46.826763,
                 mada_geom_point = POINT (695186.2170220022 8197477.647690434),
-                sampled_data = None,
+                sampled_layers = None,
                 nodata_layers = None
             )
 
@@ -2240,7 +2350,7 @@ class MadaclimCollection:
             ValueError: If the MadaclimCollection doesn't contain any MadaclimPoints.
 
         Notes:
-            This method also updates the 'sampled_raster_data' and 'nodata_layers' attributes of the MadaclimCollection instance.
+            This method also updates the 'sampled_layers' and 'nodata_layers' attributes of the MadaclimCollection instance.
 
         Examples:
             >>> # Start with a collection
@@ -2298,8 +2408,8 @@ class MadaclimCollection:
             ['spe1_aren', 'spe2_humb']
             >>> collection_bioclim_data["spe2_humb"]["layer_55"]
             66
-            >>> # Results also stored in the .sampled_raster_data attribute
-            >>> collection.sampled_raster_data["spe2_humb"]["layer_55"]
+            >>> # Results also stored in the `sampled_layers` attribute
+            >>> collection.sampled_layers["spe2_humb"]["layer_55"]
             66
 
             >>> # Sample all layers and examine nodata layers with more informative layers names
@@ -2347,7 +2457,7 @@ class MadaclimCollection:
             raise ValueError("Not MadaclimPoint to sample from in the Collection.")
         
         # # Initialize containers for sampled data
-        sampled_data = {}
+        sampled_layers = {}
         nodata_layers = {}
 
         # Sample rasters for whole collection
@@ -2361,18 +2471,18 @@ class MadaclimCollection:
             )
 
             # Save sampled raster data (nested dicts)
-            sampled_data[point.specimen_id] = sampled_data_point
+            sampled_layers[point.specimen_id] = sampled_data_point
 
             # Save layers name only when val is nodata
             if len(nodata_layers_point) > 0:
                 nodata_layers[point.specimen_id] = nodata_layers_point
                 
         # Update instance attributes
-        self.__sampled_raster_data = sampled_data
+        self.__sampled_layers = sampled_layers
         self.__nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
 
         if return_nodata_layers:
-            return sampled_data, nodata_layers if len(nodata_layers) > 0 else None
+            return sampled_layers, nodata_layers if len(nodata_layers) > 0 else None
         else:
-            return sampled_data
+            return sampled_layers
         
