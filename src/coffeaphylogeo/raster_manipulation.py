@@ -1281,7 +1281,6 @@ class MadaclimPoint:
             nodata_layers    1
 
         """
-        self._is_categorical_encoded = False    # Reset categorical encoding check
 
         # Create a MadaclimRaster to validate both rasters
         mada_rasters = MadaclimRaster(clim_raster=clim_raster, env_raster=env_raster)
@@ -1444,7 +1443,11 @@ class MadaclimPoint:
         elapsed_time = end_time - start_time    # Total raster sampling time
         print(f"\nFinished raster sampling operation in {elapsed_time:.2f} seconds.\n")
         
-        # Update instance attributes
+        # Reset categorical encoding attributes
+        self._is_categorical_encoded = False   
+        self._encoded_categ_layers = None
+
+        # Update related-instance attributes
         self._sampled_layers = sampled_layers
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
         self._update_gdf()
@@ -2496,10 +2499,6 @@ class MadaclimCollection:
         
         if not len(self._all_points) > 0:
             raise ValueError("No MadaclimPoint to sample from in the Collection.")
-        
-        # Reset categorical encoding
-        self._is_categorical_encoded = False    
-        self._encoded_categ_layers = None
 
         sampled_layers, nodata_layers = {}, {}
 
@@ -2518,6 +2517,10 @@ class MadaclimCollection:
             # Save layers name only when val is nodata
             nodata_layers[point.specimen_id] = point.nodata_layers if point.nodata_layers else None
                 
+        # Reset categorical encoding
+        self._is_categorical_encoded = False    
+        self._encoded_categ_layers = None
+
         # Update instance attributes
         self._sampled_layers = sampled_layers
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
