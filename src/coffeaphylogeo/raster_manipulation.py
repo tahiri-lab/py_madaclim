@@ -1747,10 +1747,11 @@ class MadaclimCollection:
         """
         Get the `all_points` attribute.
 
-
+        Corresponds to a list of each object in the collection.
 
         Returns:
             list: A list of all the MadaclimPoint objects in the MadaclimCollection.
+
         Examples:
             >>> # MadaclimPoints are stored in the .all_points attributes in a list
             >>> sample_A = MadaclimPoint()
@@ -1771,7 +1772,8 @@ class MadaclimCollection:
     
     @property
     def sampled_layers(self) -> Optional[Dict[str, Dict[str, int]]]:
-        """Get the sampled_layers attribute.
+        """
+        Get the sampled_layers attribute.
 
         This attribute is a nested dictionary. The outer dictionary uses the MadaclimPoint.specimen_id as keys. 
         The corresponding value for each key is another dictionary, which uses layer_names as keys and sampled values from rasters as values.
@@ -1784,7 +1786,8 @@ class MadaclimCollection:
 
     @property
     def nodata_layers(self) -> Optional[Dict[str, Union[str, List[str]]]]:
-        """Get the nodata_layers attribute.
+        """
+        Get the nodata_layers attribute.
 
         This attribute is a dictionary that contains the MadaclimPoint.specimen_id as keys and the values as the 'nodata_layers' as str or list of str.
         
