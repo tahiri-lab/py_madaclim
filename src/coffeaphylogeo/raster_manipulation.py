@@ -1498,12 +1498,20 @@ class MadaclimPoint:
             layer_dict = possible_categ_labels.get(layer, {}) or possible_descriptive_categ_labels.get(layer, {})
             
             for k, v in layer_dict.items():
-                # layer = layer if layer in possible_categ_labels else layer.split("(")[0].strip()    !DEPRECATED
-                layer = re.sub(r"\(categ_vals:.*?\)", "", layer)
-                layer = layer.strip()    # Remove the category units from the descriptive label
+                # Remove the category units from the descriptive label
+                layer_label = re.sub(r"\(categ_vals:.*?\)", "", layer)
+                layer_label = layer_label.strip()    
 
-                encoded_categ[f"{layer}_{v}"] = 1 if value == k else 0
+                encoded_categ[f"{layer_label}_{v}"] = 1 if k == value else 0    # Binary encoding for possible_categ
+                # Create an additional 'NaN' category for nodata layers
+                if self.nodata_layers:
+                    if layer in self.nodata_layers:
+                        encoded_categ[f"{layer_label}__nodata"] = 1   
+                else:
+                    encoded_categ[f"{layer_label}__nodata"] = 0 
         
+        encoded_categ = {k: v for k, v in sorted(encoded_categ.items())}
+
         # Update categorical layers-related attributes
         self._is_categorical_encoded = True
         self._encoded_categ_layers = encoded_categ    # Overridden `settr` will update `gdf`       
