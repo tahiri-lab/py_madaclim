@@ -1675,7 +1675,8 @@ class MadaclimCollection:
     #TODO CHECK IF SAMPLED_LAYERS + CATEGORICAL ENCODING WORKS
     
     def __init__(self, madaclim_points: Optional[Union[MadaclimPoint, List[MadaclimPoint]]]=None) -> None:
-        """Instantiate a collection of MadaclimPoint objects. By default, the MadaclimCollection is empty.
+        """
+        Instantiate a collection of MadaclimPoint objects. By default, the MadaclimCollection is empty.
         It will populate the collection with a single instance or a list of MadaclimPoint instances by calling the add_points method with the given madaclim_points.
 
         Args:
@@ -1735,15 +1736,18 @@ class MadaclimCollection:
             )
 
         """
-        self.__all_points = []
+        self._all_points = []
         if madaclim_points:
             self.add_points(madaclim_points)
-        self.__sampled_layers = None
-        self.__nodata_layers = None
+        self._sampled_layers = None
+        self._nodata_layers = None
 
     @property
     def all_points(self) -> list:
-        """Get the all_points attribute.
+        """
+        Get the `all_points` attribute.
+
+
 
         Returns:
             list: A list of all the MadaclimPoint objects in the MadaclimCollection.
@@ -1763,7 +1767,7 @@ class MadaclimCollection:
                 nodata_layers = None
             )
         """
-        return self.__all_points
+        return self._all_points
     
     @property
     def sampled_layers(self) -> Optional[Dict[str, Dict[str, int]]]:
@@ -1776,7 +1780,7 @@ class MadaclimCollection:
             Optional[Dict[str, Dict[str, int]]]: A dictionary with MadaclimPoint.specimen_id as keys and a dictionary of layer_names (str) and sampled values (int) as values.
                 None if Collection has not been sampled yet.
         """
-        return self.__sampled_layers
+        return self._sampled_layers
 
     @property
     def nodata_layers(self) -> Optional[Dict[str, Union[str, List[str]]]]:
@@ -1788,19 +1792,19 @@ class MadaclimCollection:
             Optional[Dict[str, Union[str, List[str]]]]: A dictionary with MadaclimPoint.specimen_id as keys and values of str or list of str of the layers_name with nodata values.
                 None if Collection has not been sampled yet or all layers sampled contained valid data.
         """
-        return self.__nodata_layers
+        return self._nodata_layers
     
     def __str__(self) -> str:
-        if len(self.__all_points) == 0:
+        if len(self._all_points) == 0:
             return "No MadaclimPoint inside the collection."
         else:
             # Raster sampling state of each object of the collection.
             sampled = False
-            if self.__sampled_layers is not None:
+            if self._sampled_layers is not None:
                 sampled = True
 
             all_points_short = [
-                f"MadaclimPoint(specimen_id={point.specimen_id}, mada_geom_point={point.mada_geom_point}, {sampled=})" for point in self.all_points
+                f"MadaclimPoint(specimen_id={point.specimen_id}, mada_geom_point={point.mada_geom_point}, {sampled=})" for point in self._all_points
             ]
             return "MadaclimCollection = [\n" + "\t" + ",\n\t".join(all_points_short) + "\n]"
         
@@ -2094,26 +2098,26 @@ class MadaclimCollection:
                 if not isinstance(point, MadaclimPoint):
                     raise TypeError(f"{point} is not a MadaclimPoint object. Accepted types are a single MadaclimPoint and a list of MadaclimPoint objects.")
                 
-                if point in self.__all_points:
+                if point in self._all_points:
                     raise ValueError(f"{point} is already in the current MadaclimCollection instance.")
                 
-                if point.specimen_id in [mada_pt.specimen_id for mada_pt in self.__all_points]:    # specimen_id unique id validation
+                if point.specimen_id in [mada_pt.specimen_id for mada_pt in self._all_points]:    # specimen_id unique id validation
                     raise ValueError(f"specimen_id={point.specimen_id} already exists inside current MadaclimCollection. Every MadaclimPoint must have a unique id.")
                 
-                self.__all_points.append(point) 
+                self._all_points.append(point) 
         else:
             # Add single MadaclimPoint object
             if not isinstance(madaclim_points, MadaclimPoint):
                 raise TypeError("The madaclim_point to add is not a MadaclimPoint object.")
             
-            if madaclim_points in self.__all_points:
+            if madaclim_points in self._all_points:
                 raise ValueError(f"{madaclim_points} is already in the current MadaclimCollection instance.")
             
-            if madaclim_points.specimen_id in [mada_pt.specimen_id for mada_pt in self.__all_points]:    # specimen_id unique id validation
+            if madaclim_points.specimen_id in [mada_pt.specimen_id for mada_pt in self._all_points]:    # specimen_id unique id validation
                     raise ValueError(f"specimen_id={madaclim_points.specimen_id} already exists inside current MadaclimCollection. Every MadaclimPoint must have a unique id.")
                 
             
-            self.__all_points.append(madaclim_points)
+            self._all_points.append(madaclim_points)
 
     def remove_points(self, *, madaclim_points: Optional[Union[MadaclimPoint, List[MadaclimPoint]]]=None, indices: Optional[Union[int, List[int]]]=None, clear:bool=False) -> None:
         """Removes MadaclimPoint objects from the MadaclimCollection based on specified criteria.
@@ -2237,7 +2241,7 @@ class MadaclimCollection:
             No MadaclimPoint inside the collection.
         """
         # Handle empty MadaclimCollection
-        if not len(self.__all_points) > 0:
+        if not len(self._all_points) > 0:
             raise ValueError("No points to delete since the MadaclimCollection is empty.")
         
         # Drop all points
@@ -2245,7 +2249,7 @@ class MadaclimCollection:
             if madaclim_points is not None or indices is not None:
                 raise ValueError("When using 'clear', do not provide 'madaclim_points' or 'indices'.")
             else:
-                self.__all_points.clear()
+                self._all_points.clear()
                 return
         if madaclim_points is not None and indices is not None:
             raise ValueError("Either provide 'madaclim_points' or 'indices', not both.")
@@ -2266,15 +2270,15 @@ class MadaclimCollection:
                         raise TypeError(f"{point_to_rm} is not a MadaclimPoint object or str. Accepted types are a single MadaclimPoint, a str, a list of MadaclimPoint objects or a list of str.")
                     
                     if isinstance(point_to_rm, MadaclimPoint):
-                        if point_to_rm not in self.__all_points:
+                        if point_to_rm not in self._all_points:
                             raise ValueError(f"{point_to_rm} does not exists in the current MadaclimCollection instance.")
                         madaclim_points_objects.append(point_to_rm)
                     else:
-                        if point_to_rm not in [point.specimen_id for point in self.__all_points]:
+                        if point_to_rm not in [point.specimen_id for point in self._all_points]:
                             raise ValueError(f"{point_to_rm} is not a valid MadaclimPoint.specimen_id for all points of the collection.")
                         madaclim_points_ids.append(point_to_rm)
 
-                self.__all_points = [point for point in self.__all_points if point not in madaclim_points_objects and point.specimen_id not in madaclim_points_ids]
+                self._all_points = [point for point in self._all_points if point not in madaclim_points_objects and point.specimen_id not in madaclim_points_ids]
 
             # Single object removal
             else:    
@@ -2282,15 +2286,15 @@ class MadaclimCollection:
                     raise TypeError(f"{madaclim_points} is not a MadaclimPoint object or str. Accepted types are a single MadaclimPoint, a str, a list of MadaclimPoint objects or a list of str.")
                 
                 if isinstance(madaclim_points, MadaclimPoint):
-                    if madaclim_points not in self.__all_points:
+                    if madaclim_points not in self._all_points:
                         raise ValueError(f"{madaclim_points} does not exists in the current MadaclimCollection instance.")
                     madaclim_points_objects.append(madaclim_points)
                 else:
-                    if madaclim_points not in [point.specimen_id for point in self.__all_points]:
+                    if madaclim_points not in [point.specimen_id for point in self._all_points]:
                         raise ValueError(f"{madaclim_points} is not a valid MadaclimPoint.specimen_id for all points of the collection.")
                     madaclim_points_ids.append(madaclim_points)
 
-                self.__all_points = [point for point in self.__all_points if point not in madaclim_points_objects and point.specimen_id not in madaclim_points_ids]
+                self._all_points = [point for point in self._all_points if point not in madaclim_points_objects and point.specimen_id not in madaclim_points_ids]
 
         
         
@@ -2298,25 +2302,25 @@ class MadaclimCollection:
         if indices is not None:
             if isinstance(indices, list):
                 try:
-                    indices = [int(index) if index >= 0 else len(self.__all_points) + int(index) for index in indices]
+                    indices = [int(index) if index >= 0 else len(self._all_points) + int(index) for index in indices]
                 except:
                     raise TypeError("Indices should be integers.")
                 for index in indices:
-                    if index < 0 or index >= len(self.__all_points):
+                    if index < 0 or index >= len(self._all_points):
                         raise ValueError(f"Index {index} is out of bounds.")
-                self.__all_points = [point for i, point in enumerate(self.__all_points) if i not in indices]
+                self._all_points = [point for i, point in enumerate(self._all_points) if i not in indices]
 
             else:    # Remove single point
                 try:
-                    index = int(indices) if indices >= 0 else len(self.__all_points) + int(indices)
+                    index = int(indices) if indices >= 0 else len(self._all_points) + int(indices)
                 except:
                     raise TypeError("Single index must be an integer.")
                 
-                if index < 0 or index >= len(self.__all_points):
+                if index < 0 or index >= len(self._all_points):
                     raise IndexError("Index out of range.")
                 
                 else:
-                    self.__all_points.pop(index)
+                    self._all_points.pop(index)
 
 
     def sample_from_rasters(
@@ -2453,7 +2457,7 @@ class MadaclimCollection:
             {'spe1_aren': {'layer_37': 196}, 'spe2_humb': {'layer_37': 238}}
         """
         
-        if not len(self.__all_points) > 0:
+        if not len(self._all_points) > 0:
             raise ValueError("Not MadaclimPoint to sample from in the Collection.")
         
         # # Initialize containers for sampled data
@@ -2461,7 +2465,7 @@ class MadaclimCollection:
         nodata_layers = {}
 
         # Sample rasters for whole collection
-        for point in self.__all_points:
+        for point in self._all_points:
             sampled_data_point, nodata_layers_point = point.sample_from_rasters(
                 clim_raster=clim_raster,
                 env_raster=env_raster,
@@ -2478,8 +2482,8 @@ class MadaclimCollection:
                 nodata_layers[point.specimen_id] = nodata_layers_point
                 
         # Update instance attributes
-        self.__sampled_layers = sampled_layers
-        self.__nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
+        self._sampled_layers = sampled_layers
+        self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
 
         if return_nodata_layers:
             return sampled_layers, nodata_layers if len(nodata_layers) > 0 else None
