@@ -1847,14 +1847,15 @@ class MadaclimCollection:
         if len(self._all_points) == 0:
             return "No MadaclimPoint inside the collection."
         else:
-            # Raster sampling state of each object of the collection.
-            sampled = False
-            if self._sampled_layers is not None:
-                sampled = True
+            all_points_short = []
+            for point in self._all_points:
+                point_info = (
+                    f"MadaclimPoint(specimen_id={point.specimen_id}, lat={point.latitude:.6f}, lon={point.longitude:.6f}, "
+                    f"sampled_layers={True if point.sampled_layers else False}, "
+                    f"categ_encoded={point.is_categorical_encoded})"
+                )
+                all_points_short.append(point_info)
 
-            all_points_short = [
-                f"MadaclimPoint(specimen_id={point.specimen_id}, mada_geom_point={point.mada_geom_point}, {sampled=})" for point in self._all_points
-            ]
             return "MadaclimCollection = [\n" + "\t" + ",\n\t".join(all_points_short) + "\n]"
         
     def __repr__(self) -> str:
