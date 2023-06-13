@@ -1499,7 +1499,9 @@ class MadaclimPoint:
             
             for k, v in layer_dict.items():
                 # layer = layer if layer in possible_categ_labels else layer.split("(")[0].strip()    !DEPRECATED
-                layer = re.sub(r"\(categ_vals:.*?\)", "", layer)    # Remove the category units from the descriptive label
+                layer = re.sub(r"\(categ_vals:.*?\)", "", layer)
+                layer = layer.strip()    # Remove the category units from the descriptive label
+
                 encoded_categ[f"{layer}_{v}"] = 1 if value == k else 0
         
         # Update categorical layers-related attributes
