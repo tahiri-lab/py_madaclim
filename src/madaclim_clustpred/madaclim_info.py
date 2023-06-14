@@ -13,7 +13,7 @@ import numpy as np
 import rasterio
 import pyproj
 
-from coffeaphylogeo._constants import Constants
+from madaclim_clustpred._constants import Constants
 
 class MadaclimLayers:
     """A class that represents all of the information and data from the climate and environmental variable layers 
@@ -40,7 +40,7 @@ class MadaclimLayers:
 
         
         Example:
-            >>> from coffeaphylogeo.madaclim_info import MadaclimLayers
+            >>> from madaclim_clustpred.madaclim_info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> # Access the all layers df
             >>> all_layers_df = madaclim_info.all_layers
@@ -90,9 +90,9 @@ class MadaclimLayers:
             >>> madaclim_info.clim_crs
             Traceback (most recent call last):
             File "<stdin>", line 1, in <module>
-            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaPhyloGeo/src/coffeaphylogeo/madaclim_info.py", line 223, in clim_crs
+            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaphylogeo/src/madaclim_clustpred/madaclim_info.py", line 223, in clim_crs
                 self._validate_raster("clim_raster")
-            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaPhyloGeo/src/coffeaphylogeo/madaclim_info.py", line 1111, in _validate_raster
+            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaphylogeo/src/madaclim_clustpred/madaclim_info.py", line 1111, in _validate_raster
                 raise ValueError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
             ValueError: Undefined attribute: 'clim_raster'. You need to assign a valid pathlib.Path to the related raster attribute first.
             
@@ -341,7 +341,7 @@ class MadaclimLayers:
             ValueError: If geoclim_type does not corresponds to a valid geoclim type.
         
         Example:
-            >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
+            >>> from madaclim_clustpred.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> clim_df = madaclim_info.select_geoclim_type_layers(geoclim_type="clim")
             >>> clim_df.head()
@@ -392,7 +392,7 @@ class MadaclimLayers:
         
         Example:
             >>> # Get labels for all layers
-            >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
+            >>> from madaclim_clustpred.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> all_layers = madaclim_info.get_layers_labels()
             >>> len(all_layers)
@@ -522,7 +522,7 @@ class MadaclimLayers:
             KeyError: If any value in args is not a column in `all_layers` DataFrame.
 
         Example:
-            >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
+            >>> from madaclim_clustpred.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> madaclim_info.fetch_specific_layers([1, 15, 55, 71])
             geoclim_type  layer_number layer_name                      layer_description  is_categorical         units
@@ -588,7 +588,7 @@ class MadaclimLayers:
             >>> madaclim_info.fetch_specific_layers(bio1, "band_number")
             Traceback (most recent call last):
             File "<stdin>", line 1, in <module>
-            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaPhyloGeo/src/coffeaphylogeo/madaclim_info.py", line 604, in fetch_specific_layers
+            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/madaclim_clustpred/src/madaclim_clustpred/madaclim_info.py", line 604, in fetch_specific_layers
                 if not min_layer <= layer_number <= max_layer:
                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             KeyError: "Invalid args: ['band_number']. Args must be one of a key of ['geoclim_type', 'layer_number', 'layer_name', 'layer_description', 'is_categorical', 'units'] or 'all'"
@@ -796,7 +796,7 @@ class MadaclimLayers:
             List[int]: A list of band numbers corresponding to the provided layer labels.
 
         Example:
-            >>> from coffeaphylogeo.madaclim_layers import MadaclimLayers
+            >>> from madaclim_clustpred.madaclim_layers import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> last_20 = madaclim_info.get_layers_labels()[-20:]
             >>> band_nums = madaclim_info.get_bandnums_from_layers(last_20)

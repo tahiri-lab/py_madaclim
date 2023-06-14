@@ -4,8 +4,8 @@ import pyproj
 
 class Constants:
     # Define relevant directories
-    MAIN_DIR = Path(pkg_resources.files("coffeaphylogeo"))
-    _DATA_DIR = Path(pkg_resources.files("coffeaphylogeo"), "_data")
+    MAIN_DIR = Path(pkg_resources.files("madaclim_clustpred"))
+    _DATA_DIR = Path(pkg_resources.files("madaclim_clustpred"), "_data")
 
     # check directories
     assert _DATA_DIR.is_dir(), f"Directory not found: {_DATA_DIR}"
