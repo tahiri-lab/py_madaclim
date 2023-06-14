@@ -1,5 +1,5 @@
 [project]
-name = "coffeaPhylogeo"
+name = "madaclim_clustpred"
 version = "0.0.1"
 license = {file = "LICENSE.txt"}
 dynamic = ["readme"]    # Add dependencies "dependencies"
