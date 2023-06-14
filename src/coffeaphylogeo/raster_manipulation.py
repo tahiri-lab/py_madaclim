@@ -938,7 +938,8 @@ class MadaclimPoint:
     
     @property
     def gdf(self) -> gpd.GeoDataFrame:
-        """Get the GeoPandas DataFrame using `mada_geom_point` as geometry.
+        """
+        Get the GeoPandas DataFrame using `mada_geom_point` as geometry.
 
         Returns:
             gpd.GeoDataFrame: A Geopandas GeoDataFrame generated from instance attributes and Point geometry.
@@ -1761,6 +1762,11 @@ class MadaclimCollection:
 
         self._is_categorical_encoded = False
         self._encoded_categ_layers = None
+        
+        # GeoDataframe construction and updating
+        self._gdf = self._construct_geodataframe()
+
+
 
     @property
     def all_points(self) -> list:
@@ -1843,6 +1849,17 @@ class MadaclimCollection:
         """
         return self._encoded_categ_layers
     
+    @property
+    def gdf(self) -> gpd.GeoDataFrame:
+        """
+        Get the GeoPandas DataFrame of the collection (concat of all points' gdfs).
+
+        Returns:
+            gpd.GeoDataFrame: A Geopandas GeoDataFrame generated from instance attributes and Point geometry.
+        """
+        self._update_gdf()
+        return self._gdf
+    
     def __str__(self) -> str:
         if len(self._all_points) == 0:
             return "No MadaclimPoint inside the collection."
@@ -1861,6 +1878,30 @@ class MadaclimCollection:
     def __repr__(self) -> str:
         return self.__str__()
     
+    # def __setattr__(self, name, value):
+    #     """
+    #     Overrides the __setattr__ method to update GeoDataFrame when attributes are set.
+
+    #     This method overrides the standard `__setattr__` method. When an attribute 
+    #     is set on the instance, it checks if it's a new attribute (not one of 
+    #     the instance's initial attributes). If it's new, the GeoDataFrame 
+    #     (represented by the `_gdf` attribute) is updated to reflect the new attribute. 
+
+    #     Args:
+    #         name (str): The name of the attribute being set.
+    #         value (Any): The value being assigned to the attribute.
+
+    #     Raises:
+    #         AttributeError: If the attribute being set is '_initial_attributes', 
+    #             as this attribute is meant to remain constant after object creation.
+
+    #     """
+    #     super().__setattr__(name, value)  # Call the parent class's __setattr__ first
+    #     if hasattr(self, "_MadaclimCollection__initial_attributes") and name != "_gdf":
+    #         # Update the `gdf` attribute with the newly added attribute
+    #         self._update_gdf()
+
+
     @classmethod
     def populate_from_csv(cls, csv_file: Union[str, pathlib.Path]) -> "MadaclimCollection":
         """Creates a new MadaclimCollection from a CSV file.
@@ -2166,11 +2207,18 @@ class MadaclimCollection:
             if madaclim_points.specimen_id in [mada_pt.specimen_id for mada_pt in self._all_points]:    # specimen_id unique id validation
                     raise ValueError(f"specimen_id={madaclim_points.specimen_id} already exists inside current MadaclimCollection. Every MadaclimPoint must have a unique id.")
                 
-            
             self._all_points.append(madaclim_points)
+        # Update collection gdf after point addition
+        self._update_gdf()
 
-    def remove_points(self, *, madaclim_points: Optional[Union[MadaclimPoint, List[MadaclimPoint]]]=None, indices: Optional[Union[int, List[int]]]=None, clear:bool=False) -> None:
-        """Removes MadaclimPoint objects from the MadaclimCollection based on specified criteria.
+    def remove_points(
+            self, *, 
+            madaclim_points: Optional[Union[MadaclimPoint, List[MadaclimPoint]]]=None, 
+            indices: Optional[Union[int, List[int]]]=None, 
+            clear:bool=False
+        ) -> None:
+        """
+        Removes MadaclimPoint objects from the MadaclimCollection based on specified criteria.
 
         This method allows removing MadaclimPoint objects from the collection by providing either
         MadaclimPoint instance(s), index/indices, or by clearing the whole collection.
@@ -2300,6 +2348,7 @@ class MadaclimCollection:
                 raise ValueError("When using 'clear', do not provide 'madaclim_points' or 'indices'.")
             else:
                 self._all_points.clear()
+                self._update_gdf()    # Return string when empty points
                 return
         if madaclim_points is not None and indices is not None:
             raise ValueError("Either provide 'madaclim_points' or 'indices', not both.")
@@ -2371,6 +2420,8 @@ class MadaclimCollection:
                 
                 else:
                     self._all_points.pop(index)
+        
+        self._update_gdf()    # Update collection geodataframe with removed points
 
 
     def sample_from_rasters(
@@ -2535,6 +2586,7 @@ class MadaclimCollection:
         # Update instance attributes
         self._sampled_layers = sampled_layers
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
+        self._update_gdf()
 
     def binary_encode_categorical(self) -> None:
         """
@@ -2573,5 +2625,86 @@ class MadaclimCollection:
         # Update categorical layers-related attributes
         self._is_categorical_encoded = True
         self._encoded_categ_layers = encoded_categ
+        self._update_gdf()
         
+    def _construct_geodataframe(self) -> Union[str, gpd.GeoDataFrame]:
+        """
+        Constructs a GeoDataFrame from the MadaclimPoint objects stored in the MadaclimCollection.
+
+        The method fills in missing columns across the collection to standardize the GeoDataFrame.
+        It also reorders the columns based on the presence of sampled layers and their encoding states.
+        The method aims to keep a logical display with sampled layers and/or encoded layers at the right end of the GeoDataFrame.
+
+        Returns:
+            Union[str, gpd.GeoDataFrame]: A GeoDataFrame that contains all MadaclimPoint data in a standardized format.
+            In case there are no MadaclimPoint objects in the collection, a string message is returned instead.
+
+        Raises:
+            ValueError: If there are no MadaclimPoint objects in the collection.
+
+        """
+        if not len(self._all_points) > 0:
+            collection_gdf = "No MadaclimPoint to sample from in the Collection."
+        else:
+            # Get all unique and keep the order
+            all_points_gdf_cols = [list(point.gdf.columns) for point in self._all_points]
+            # unique_cols_whole_collection = set().union(*all_points_gdf_cols)
+            unique_cols_whole_collection = list(dict.fromkeys(sum(all_points_gdf_cols, [])))
+
+            # Fill-in missing cols accross collection to standardize collection gdf
+            points_gdfs = []
+            for point in self._all_points:
+                point_df = point.gdf.copy()
+                missing_cols = set(unique_cols_whole_collection) - set(point_df.columns)
+                for col in missing_cols: 
+                    point_df[col] = np.nan
+                points_gdfs.append(point_df)
+
+            collection_gdf = pd.concat(points_gdfs, ignore_index=True)
+            
+            # Check in both collection an individual objects for presence sampled_layers and NO categ_encoding state
+            if hasattr(self, "_sampled_layers") and hasattr(self, "_nodata_layers"):    # Avoid block-trigger when constructing with points
+                has_sampled_layers = self._sampled_layers is not None or any([point.sampled_layers for point in self._all_points])
+                has_not_encoded_layers = not self._is_categorical_encoded or not any([point.is_categorical_encoded for point in self._all_points])
+
+                # Reorder the cols to keep logical display + sampled_layers at right end
+                if has_sampled_layers and has_not_encoded_layers:
+                    all_sampled_layers_cols = [list(point.sampled_layers.keys()) for point in self._all_points if point.sampled_layers]
+                    unique_sampled_layers_cols = list(dict.fromkeys(sum(all_sampled_layers_cols, [])))
+                    unsampled_cols = [col for col in collection_gdf.columns if col not in unique_sampled_layers_cols]
+                    new_cols_order = list(unsampled_cols) + unique_sampled_layers_cols
+                    collection_gdf = collection_gdf.loc[:, new_cols_order]
+
+            # Check in both collection an individual objects for sampled_layers and categ_encoding state
+            if hasattr(self, "_is_categorical_encoded") and hasattr(self, "_encoded_categ_layers"):    # Avoid block-trigger when constructing with points
+                has_sampled_layers = self._sampled_layers is not None or any([point.sampled_layers for point in self._all_points])
+                has_encoded_layers = self._is_categorical_encoded or any([point.is_categorical_encoded for point in self._all_points])
+
+                # Reorder the cols to keep logical display + sampled_layers at right end
+                if has_sampled_layers and has_encoded_layers:
+                    # Remove the categorical keys from the sampled_layers
+                    madaclim_info = MadaclimLayers()
+                    possible_categ_labels = list(madaclim_info.get_categorical_combinations().keys())
+                    possible_descriptive_categ_labels = list(madaclim_info.get_categorical_combinations(as_descriptive_keys=True).keys())
+                    
+                    all_sampled_layers_cols = [list(point.sampled_layers.keys()) for point in self._all_points if point.sampled_layers]
+                    noncateg_sampled_layers_cols = [ele for sublist in all_sampled_layers_cols for ele in sublist if ele not in possible_categ_labels + possible_descriptive_categ_labels]
+                    all_categ_layers_cols = [list(point.encoded_categ_layers.keys()) for point in self._all_points if point.is_categorical_encoded]
+                    
+                    unique_sampled_layers_cols = list(dict.fromkeys(noncateg_sampled_layers_cols, []))
+                    unique_encoded_layers_cols = list(dict.fromkeys(sum(all_categ_layers_cols, [])))
+                    
+                    non_sampled_categ_cols = [col for col in collection_gdf.columns if col not in unique_sampled_layers_cols + unique_encoded_layers_cols]
+                    reordered_cols = list(non_sampled_categ_cols) + unique_sampled_layers_cols + unique_encoded_layers_cols
+                    collection_gdf = collection_gdf.loc[:, reordered_cols]
+
+        return collection_gdf
+    
+    def _update_gdf(self) -> None:
+        """
+        Updates the internal GeoDataFrame of the MadaclimCollection.
+
+        The method sets the internal `_gdf` attribute to the GeoDataFrame constructed by the `_construct_geodataframe` method.
+        """
+        self._gdf = self._construct_geodataframe()
         
