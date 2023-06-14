@@ -421,8 +421,11 @@ class MadaclimRasters:
 
     Attributes:
         clim_raster (pathlib.Path): Path to the climate raster file.
-        clim_crs ()
+        clim_crs (pyproj.crs.crs.CRS): The CRS derived of the climate raster file.
+        clim_nodata_val (float): The nodata value from the climate raster file
         env_raster (pathlib.Path): Path to the environmental raster file.
+        env_crs (pyproj.crs.crs.CRS): The CRS derived of the environmental raster file.
+        env_nodata_val (float): The nodata value from the environmental raster file
     """
 
     def __init__(self, clim_raster: pathlib.Path, env_raster: pathlib.Path) -> None:
@@ -453,8 +456,8 @@ class MadaclimRasters:
             - Prime Meridian: Greenwich
        
         """
-        self.clim_raster = clim_raster
-        self.env_raster = env_raster
+        self._clim_raster = clim_raster
+        self._env_raster = env_raster
     
     @property
     def clim_raster(self) -> pathlib.Path:
@@ -552,10 +555,25 @@ class MadaclimRasters:
             pyproj.crs.crs.CRS: The CRS derived of the climate raster file.
         """
         # Get epsg from clim_raster
-        with rasterio.open(self.clim_raster) as clim_raster:
+        with rasterio.open(self._clim_raster) as clim_raster:
             clim_epsg = clim_raster.crs.to_epsg()  # Get the EPSG code of the CRS
             clim_crs = pyproj.CRS.from_epsg(clim_epsg)  # Create a pyproj CRS object
         return clim_crs
+    @property
+    def clim_nodata_val(self) -> pyproj.crs.crs.CRS:
+        """
+        Retrieves the nodata value from the Madaclim climate raster.
+
+        This property opens the raster file and retrieves nodata value from the raster.
+
+        Returns:
+            float: The nodata value from the climate raster file
+        """
+        
+        with rasterio.open(self._clim_raster) as clim_raster:
+            clim_nodata = clim_raster.nodata
+        return clim_nodata
+    
     @property
     def env_crs(self) -> pyproj.crs.crs.CRS:
         """
@@ -568,18 +586,34 @@ class MadaclimRasters:
             pyproj.crs.crs.CRS: The CRS derived of the environmental raster file.
         """
         # Get epsg from clim_raster
-        with rasterio.open(self.env_raster) as env_raster:
+        with rasterio.open(self._env_raster) as env_raster:
             env_epsg = env_raster.crs.to_epsg()  # Get the EPSG code of the CRS
             env_crs = pyproj.CRS.from_epsg(env_epsg)  # Create a pyproj CRS object
         return env_crs
+    
+    @property
+    def env_nodata_val(self) -> pyproj.crs.crs.CRS:
+        """
+        Retrieves the nodata value from the Madaclim environmental raster.
+
+        This property opens the raster file and retrieves nodata value from the raster.
+
+        Returns:
+            float: The nodata value from the environmental raster file
+        """
+        
+        with rasterio.open(self._env_raster) as env_raster:
+            env_nodata = env_raster.nodata
+        return env_nodata
         
     def __str__(self) -> str:
         info = (
             f"MadaclimRasters(\n\tclim_raster = {self._clim_raster},"
             f"\n\tclim_crs = {self.clim_crs},"
+            f"\n\tclim_nodata_val = {self.clim_nodata_val}"
             f"\n\tenv_raster = {self._env_raster},"
-            f"\n\tenv_crs = {self.env_crs}\n)"
-
+            f"\n\tenv_crs = {self.env_crs},"
+            f"\n\tenv_nodata_val = {self.env_nodata_val}\n)"
     )
         return info
     
