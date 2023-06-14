@@ -574,7 +574,13 @@ class MadaclimRasters:
         return env_crs
         
     def __str__(self) -> str:
-        info = "\n ".join({f"{attr} = {val}" for attr, val in vars(self).items()})
+        info = (
+            f"MadaclimRasters(\n\tclim_raster = {self._clim_raster},"
+            f"\n\tclim_crs = {self.clim_crs},"
+            f"\n\tenv_raster = {self._env_raster},"
+            f"\n\tenv_crs = {self.env_crs}\n)"
+
+    )
         return info
     
     def __repr__(self) -> str:
