@@ -13,5 +13,10 @@ layers.ipynb
 # Trimmed fasta files
 gbs_trimmed/
 
+# coffea data files
+species_locations_all_positions.csv
+species_locations_with_gbs_only.csv
+*.tif
+
 # sphinx documentation
 docs/
