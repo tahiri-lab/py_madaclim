@@ -414,7 +414,7 @@ class _LayerPlotter:
         return madaclim_layers
 
 
-class MadaclimRaster:
+class MadaclimRasters:
     """
     Handles operations on Madaclim climate and environmental raster files. 
     Also provides a method to visualize the raster layers (map) and distribution of the raster values.
@@ -427,15 +427,15 @@ class MadaclimRaster:
 
     def __init__(self, clim_raster: pathlib.Path, env_raster: pathlib.Path) -> None:
         """
-        Initializes a MadaclimRaster object with climate and environmental raster files.
+        Initializes a MadaclimRasters object with climate and environmental raster files.
 
         Args:
             clim_raster (pathlib.Path): Path to the climate raster file.
             env_raster (pathlib.Path): Path to the environmental raster file.
         
         Examples:
-            >>> from madaclim_clustpred.raster_manipulation import MadaclimRaster
-            >>> mada_rasters = MadaclimRaster(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
+            >>> from madaclim_clustpred.raster_manipulation import MadaclimRasters
+            >>> mada_rasters = MadaclimRasters(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
             >>> mada_rasters.clim_crs
             <Derived Projected CRS: EPSG:32738>
             Name: WGS 84 / UTM zone 38S
@@ -617,8 +617,8 @@ class MadaclimRaster:
             'env_71_altitude (Altitude in meters)'
             
             >>> # Default visualization of the raster map
-            >>> from madaclim_clustpred.raster_manipulation import MadaclimRaster
-            >>> mada_rasters = MadaclimRaster(clim_raster=mada_info.clim_raster, env_raster=mada_info.env_raster)    # Using common attr btw the instances
+            >>> from madaclim_clustpred.raster_manipulation import MadaclimRasters
+            >>> mada_rasters = MadaclimRasters(clim_raster=mada_info.clim_raster, env_raster=mada_info.env_raster)    # Using common attr btw the instances
             >>> mada_rasters.plot_layer(env_layers_labels[0])
 
             >>> # Pass in any number of kwargs to the imshow or cax (raster + colorbarax) or histplot for customization
@@ -1283,8 +1283,8 @@ class MadaclimPoint:
 
         """
 
-        # Create a MadaclimRaster to validate both rasters
-        mada_rasters = MadaclimRaster(clim_raster=clim_raster, env_raster=env_raster)
+        # Create a MadaclimRasters to validate both rasters
+        mada_rasters = MadaclimRasters(clim_raster=clim_raster, env_raster=env_raster)
         if mada_rasters.clim_crs != Constants.MADACLIM_CRS:
             raise ValueError(f"The provided clim_raster's CRS does not corresponds to Madaclim db's expected crs: {Constants.MADACLIM_CRS}")
 
@@ -1604,8 +1604,8 @@ class MadaclimPoint:
                 instance's attributes.
 
         Example:
-            >>> from madaclim_clustpred.raster_manipulation import MadaclimRaster, MadaclimPoint
-            >>> mada_rasters = MadaclimRaster("madaclim_current.tif", "madaclim_enviro.tif")
+            >>> from madaclim_clustpred.raster_manipulation import MadaclimRasters, MadaclimPoint
+            >>> mada_rasters = MadaclimRasters("madaclim_current.tif", "madaclim_enviro.tif")
             >>> spe2 = MadaclimPoint(
             ... specimen_id="spe2_humb", 
             ... latitude=-12.716667, 
@@ -2475,7 +2475,7 @@ class MadaclimCollection:
             'clim_37_bio1 (Annual mean temperature)'
 
             >>> # Validating the rasters
-            mada_rasters = MadaclimRaster(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
+            mada_rasters = MadaclimRasters(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
 
             >>> # Sample the current_climate raster
             >>> collection    # sampled status set to False
