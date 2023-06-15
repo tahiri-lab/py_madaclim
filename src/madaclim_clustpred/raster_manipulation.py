@@ -843,9 +843,10 @@ class MadaclimPoint:
         """
         
         self.specimen_id = specimen_id
-        self.source_crs = self.validate_crs(source_crs)
-        self.latitude = self.validate_lat(latitude, crs=self.source_crs)
-        self.longitude = self.validate_lon(longitude, crs=self.source_crs)
+        self._source_crs = self._validate_crs(source_crs)
+        self._longitude = longitude
+        self._latitude = latitude
+        self._validate_lonlat(self._longitude, self._latitude)
         self._mada_geom_point = self._construct_point(
             latitude=self.latitude, 
             longitude=self.longitude,
@@ -884,49 +885,10 @@ class MadaclimPoint:
             str: The identifier for the MadaclimPoint.
         """
         return self._specimen_id
+    
     @specimen_id.setter
     def specimen_id(self, value: str):
         self._specimen_id = value
-    
-    @property
-    def latitude(self) -> float:
-        """
-        Get or sets the latitude attribute.
-
-        Args:
-            value (float): The latitude value for the point.
-
-        Returns:
-            float: The latitude of the point.
-        """
-        return self._latitude
-    
-    @latitude.setter
-    def latitude(self, value: float):
-        value = self.validate_lat(value, crs=self.source_crs)
-        self._latitude = value
-        
-        self._update_mada_geom_point()   # Update `mada_geom_point` when latitude is updated
-    
-    @property
-    def longitude(self) -> float:
-        """
-        Get or sets the longitude attribute.
-
-        Args:
-            value (float): The longitude value for the point.
-
-        Returns:
-            float: The longitude of the point.
-        """
-        return self._longitude
-    
-    @longitude.setter
-    def longitude(self, value: float):
-        value = self.validate_lon(value, crs=self.source_crs)
-        self._longitude = value
-        
-        self._update_mada_geom_point()   # Update `mada_geom_point` when longitude is updated
     
     @property
     def source_crs(self) -> pyproj.crs.CRS:
@@ -943,10 +905,47 @@ class MadaclimPoint:
     
     @source_crs.setter
     def source_crs(self, value: pyproj.crs.CRS):
-        value = self.validate_crs(value)
-        self._source_crs = value
+        self._source_crs = self._validate_crs(value)
+        self._update_mada_geom_point()
         
-        self._update_mada_geom_point()   # Update `mada_geom_point` when source_crs is updated
+    @property
+    def longitude(self) -> float:
+        """
+        Gets or sets the longitude attribute.
+
+        Args:
+            value (float): The longitude value of the point.
+
+        Returns:
+            float: The current longitude value of the point.
+        """
+        return self._longitude
+    
+    @longitude.setter
+    def longitude(self, value: float):
+        if hasattr(self, "_longitude") and hasattr(self, "_latitude"):
+            self._longitude, _ = self._validate_lonlat(longitude=value, latitude=self._latitude)
+            self._update_mada_geom_point()
+
+    @property
+    def latitude(self) -> float:
+        """
+        Gets or sets the latitude attribute.
+
+        Args:
+            value (float): The latitude value of the point.
+
+        Returns:
+            float: The current latitude value of the point.
+        """
+        return self._latitude
+    
+    @latitude.setter
+    def latitude(self, value: float):
+        if hasattr(self, "_longitude") and hasattr(self, "_latitude"):
+            _, self._latitude = self._validate_lonlat(longitude=self._longitude, latitude=value)
+            self._update_mada_geom_point()
+    
 
     @property
     def mada_geom_point(self) -> shapely.geometry.point.Point:
@@ -1120,7 +1119,7 @@ class MadaclimPoint:
             source_crs_val = source_crs_val.to_epsg()
         return source_crs_val
     
-    def validate_crs(self, crs) -> pyproj.crs.crs.CRS:
+    def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
         """
         Validate the input CRS and return a valid CRS object.
 
@@ -1144,7 +1143,79 @@ class MadaclimPoint:
             raise ValueError(crs_error)
         return valid_crs
     
-    def validate_lat(self, latitude, crs) -> float:
+    def _validate_lonlat(self, longitude: float, latitude: float) -> Tuple[float]:
+        """
+        Validate if the given longitude and latitude fall within the bounds of the Madaclim rasters.
+
+        If the source CRS differs from the Madaclim rasters' CRS, the provided longitude and latitude are 
+        reprojected to the Madaclim rasters' CRS for validation. If the source CRS and the rasters' CRS are the same, 
+        the provided coordinates are directly validated against the rasters' bounds.
+
+        Args:
+            longitude (float): The longitude to validate.
+            latitude (float): The latitude to validate.
+
+        Returns:
+            Tuple[float]: T original longitude and latitude values if valid.
+
+        Raises:
+            TypeError: If the provided longitude or latitude can't be converted to float.
+            ValueError: If the reprojected or original longitude or latitude don't fall within the bounds of the Madaclim rasters.
+        """
+        try:
+            longitude = float(longitude)
+        except:
+            raise TypeError(f"Could not convert {longitude} to float. Longitude must be a float.")
+        
+        try:
+            latitude = float(latitude)
+        except:
+            raise TypeError(f"Could not convert {latitude} to float. Latitude must be a float.")
+        
+        # Define Madaclim rasters' crs and native units bounds
+        madarasters_crs = Constants.MADACLIM_CRS
+        madarasters_native_bounds = Constants.MADACLIM_RASTERS_BOUNDS    # (298000.0, 7155000.0, 1101000.0, 8683000.0)
+        raster_min_x, raster_max_x = madarasters_native_bounds[0], madarasters_native_bounds[2]
+        raster_min_y, raster_max_y = madarasters_native_bounds[1], madarasters_native_bounds[3]
+
+        if self._source_crs != madarasters_crs:
+            
+            # Reproject the lonlat coords to the Madaclim rasters' crs
+            mada_transformer = Transformer.from_crs(self.source_crs, madarasters_crs, always_xy=True)
+            reproj_lon, reproj_lat = mada_transformer.transform(longitude, latitude)
+
+            # Get madarasters' bounds in the source_crs' projection
+            mada_bounds_reproj_source_crs = mada_transformer.transform_bounds(*madarasters_native_bounds, direction="INVERSE")
+
+            if not raster_min_x <= reproj_lon <= raster_max_x:
+                raise ValueError(
+                    f"{longitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
+                    f"Longitude must fall between {mada_bounds_reproj_source_crs[0]:.6f} "
+                    f"and {mada_bounds_reproj_source_crs[2]:.6f} (according to `source_crs`)."
+                )
+            if not raster_min_y <= reproj_lat <= raster_max_y:
+                raise ValueError(
+                    f"{latitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
+                    f"Latitude must fall between {mada_bounds_reproj_source_crs[1]:.6f} "
+                    f"and {mada_bounds_reproj_source_crs[3]:.6f} (according to `source_crs`)."
+                )
+            return longitude, latitude
+        
+        else:
+            if not raster_min_x <= longitude <= raster_max_x:
+                raise ValueError(
+                    f"{longitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
+                    f"Longitude must fall between {raster_min_x} and {raster_max_x}."
+                )
+            if not raster_min_y <= latitude <= raster_max_y:
+                raise ValueError(
+                    f"{latitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
+                    f"Latitude must fall between {raster_min_y} and {raster_max_y}."
+                )
+            return longitude, latitude
+    
+    #!DEPRECATED METHOD
+    def _validate_lat(self, latitude) -> float:
         """
         Validate the input latitude value and return a valid latitude.
 
@@ -1163,27 +1234,27 @@ class MadaclimPoint:
         try:
             latitude = float(latitude)
         except:
-            raise TypeError(f"Could not convert {latitude} to float. Latitude must be a float.")
+            raise TypeError(f"Could not convert {latitude} to float. latitude must be a float.")
         
-        # Validate max lat according to crs bounds
-        if crs.is_geographic:
-            bounds = crs.area_of_use.bounds
+        # Validate max lon according to crs bounds
+        if self._source_crs.is_geographic:
+            bounds = self._source_crs.area_of_use.bounds
         else:
             # Extract bounds in native units of projection
-            transformer = Transformer.from_crs(crs.geodetic_crs, crs, always_xy=True)
-            bounds = transformer.transform_bounds(*crs.area_of_use.bounds)
-
+            transformer = Transformer.from_crs(self._source_crs.geodetic_crs, self._source_crs, always_xy=True)
+            bounds = transformer.transform_bounds(*self._source_crs.area_of_use.bounds)
+        
         if bounds[0] < bounds[2]:
-            min_lat, max_lat = bounds[1], bounds[3]
+            min_lat, max_lat = bounds[0], bounds[2]
         else:
-            max_lat, min_lat = bounds[1], bounds[3]
-        min_lat, max_lat = bounds[1], bounds[3]
+            max_lat, min_lat = bounds[0], bounds[2]
         if not min_lat <= latitude <= max_lat:
-            raise ValueError(f"{latitude=} is out of bounds for the crs=EPSG:{crs.to_epsg()}. Latitude must be between: {min_lat} and {max_lat}")
+            raise ValueError(f"{latitude=} is out of bounds for the crs=EPSG:{self._source_crs.to_epsg()}. latitude must be between {min_lon} and {max_lon}")
         
         return latitude
     
-    def validate_lon(self, longitude, crs) -> float:
+    #!DEPRECATED METHOD
+    def _validate_lon(self, longitude) -> float:
         """
         Validate the input longitude value and return a valid longitude.
 
@@ -1205,19 +1276,19 @@ class MadaclimPoint:
             raise TypeError(f"Could not convert {longitude} to float. longitude must be a float.")
         
         # Validate max lon according to crs bounds
-        if crs.is_geographic:
-            bounds = crs.area_of_use.bounds
+        if self._source_crs.is_geographic:
+            bounds = self._source_crs.area_of_use.bounds
         else:
             # Extract bounds in native units of projection
-            transformer = Transformer.from_crs(crs.geodetic_crs, crs, always_xy=True)
-            bounds = transformer.transform_bounds(*crs.area_of_use.bounds)
+            transformer = Transformer.from_crs(self._source_crs.geodetic_crs, self._source_crs, always_xy=True)
+            bounds = transformer.transform_bounds(*self._source_crs.area_of_use.bounds)
         
         if bounds[0] < bounds[2]:
             min_lon, max_lon = bounds[0], bounds[2]
         else:
             max_lon, min_lon = bounds[0], bounds[2]
         if not min_lon <= longitude <= max_lon:
-            raise ValueError(f"{longitude=} is out of bounds for the crs=EPSG:{crs.to_epsg()}. Longitude must be between {min_lon} and {max_lon}")
+            raise ValueError(f"{longitude=} is out of bounds for the crs=EPSG:{self._source_crs.to_epsg()}. Longitude must be between {min_lon} and {max_lon}")
         
         return longitude
     
@@ -1440,7 +1511,7 @@ class MadaclimPoint:
         sampled_layers = {}
         nodata_layers = []
         
-        print("\n" + "#" * 40 + f" \033[1mExtracting data for: {self.specimen_id}\033[0m " +"#" * 40)
+        print("\n" + "#" * 40 + f" \033[1mExtracting data for: {self._specimen_id}\033[0m " +"#" * 40)
         start_time = time.perf_counter()
         
         if clim_raster_sample_info["layers"]:
@@ -1656,9 +1727,9 @@ class MadaclimPoint:
         """
         if hasattr(self, "_latitude") and hasattr(self, "_longitude"):
             self._mada_geom_point = self._construct_point(
-                latitude=self.latitude,
-                longitude=self.longitude,
-                source_crs=self.source_crs
+                latitude=self._latitude,
+                longitude=self._longitude,
+                source_crs=self._source_crs
             )
 
     def _construct_geodataframe(self) -> gpd.geopandas:
