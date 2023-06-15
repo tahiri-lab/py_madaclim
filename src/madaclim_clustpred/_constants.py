@@ -26,7 +26,9 @@ class Constants:
     # Default raster filenames
     DEFAULT_CLIM_RASTER_FILENAME = "madaclim_current.tif"
     DEFAULT_ENV_RASTER_FILENAME = "madaclim_enviro.tif"
+    # Raster metadata to avoid instantiation of MadaclimRasters
     MADACLIM_CRS = pyproj.CRS.from_epsg(32738)
+    RASTERS_BOUNDS = (298000.0, 7155000.0, 1101000.0, 8683000.0)
 
     # URLs
     MADACLIM_URLS = {
