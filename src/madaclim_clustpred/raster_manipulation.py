@@ -423,9 +423,11 @@ class MadaclimRasters:
         clim_raster (pathlib.Path): Path to the climate raster file.
         clim_crs (pyproj.crs.crs.CRS): The CRS derived of the climate raster file.
         clim_nodata_val (float): The nodata value from the climate raster file
+        clim_bounds (tuple): The bounds of the climate raster in order of (left, bottom, right, top)
         env_raster (pathlib.Path): Path to the environmental raster file.
         env_crs (pyproj.crs.crs.CRS): The CRS derived of the environmental raster file.
         env_nodata_val (float): The nodata value from the environmental raster file
+        env_bounds (tuple): The bounds of the environmental raster in order of (left, bottom, right, top)
     """
 
     def __init__(self, clim_raster: pathlib.Path, env_raster: pathlib.Path) -> None:
@@ -560,7 +562,7 @@ class MadaclimRasters:
             clim_crs = pyproj.CRS.from_epsg(clim_epsg)  # Create a pyproj CRS object
         return clim_crs
     @property
-    def clim_nodata_val(self) -> pyproj.crs.crs.CRS:
+    def clim_nodata_val(self) -> float:
         """
         Retrieves the nodata value from the Madaclim climate raster.
 
@@ -573,6 +575,21 @@ class MadaclimRasters:
         with rasterio.open(self._clim_raster) as clim_raster:
             clim_nodata = clim_raster.nodata
         return clim_nodata
+    
+    @property
+    def clim_bounds(self) -> Tuple[float]:
+        """
+        Retrieves the bounds of the climate raster.
+
+        This property opens the raster file and retrieves bounds values (left, bottom, right, top) from the raster.
+
+        Returns:
+            Tuple[float]: The bounds values in order (left, bottom, right, top)
+        """
+        
+        with rasterio.open(self._clim_raster) as clim_raster:
+            clim_bounds = clim_raster.bounds
+        return clim_bounds
     
     @property
     def env_crs(self) -> pyproj.crs.crs.CRS:
@@ -592,7 +609,7 @@ class MadaclimRasters:
         return env_crs
     
     @property
-    def env_nodata_val(self) -> pyproj.crs.crs.CRS:
+    def env_nodata_val(self) -> float:
         """
         Retrieves the nodata value from the Madaclim environmental raster.
 
@@ -605,6 +622,21 @@ class MadaclimRasters:
         with rasterio.open(self._env_raster) as env_raster:
             env_nodata = env_raster.nodata
         return env_nodata
+    
+    @property
+    def env_bounds(self) -> Tuple[float]:
+        """
+        Retrieves the bounds of the climate raster.
+
+        This property opens the raster file and retrieves bounds values (left, bottom, right, top) from the raster.
+
+        Returns:
+            Tuple[float]: The bounds values in order (left, bottom, right, top)
+        """
+        
+        with rasterio.open(self._env_raster) as env_raster:
+            env_bounds = env_raster.bounds
+        return env_bounds
         
     def __str__(self) -> str:
         info = (
@@ -1140,7 +1172,11 @@ class MadaclimPoint:
             # Extract bounds in native units of projection
             transformer = Transformer.from_crs(crs.geodetic_crs, crs, always_xy=True)
             bounds = transformer.transform_bounds(*crs.area_of_use.bounds)
-        
+
+        if bounds[0] < bounds[2]:
+            min_lat, max_lat = bounds[1], bounds[3]
+        else:
+            max_lat, min_lat = bounds[1], bounds[3]
         min_lat, max_lat = bounds[1], bounds[3]
         if not min_lat <= latitude <= max_lat:
             raise ValueError(f"{latitude=} is out of bounds for the crs=EPSG:{crs.to_epsg()}. Latitude must be between: {min_lat} and {max_lat}")
@@ -1175,8 +1211,11 @@ class MadaclimPoint:
             # Extract bounds in native units of projection
             transformer = Transformer.from_crs(crs.geodetic_crs, crs, always_xy=True)
             bounds = transformer.transform_bounds(*crs.area_of_use.bounds)
-
-        min_lon, max_lon = bounds[0], bounds[2]
+        
+        if bounds[0] < bounds[2]:
+            min_lon, max_lon = bounds[0], bounds[2]
+        else:
+            max_lon, min_lon = bounds[0], bounds[2]
         if not min_lon <= longitude <= max_lon:
             raise ValueError(f"{longitude=} is out of bounds for the crs=EPSG:{crs.to_epsg()}. Longitude must be between {min_lon} and {max_lon}")
         
