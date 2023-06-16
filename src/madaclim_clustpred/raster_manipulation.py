@@ -2162,16 +2162,6 @@ class MadaclimCollection:
                 specie = spectabilis
             )
         """
-        def sanitize_attr_name(attribute: str):
-            """Strips incompatible char from attribute names
-
-            Args:
-                attribute (str): The attribute header from the csv file
-
-            Returns:
-                str: The compatible attribute name.
-            """
-            return attribute.replace(" ", "_").replace(".", "").replace("(", "").replace(")", "").replace("(", "")
 
         # Convert str to pathlib.Path
         if isinstance(csv_file, str):
@@ -2203,7 +2193,7 @@ class MadaclimCollection:
                 print(f"Warning! No {madapoint_default_crs_arg} column in the csv. Using the default value of EPSG:{madapoint_default_crs_val}...")
 
             # Replace incompatible attribute names
-            sanitized_col_names = [sanitize_attr_name(col_name) for col_name in col_names]
+            sanitized_col_names = [MadaclimCollection.sanitize_attr_name(col_name) for col_name in col_names]
             csv_data.fieldnames = sanitized_col_names
 
 
@@ -2274,7 +2264,8 @@ class MadaclimCollection:
             )
 
         """
-        if not isinstance(df, pd.DataFrame):
+        df_copy = df.copy()
+        if not isinstance(df_copy, pd.DataFrame):
             raise TypeError("'df' is not a pd.DataFrame.")
         
         # Get the required + default args to use to construct the MadaclimPoint objects
@@ -2282,18 +2273,19 @@ class MadaclimCollection:
         madapoint_default_crs_val = MadaclimPoint.get_default_source_crs()
 
         # Check for required args present in df
-        missing_args = [req_arg for req_arg in madapoint_required_args if req_arg not in df.columns]
+        missing_args = [req_arg for req_arg in madapoint_required_args if req_arg not in df_copy.columns]
         if len(missing_args) > 0:
             raise ValueError(f"df is missing the following required args to construct the MadaclimPoint objects:\n{missing_args}")
         
         # Warn for default EPSG if not provided
-        if madapoint_default_crs_arg not in df.columns:
+        if madapoint_default_crs_arg not in df_copy.columns:
             print(f"Warning! No {madapoint_default_crs_arg} column in the df. Using the default value of EPSG:{madapoint_default_crs_val}...")
 
-        # Initialize MadaclimPoint instances container to fill from df
+        # Sanitize col names for attrs + construct points to add to collection
+        df_copy = df_copy.rename(columns={col: MadaclimCollection.sanitize_attr_name(col) for col in df_copy.columns})
         points = []
 
-        for _, row in df.iterrows():
+        for _, row in df_copy.iterrows():
             # If source_crs not in row use default val
             if madapoint_default_crs_arg not in row or not row[madapoint_default_crs_arg]:
                 row[madapoint_default_crs_arg] = madapoint_default_crs_val
@@ -2305,6 +2297,18 @@ class MadaclimCollection:
         new_collection = cls(points)
         print(f"Created new MadaclimCollection with {len(points)} samples.")
         return new_collection
+    
+    @staticmethod
+    def sanitize_attr_name(attribute: str):
+            """Strips incompatible char from attribute names
+
+            Args:
+                attribute (str): The attribute header from the csv file
+
+            Returns:
+                str: The compatible attribute name.
+            """
+            return attribute.replace(" ", "_").replace(".", "").replace("(", "").replace(")", "").replace("(", "")
 
     def add_points(self, madaclim_points: Union[MadaclimPoint, List[MadaclimPoint]]) -> None:
         """
