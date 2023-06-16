@@ -844,9 +844,7 @@ class MadaclimPoint:
         
         self.specimen_id = specimen_id
         self._source_crs = self._validate_crs(source_crs)
-        self._longitude = longitude
-        self._latitude = latitude
-        self._validate_lonlat(self._longitude, self._latitude)
+        self._longitude, self._latitude = self._validate_lonlat(longitude, latitude)
         self._mada_geom_point = self._construct_point(
             latitude=self.latitude, 
             longitude=self.longitude,
@@ -1118,179 +1116,6 @@ class MadaclimPoint:
         if as_epsg:
             source_crs_val = source_crs_val.to_epsg()
         return source_crs_val
-    
-    def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
-        """
-        Validate the input CRS and return a valid CRS object.
-
-        Args:
-            crs (pyproj.crs.CRS): The input CRS to validate.
-
-        Returns:
-            pyproj.crs.CRS: A valid CRS object.
-
-        Raises:
-            ValueError: If the input CRS is invalid.
-        """
-        try:
-            valid_crs = pyproj.crs.CRS(crs)
-        except pyproj.exceptions.CRSError:
-            crs_error = (
-                f"Invalid CRS: {crs}. For simplicy, validate your crs if using EPSG codes by using:\n"
-                f">>> your_crs in [int(code) for code in pyproj.get_codes('EPSG', 'CRS')]\n"
-                f"Or check the PyProj documentation: https://pyproj4.github.io/pyproj/"
-            )
-            raise ValueError(crs_error)
-        return valid_crs
-    
-    def _validate_lonlat(self, longitude: float, latitude: float) -> Tuple[float]:
-        """
-        Validate if the given longitude and latitude fall within the bounds of the Madaclim rasters.
-
-        If the source CRS differs from the Madaclim rasters' CRS, the provided longitude and latitude are 
-        reprojected to the Madaclim rasters' CRS for validation. If the source CRS and the rasters' CRS are the same, 
-        the provided coordinates are directly validated against the rasters' bounds.
-
-        Args:
-            longitude (float): The longitude to validate.
-            latitude (float): The latitude to validate.
-
-        Returns:
-            Tuple[float]: T original longitude and latitude values if valid.
-
-        Raises:
-            TypeError: If the provided longitude or latitude can't be converted to float.
-            ValueError: If the reprojected or original longitude or latitude don't fall within the bounds of the Madaclim rasters.
-        """
-        try:
-            longitude = float(longitude)
-        except:
-            raise TypeError(f"Could not convert {longitude} to float. Longitude must be a float.")
-        
-        try:
-            latitude = float(latitude)
-        except:
-            raise TypeError(f"Could not convert {latitude} to float. Latitude must be a float.")
-        
-        # Define Madaclim rasters' crs and native units bounds
-        madarasters_crs = Constants.MADACLIM_CRS
-        madarasters_native_bounds = Constants.MADACLIM_RASTERS_BOUNDS    # (298000.0, 7155000.0, 1101000.0, 8683000.0)
-        raster_min_x, raster_max_x = madarasters_native_bounds[0], madarasters_native_bounds[2]
-        raster_min_y, raster_max_y = madarasters_native_bounds[1], madarasters_native_bounds[3]
-
-        if self._source_crs != madarasters_crs:
-            
-            # Reproject the lonlat coords to the Madaclim rasters' crs
-            mada_transformer = Transformer.from_crs(self.source_crs, madarasters_crs, always_xy=True)
-            reproj_lon, reproj_lat = mada_transformer.transform(longitude, latitude)
-
-            # Get madarasters' bounds in the source_crs' projection
-            mada_bounds_reproj_source_crs = mada_transformer.transform_bounds(*madarasters_native_bounds, direction="INVERSE")
-
-            if not raster_min_x <= reproj_lon <= raster_max_x:
-                raise ValueError(
-                    f"{longitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
-                    f"Longitude must fall between {mada_bounds_reproj_source_crs[0]:.6f} "
-                    f"and {mada_bounds_reproj_source_crs[2]:.6f} (according to `source_crs`)."
-                )
-            if not raster_min_y <= reproj_lat <= raster_max_y:
-                raise ValueError(
-                    f"{latitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
-                    f"Latitude must fall between {mada_bounds_reproj_source_crs[1]:.6f} "
-                    f"and {mada_bounds_reproj_source_crs[3]:.6f} (according to `source_crs`)."
-                )
-            return longitude, latitude
-        
-        else:
-            if not raster_min_x <= longitude <= raster_max_x:
-                raise ValueError(
-                    f"{longitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
-                    f"Longitude must fall between {raster_min_x} and {raster_max_x}."
-                )
-            if not raster_min_y <= latitude <= raster_max_y:
-                raise ValueError(
-                    f"{latitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
-                    f"Latitude must fall between {raster_min_y} and {raster_max_y}."
-                )
-            return longitude, latitude
-    
-    #!DEPRECATED METHOD
-    def _validate_lat(self, latitude) -> float:
-        """
-        Validate the input latitude value and return a valid latitude.
-
-        Args:
-            latitude (float): The input latitude value.
-            crs (pyproj.crs.CRS): The coordinate reference system of the point.
-
-        Returns:
-            float: A valid latitude value.
-
-        Raises:
-            TypeError: If the input latitude value cannot be converted to a float.
-            ValueError: If the input latitude value is out of bounds for the given CRS.
-        """
-        # Validate float type
-        try:
-            latitude = float(latitude)
-        except:
-            raise TypeError(f"Could not convert {latitude} to float. latitude must be a float.")
-        
-        # Validate max lon according to crs bounds
-        if self._source_crs.is_geographic:
-            bounds = self._source_crs.area_of_use.bounds
-        else:
-            # Extract bounds in native units of projection
-            transformer = Transformer.from_crs(self._source_crs.geodetic_crs, self._source_crs, always_xy=True)
-            bounds = transformer.transform_bounds(*self._source_crs.area_of_use.bounds)
-        
-        if bounds[0] < bounds[2]:
-            min_lat, max_lat = bounds[0], bounds[2]
-        else:
-            max_lat, min_lat = bounds[0], bounds[2]
-        if not min_lat <= latitude <= max_lat:
-            raise ValueError(f"{latitude=} is out of bounds for the crs=EPSG:{self._source_crs.to_epsg()}. latitude must be between {min_lon} and {max_lon}")
-        
-        return latitude
-    
-    #!DEPRECATED METHOD
-    def _validate_lon(self, longitude) -> float:
-        """
-        Validate the input longitude value and return a valid longitude.
-
-        Args:
-            longitude (float): The input longitude value.
-            crs (pyproj.crs.CRS): The coordinate reference system of the point.
-
-        Returns:
-            float: A valid longitude value.
-
-        Raises:
-            TypeError: If the input longitude value cannot be converted to a float.
-            ValueError: If the input longitude value is out of bounds for the given CRS.
-        """
-        # Validate float type
-        try:
-            longitude = float(longitude)
-        except:
-            raise TypeError(f"Could not convert {longitude} to float. longitude must be a float.")
-        
-        # Validate max lon according to crs bounds
-        if self._source_crs.is_geographic:
-            bounds = self._source_crs.area_of_use.bounds
-        else:
-            # Extract bounds in native units of projection
-            transformer = Transformer.from_crs(self._source_crs.geodetic_crs, self._source_crs, always_xy=True)
-            bounds = transformer.transform_bounds(*self._source_crs.area_of_use.bounds)
-        
-        if bounds[0] < bounds[2]:
-            min_lon, max_lon = bounds[0], bounds[2]
-        else:
-            max_lon, min_lon = bounds[0], bounds[2]
-        if not min_lon <= longitude <= max_lon:
-            raise ValueError(f"{longitude=} is out of bounds for the crs=EPSG:{self._source_crs.to_epsg()}. Longitude must be between {min_lon} and {max_lon}")
-        
-        return longitude
     
     def sample_from_rasters(
             self,
@@ -1669,6 +1494,181 @@ class MadaclimPoint:
     
     def plot_on_layer(self, layer: Union[str, int], **kwargs) -> None:
         pass
+
+    def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
+        """
+        Validate the input CRS and return a valid CRS object.
+
+        Args:
+            crs (pyproj.crs.CRS): The input CRS to validate.
+
+        Returns:
+            pyproj.crs.CRS: A valid CRS object.
+
+        Raises:
+            ValueError: If the input CRS is invalid.
+        """
+        try:
+            valid_crs = pyproj.crs.CRS(crs)
+        except pyproj.exceptions.CRSError:
+            crs_error = (
+                f"Invalid CRS: {crs}. For simplicy, validate your crs if using EPSG codes by using:\n"
+                f">>> your_crs in [int(code) for code in pyproj.get_codes('EPSG', 'CRS')]\n"
+                f"Or check the PyProj documentation: https://pyproj4.github.io/pyproj/"
+            )
+            raise ValueError(crs_error)
+        return valid_crs
+    
+    def _validate_lonlat(self, longitude: float, latitude: float) -> Tuple[float]:
+        """
+        Validate if the given longitude and latitude fall within the bounds of the Madaclim rasters.
+
+        If the source CRS differs from the Madaclim rasters' CRS, the provided longitude and latitude are 
+        reprojected to the Madaclim rasters' CRS for validation. If the source CRS and the rasters' CRS are the same, 
+        the provided coordinates are directly validated against the rasters' bounds.
+
+        Args:
+            longitude (float): The longitude to validate.
+            latitude (float): The latitude to validate.
+
+        Returns:
+            Tuple[float]: T original longitude and latitude values if valid.
+
+        Raises:
+            TypeError: If the provided longitude or latitude can't be converted to float.
+            ValueError: If the reprojected or original longitude or latitude don't fall within the bounds of the Madaclim rasters.
+        """
+        try:
+            longitude = float(longitude)
+            print(f"converted {longitude} to float")
+            print(type(longitude))
+        except:
+            raise TypeError(f"Could not convert {longitude} to float. Longitude must be a float.")
+        
+        try:
+            latitude = float(latitude)
+        except:
+            raise TypeError(f"Could not convert {latitude} to float. Latitude must be a float.")
+        
+        # Define Madaclim rasters' crs and native units bounds
+        madarasters_crs = Constants.MADACLIM_CRS
+        madarasters_native_bounds = Constants.MADACLIM_RASTERS_BOUNDS    # (298000.0, 7155000.0, 1101000.0, 8683000.0)
+        raster_min_x, raster_max_x = madarasters_native_bounds[0], madarasters_native_bounds[2]
+        raster_min_y, raster_max_y = madarasters_native_bounds[1], madarasters_native_bounds[3]
+
+        if self._source_crs != madarasters_crs:
+            
+            # Reproject the lonlat coords to the Madaclim rasters' crs
+            mada_transformer = Transformer.from_crs(self.source_crs, madarasters_crs, always_xy=True)
+            reproj_lon, reproj_lat = mada_transformer.transform(longitude, latitude)
+
+            # Get madarasters' bounds in the source_crs' projection
+            mada_bounds_reproj_source_crs = mada_transformer.transform_bounds(*madarasters_native_bounds, direction="INVERSE")
+
+            if not raster_min_x <= reproj_lon <= raster_max_x:
+                raise ValueError(
+                    f"{longitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
+                    f"Longitude must fall between {mada_bounds_reproj_source_crs[0]:.6f} "
+                    f"and {mada_bounds_reproj_source_crs[2]:.6f} (according to `source_crs`)."
+                )
+            if not raster_min_y <= reproj_lat <= raster_max_y:
+                raise ValueError(
+                    f"{latitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
+                    f"Latitude must fall between {mada_bounds_reproj_source_crs[1]:.6f} "
+                    f"and {mada_bounds_reproj_source_crs[3]:.6f} (according to `source_crs`)."
+                )
+            return longitude, latitude
+        
+        else:
+            if not raster_min_x <= longitude <= raster_max_x:
+                raise ValueError(
+                    f"{longitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
+                    f"Longitude must fall between {raster_min_x} and {raster_max_x}."
+                )
+            if not raster_min_y <= latitude <= raster_max_y:
+                raise ValueError(
+                    f"{latitude=} is out of bounds of the Madaclim rasters' for {self._specimen_id}.\n"
+                    f"Latitude must fall between {raster_min_y} and {raster_max_y}."
+                )
+            return longitude, latitude
+    
+    #!DEPRECATED METHOD
+    def _validate_lat(self, latitude) -> float:
+        """
+        Validate the input latitude value and return a valid latitude.
+
+        Args:
+            latitude (float): The input latitude value.
+            crs (pyproj.crs.CRS): The coordinate reference system of the point.
+
+        Returns:
+            float: A valid latitude value.
+
+        Raises:
+            TypeError: If the input latitude value cannot be converted to a float.
+            ValueError: If the input latitude value is out of bounds for the given CRS.
+        """
+        # Validate float type
+        try:
+            latitude = float(latitude)
+        except:
+            raise TypeError(f"Could not convert {latitude} to float. latitude must be a float.")
+        
+        # Validate max lon according to crs bounds
+        if self._source_crs.is_geographic:
+            bounds = self._source_crs.area_of_use.bounds
+        else:
+            # Extract bounds in native units of projection
+            transformer = Transformer.from_crs(self._source_crs.geodetic_crs, self._source_crs, always_xy=True)
+            bounds = transformer.transform_bounds(*self._source_crs.area_of_use.bounds)
+        
+        if bounds[0] < bounds[2]:
+            min_lat, max_lat = bounds[0], bounds[2]
+        else:
+            max_lat, min_lat = bounds[0], bounds[2]
+        if not min_lat <= latitude <= max_lat:
+            raise ValueError(f"{latitude=} is out of bounds for the crs=EPSG:{self._source_crs.to_epsg()}. latitude must be between {min_lon} and {max_lon}")
+        
+        return latitude
+    
+    #!DEPRECATED METHOD
+    def _validate_lon(self, longitude) -> float:
+        """
+        Validate the input longitude value and return a valid longitude.
+
+        Args:
+            longitude (float): The input longitude value.
+            crs (pyproj.crs.CRS): The coordinate reference system of the point.
+
+        Returns:
+            float: A valid longitude value.
+
+        Raises:
+            TypeError: If the input longitude value cannot be converted to a float.
+            ValueError: If the input longitude value is out of bounds for the given CRS.
+        """
+        # Validate float type
+        try:
+            longitude = float(longitude)
+        except:
+            raise TypeError(f"Could not convert {longitude} to float. longitude must be a float.")
+        
+        # Validate max lon according to crs bounds
+        if self._source_crs.is_geographic:
+            bounds = self._source_crs.area_of_use.bounds
+        else:
+            # Extract bounds in native units of projection
+            transformer = Transformer.from_crs(self._source_crs.geodetic_crs, self._source_crs, always_xy=True)
+            bounds = transformer.transform_bounds(*self._source_crs.area_of_use.bounds)
+        
+        if bounds[0] < bounds[2]:
+            min_lon, max_lon = bounds[0], bounds[2]
+        else:
+            max_lon, min_lon = bounds[0], bounds[2]
+        if not min_lon <= longitude <= max_lon:
+            raise ValueError(f"{longitude=} is out of bounds for the crs=EPSG:{self._source_crs.to_epsg()}. Longitude must be between {min_lon} and {max_lon}")
+        
+        return longitude
         
     
     def _get_additional_attributes(self) -> dict:
