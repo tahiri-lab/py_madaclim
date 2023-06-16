@@ -865,7 +865,16 @@ class MadaclimPoint:
         base_args = self.get_args_names()[0] + [self.get_args_names()[1]]
         additional_args = [key for key in kwargs if key not in base_args]
         for key in additional_args:
-            setattr(self, key, kwargs[key])
+            value = kwargs[key]
+            # type conversion especially for csv/json data used on construction
+            try:
+                value = int(value)
+            except ValueError:
+                try:
+                    value = float(value)
+                except ValueError:
+                    pass
+            setattr(self, key, value)
 
         # Construct the GeoPandas DataFrame with all attrs and `mada_geom_point` for geometry
         self._gdf = self._construct_geodataframe()
@@ -1540,8 +1549,6 @@ class MadaclimPoint:
         """
         try:
             longitude = float(longitude)
-            print(f"converted {longitude} to float")
-            print(type(longitude))
         except:
             raise TypeError(f"Could not convert {longitude} to float. Longitude must be a float.")
         
@@ -1627,7 +1634,7 @@ class MadaclimPoint:
         else:
             max_lat, min_lat = bounds[0], bounds[2]
         if not min_lat <= latitude <= max_lat:
-            raise ValueError(f"{latitude=} is out of bounds for the crs=EPSG:{self._source_crs.to_epsg()}. latitude must be between {min_lon} and {max_lon}")
+            raise ValueError(f"{latitude=} is out of bounds for the crs=EPSG:{self._source_crs.to_epsg()}. latitude must be between {min_lat} and {max_lat}")
         
         return latitude
     
@@ -2152,6 +2159,17 @@ class MadaclimCollection:
                 specie = spectabilis
             )
         """
+        def sanitize_attr_name(attribute: str):
+            """Strips incompatible char from attribute names
+
+            Args:
+                attribute (str): The attribute header from the csv file
+
+            Returns:
+                str: The compatible attribute name.
+            """
+            return attribute.replace(" ", "_").replace(".", "").replace("(", "").replace(")", "").replace("(", "")
+
         # Convert str to pathlib.Path
         if isinstance(csv_file, str):
             csv_file = Path(csv_file)
@@ -2181,14 +2199,19 @@ class MadaclimCollection:
             if madapoint_default_crs_arg not in col_names:
                 print(f"Warning! No {madapoint_default_crs_arg} column in the csv. Using the default value of EPSG:{madapoint_default_crs_val}...")
 
-            # Initialize MadaclimPoint instances container to fill from csv
-            points = []
+            # Replace incompatible attribute names
+            sanitized_col_names = [sanitize_attr_name(col_name) for col_name in col_names]
+            csv_data.fieldnames = sanitized_col_names
 
+
+            # Contruct points with all req+opt attributes from sanitized headers
+            points = []
             for row in csv_data:
+                                
                 # If source_crs not in row use default val
                 if madapoint_default_crs_arg not in row or not row[madapoint_default_crs_arg]:
                     row[madapoint_default_crs_arg] = madapoint_default_crs_val
-                
+
                 # Create a MadaclimPoint using the values of the row
                 print(f"Creating MadaclimPoint(specimen_id={row['specimen_id']}...)")
                 point = MadaclimPoint(**row)
