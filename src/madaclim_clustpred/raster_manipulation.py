@@ -1478,22 +1478,25 @@ class MadaclimPoint:
 
         # Extract categorical data from sampled_layers and encode them into binary features
         encoded_categ = {}
-        for layer in sorted(intersect_layers):
-            value = self._sampled_layers[layer]
-            layer_dict = possible_categ_labels.get(layer, {}) or possible_descriptive_categ_labels.get(layer, {})
-            
-            for k, v in layer_dict.items():
-                # Remove the category units from the descriptive label
-                layer_label = re.sub(r"\(categ_vals:.*?\)", "", layer)
-                layer_label = layer_label.strip()    
 
-                encoded_categ[f"{layer_label}_{v}"] = 1 if k == value else 0    # Binary encoding for possible_categ
-                # Create an additional 'NaN' category for nodata layers
-                if self.nodata_layers:
-                    if layer in self.nodata_layers:
-                        encoded_categ[f"{layer_label}__nodata"] = 1   
+        for layer in sorted(intersect_layers):
+            # Remove the category units from the descriptive label
+            layer_label = re.sub(r"\(categ_vals:.*?\)", "", layer)
+            layer_label = layer_label.strip()    
+            value = self._sampled_layers[layer]
+            categories_dict = possible_categ_labels.get(layer, {}) or possible_descriptive_categ_labels.get(layer, {})
+            
+            for dummy, category in categories_dict.items():
+                encoded_categ[f"{layer_label}_{category}"] = 1 if dummy == value else 0
+                
+            # Create an additional 'nodata' category for layers with missing vals
+            if self._nodata_layers:
+                if layer in self._nodata_layers:
+                    encoded_categ[f"{layer_label}__nodata"] = 1   
                 else:
-                    encoded_categ[f"{layer_label}__nodata"] = 0 
+                    encoded_categ[f"{layer_label}__nodata"] = 0
+            else:
+                encoded_categ[f"{layer_label}__nodata"] = 0
         
         encoded_categ = {k: v for k, v in sorted(encoded_categ.items())}
 
