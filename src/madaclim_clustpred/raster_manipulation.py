@@ -773,8 +773,8 @@ class MadaclimPoint:
     def __init__(
             self, 
             specimen_id: str, 
-            latitude: float, 
             longitude: float, 
+            latitude: float, 
             source_crs: pyproj.crs.crs.CRS=pyproj.CRS.from_epsg(4326), 
             **kwargs
         ) -> None:
@@ -868,12 +868,10 @@ class MadaclimPoint:
             value = kwargs[key]
             # type conversion especially for csv/json data used on construction
             try:
-                value = int(value)
+                value = float(value)
             except ValueError:
-                try:
-                    value = float(value)
-                except ValueError:
-                    pass
+                pass
+            value = value.strip() if isinstance(value, str) else value
             setattr(self, key, value)
 
         # Construct the GeoPandas DataFrame with all attrs and `mada_geom_point` for geometry
@@ -1330,9 +1328,11 @@ class MadaclimPoint:
 
         clim_raster_sample_info["layers"] = [layer_num for layer_num in layers_numbers if layer_num in geoclim_layer_ranges["clim"]]
         clim_raster_sample_info["bands"] = madaclim_info.get_bandnums_from_layers(clim_raster_sample_info["layers"])
+        has_clim_data = True if clim_raster_sample_info["layers"] else False
 
         env_raster_sample_info["layers"] = [layer_num for layer_num in layers_numbers if layer_num in geoclim_layer_ranges["env"]]
         env_raster_sample_info["bands"] = madaclim_info.get_bandnums_from_layers(env_raster_sample_info["layers"])
+        has_env_data = True if env_raster_sample_info["layers"] else False
 
         # # Validate if mada_geom_point attribute is of Point geom and not empty
         if not isinstance(self._mada_geom_point, shapely.geometry.point.Point):
@@ -1433,8 +1433,13 @@ class MadaclimPoint:
         self._encoded_categ_layers = None
 
         # Update related-instance attributes
-        self._sampled_layers = sampled_layers
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
+        nodata_val = nodata_clim if has_clim_data else nodata_env    # OK because clim_nodata == env_nodata
+        
+        converted_nan_sampled_layers = {    # Replace nodata int with NaN
+            layer_label: np.nan if val == nodata_val else val for layer_label, val in sampled_layers.items()
+        }
+        self._sampled_layers = converted_nan_sampled_layers
         self._update_gdf()
 
             
