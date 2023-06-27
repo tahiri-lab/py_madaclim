@@ -860,6 +860,7 @@ class MadaclimPoint:
         
         self._is_categorical_encoded = False
         self._encoded_categ_layers = None
+        self._encoded_categ_labels = None
 
         # Store any additional keyword arguments as instance attributes
         base_args = self.get_args_names()[0] + [self.get_args_names()[1]]
@@ -1010,7 +1011,17 @@ class MadaclimPoint:
                 Values are the binary encoded value for that given category.
         """
         return self._encoded_categ_layers
+    
+    @property
+    def encoded_categ_labels(self) -> Optional[List[str]]:
+        """
+        Get the labels from the binary encoded categorical layers of the instance.
 
+        Returns:
+            Optional[List[str]]: A list containing the set of the labels from the binary encoding 
+                of categorical features. None if the categorical layers have not been encoded yet.
+        """
+        return self._encoded_categ_labels
     
     @property
     def gdf(self) -> gpd.GeoDataFrame:
@@ -1027,7 +1038,12 @@ class MadaclimPoint:
         show_attributes = {}
         for k, v in self.__dict__.items():
             
-            if k not in ["_MadaclimPoint__base_attr", "_MadaclimPoint__initial_attributes", "_encoded_categ_layers"]:
+            if k not in [
+                "_MadaclimPoint__base_attr", 
+                "_MadaclimPoint__initial_attributes", 
+                "_encoded_categ_layers",
+                "_encoded_categ_labels"
+                ]:
                 
                 if k == "_source_crs":    # Display EPSG code for readability
                     show_attributes[k] = v.to_epsg()
@@ -1079,7 +1095,8 @@ class MadaclimPoint:
 
         """
         super().__setattr__(name, value)  # Call the parent class's __setattr__ first
-        if hasattr(self, "_MadaclimPoint__initial_attributes") and name != "_gdf":
+        if (hasattr(self, "_MadaclimPoint__initial_attributes") and 
+            name != "_gdf"):
             # Update the `gdf` attribute with the newly added attribute
             self._update_gdf()
     
@@ -1431,6 +1448,7 @@ class MadaclimPoint:
         # Reset categorical encoding attributes
         self._is_categorical_encoded = False   
         self._encoded_categ_layers = None
+        self._encoded_categ_labels = None
 
         # Update related-instance attributes
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
@@ -1507,8 +1525,9 @@ class MadaclimPoint:
 
         # Update categorical layers-related attributes
         self._is_categorical_encoded = True
-        self._encoded_categ_layers = encoded_categ    # Overridden `settr` will update `gdf`       
-    
+        self._encoded_categ_layers = encoded_categ    # Overridden `settr` will update `gdf`
+        self._encoded_categ_labels = list(encoded_categ.keys())
+
     def plot_on_layer(self, layer: Union[str, int], **kwargs) -> None:
         pass
 
@@ -1790,8 +1809,13 @@ class MadaclimPoint:
         point_attributes = {}
         for k, v in self.__dict__.items():
             
-            if k not in ["_gdf", "_encoded_categ_layers", "_MadaclimPoint__base_attr", "_MadaclimPoint__initial_attributes"]:
-                
+            if k not in [
+                "_gdf", 
+                "_encoded_categ_layers",
+                "_encoded_categ_labels" 
+                "_MadaclimPoint__base_attr", 
+                "_MadaclimPoint__initial_attributes"
+            ]:      
                 if k == "_source_crs":    # Display EPSG code for readability
                     point_attributes[k.lstrip("_")] = [v.to_epsg()]
                 
@@ -1927,6 +1951,7 @@ class MadaclimCollection:
 
         self._is_categorical_encoded = False
         self._encoded_categ_layers = None
+        self._encoded_categ_labels = None
         
         # GeoDataframe construction and updating
         self._gdf = self._construct_geodataframe()
@@ -2013,6 +2038,18 @@ class MadaclimCollection:
                 Values correspond to the binary encoded value for that given category
         """
         return self._encoded_categ_layers
+    
+    @property
+    def encoded_categ_labels(self) -> Optional[List[str]]:
+        """
+        Get the labels from the binary encoded categorical layers for the whole collection.
+
+        Returns:
+            Optional[List[str]]: A list containing the set of the labels from the binary encoding 
+                of categorical features from the whole collection.
+                None if the categorical layers have not been encoded yet.
+        """
+        return self._encoded_categ_labels
     
     @property
     def gdf(self) -> gpd.GeoDataFrame:
@@ -2767,6 +2804,7 @@ class MadaclimCollection:
         # Reset categorical encoding
         self._is_categorical_encoded = False    
         self._encoded_categ_layers = None
+        self._encoded_categ_labels = None
 
         # Update instance attributes
         self._sampled_layers = sampled_layers
@@ -2803,13 +2841,18 @@ class MadaclimCollection:
             )
         
         encoded_categ = {}
+        encoded_labels = []
+
         for point in self._all_points:
             point.binary_encode_categorical()
-            encoded_categ[point.specimen_id] = point.encoded_categ_layers
+            encoded_categ[point.specimen_id] = point.encoded_categ_layers   # Extract label: value pairs
+            labels = point.encoded_categ_layers.keys()
+            encoded_labels.extend(label for label in labels if label not in encoded_labels)
 
         # Update categorical layers-related attributes
         self._is_categorical_encoded = True
         self._encoded_categ_layers = encoded_categ
+        self._encoded_categ_labels = encoded_labels
         self._update_gdf()
         
     def _construct_geodataframe(self) -> Union[str, gpd.GeoDataFrame]:
