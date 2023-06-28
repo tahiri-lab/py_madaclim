@@ -1812,7 +1812,7 @@ class MadaclimPoint:
             if k not in [
                 "_gdf", 
                 "_encoded_categ_layers",
-                "_encoded_categ_labels" 
+                "_encoded_categ_labels",
                 "_MadaclimPoint__base_attr", 
                 "_MadaclimPoint__initial_attributes"
             ]:      
