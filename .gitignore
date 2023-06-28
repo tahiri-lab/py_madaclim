@@ -20,3 +20,6 @@ species_locations_with_gbs_only.csv
 
 # sphinx documentation
 docs/
+
+# ipynb pickle
+*.pkl
