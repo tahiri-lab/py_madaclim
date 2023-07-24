@@ -39,3 +39,6 @@ class Constants:
         "clim_data_format": "https://madaclim.cirad.fr/climate-data-format/",
         "env_data_format": "https://madaclim.cirad.fr/environ-data-format/"
     }
+
+    # .env required keys for GBIF API auth for download request
+    GBIF_KEYS = ["GBIF_USERNAME", "GBIF_PASSWORD"]
