@@ -41,4 +41,13 @@ class Constants:
     }
 
     # .env required keys for GBIF API auth for download request
-    GBIF_KEYS = ["GBIF_USERNAME", "GBIF_PASSWORD"]
+    GBIF_DOTENV_KEYS = ["GBIF_USERNAME", "GBIF_PASSWORD"]
+
+    # GBIF API base urls
+    GBIF_BASEURLS = {
+        "occurrence": "https://api.gbif.org/v1/occurrence",
+        "species": "https://api.gbif.org/v1/species"
+    }
+
+    # Download format in occurence/download request endpoint
+    GBIF_DOWNLOAD_FORMAT = ["SIMPLE_CSV", "DWCA", "SPECIES_LIST"]
