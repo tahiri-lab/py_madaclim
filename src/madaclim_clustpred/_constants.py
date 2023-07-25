@@ -51,3 +51,15 @@ class Constants:
 
     # Download format in occurence/download request endpoint
     GBIF_DOWNLOAD_FORMAT = ["SIMPLE_CSV", "DWCA", "SPECIES_LIST"]
+
+    GBIF_MATCH_PARAMS = [
+        "rank", 
+        "strict", 
+        "verbose", 
+        "kingdom", 
+        "phylum", 
+        "class", 
+        "order", 
+        "family", 
+        "genus"
+    ]
