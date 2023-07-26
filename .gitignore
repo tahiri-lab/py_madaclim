@@ -1,4 +1,6 @@
+# env file
 .env 
+
 # cache
 __pycache__
 .vscode
@@ -21,6 +23,7 @@ species_locations_with_gbs_only.csv
 
 # sphinx documentation
 docs/
+docs_conf.py
 
 # ipynb pickle
 *.pkl
