@@ -1,12 +1,16 @@
+from pathlib import Path
 from py_madaclim.info import MadaclimLayers
 from time import perf_counter
 
-mada_info = MadaclimLayers(clim_raster="coffeaPhyloGeo/data/madaclim_current.tif")
+data_dir = Path.cwd().parents[3] / "data"
+mada_info = MadaclimLayers(clim_raster= data_dir / "coffea_example/madaclim_current.tif")
 
 # Time for validation with double I/O raster operations
 valid_start = perf_counter()
+print("Evaluating time performance for both O(n) methods")
+print("starting with ")
 for i in range(1, 71):
-    mada_info.get_band_from_layer_number(i, "clim")
+    print(mada_info._get_band_from_layer_number(i, "clim"))
 
 valid_end = perf_counter()
 valid_time = valid_end - valid_start
@@ -15,7 +19,9 @@ print(f"With _validate_raster (2X I/O): {valid_time} s")
 # Time for halving the I/O operations
 valid_start = perf_counter()
 for i in range(1, 71):
-    mada_info.get_band_from_layer_number_novalid(i, "clim")
+    # mada_info.get_band_from_layer_number_novalid(i, "clim")
+    #! DEPRECATED METHOD
+    pass
 
 valid_end = perf_counter()
 valid_time = valid_end - valid_start
