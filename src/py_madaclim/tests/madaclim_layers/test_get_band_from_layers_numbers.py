@@ -1,4 +1,4 @@
-from madaclim_clustpred.madaclim_info import MadaclimLayers
+from py_madaclim.madaclim_info import MadaclimLayers
 from time import perf_counter
 
 mada_info = MadaclimLayers(clim_raster="coffeaPhyloGeo/data/madaclim_current.tif")

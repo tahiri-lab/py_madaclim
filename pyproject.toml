@@ -1,5 +1,5 @@
 [project]
-name = "madaclim_clustpred"
+name = "py_madaclim"
 version = "0.0.1"
 license = {file = "LICENSE.txt"}
 dynamic = ["readme"]    # Add dependencies "dependencies"

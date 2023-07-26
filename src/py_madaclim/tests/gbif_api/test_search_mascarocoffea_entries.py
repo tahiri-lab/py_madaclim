@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 from unittest.mock import patch
-from madaclim_clustpred.utils.gbif_api import search_mascarocoffea_entries
+from py_madaclim.utils.gbif_api import search_mascarocoffea_entries
 
 class TestSearchMascarocofffGbifApi(unittest.TestCase):
     def test_year_range_type(self):

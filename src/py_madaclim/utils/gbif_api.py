@@ -12,7 +12,7 @@ from dotenv import load_dotenv, dotenv_values
 from dwca.read import DwCAReader
 import pandas as pd
 
-from madaclim_clustpred._constants import Constants
+from py_madaclim._constants import Constants
 
 def get_taxon_key_by_species_match(
     name: Optional[str] = None, 

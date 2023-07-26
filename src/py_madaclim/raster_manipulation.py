@@ -7,9 +7,9 @@ import time
 from tqdm import tqdm
 import re
 
-import madaclim_clustpred
-from madaclim_clustpred._constants import Constants
-from madaclim_clustpred.madaclim_info import MadaclimLayers
+import py_madaclim
+from py_madaclim._constants import Constants
+from py_madaclim.madaclim_info import MadaclimLayers
 
 import rasterio
 import pyproj
@@ -167,7 +167,7 @@ class _LayerPlotter:
             and their raster data.
         plot_args (dict): A dictionary containing optional arguments for the plot.
     """
-    def __init__(self, layer_num: int, madaclim_layers: madaclim_clustpred.madaclim_info.MadaclimLayers, plot_args: dict) -> None:
+    def __init__(self, layer_num: int, madaclim_layers: py_madaclim.madaclim_info.MadaclimLayers, plot_args: dict) -> None:
         """
         Initialize _LayerPlotter with a specific layer number, a MadaclimLayers object, and plot arguments.
         
@@ -181,7 +181,7 @@ class _LayerPlotter:
         self.plot_args = plot_args
 
     @property
-    def madaclim_layers(self) -> madaclim_clustpred.madaclim_info.MadaclimLayers:
+    def madaclim_layers(self) -> py_madaclim.madaclim_info.MadaclimLayers:
         """
         Gets or sets for the '_madaclim_layers' attribute.
 
@@ -194,7 +194,7 @@ class _LayerPlotter:
         return self._madaclim_layers
     
     @madaclim_layers.setter
-    def madaclim_layers(self, new_instance: madaclim_clustpred.madaclim_info.MadaclimLayers):
+    def madaclim_layers(self, new_instance: py_madaclim.madaclim_info.MadaclimLayers):
         self._validate_madaclim_layers(madaclim_layers=new_instance)
         self._madaclim_layers = new_instance
 
@@ -404,9 +404,9 @@ class _LayerPlotter:
             fig.tight_layout()
 
 
-    def _validate_madaclim_layers(self, madaclim_layers: madaclim_clustpred.madaclim_info.MadaclimLayers) -> madaclim_clustpred.madaclim_info.MadaclimLayers:
-        if not isinstance(madaclim_layers, madaclim_clustpred.madaclim_info.MadaclimLayers):
-            raise TypeError("'madaclim_layers' must be of an instance of madaclim_clustpred.madaclim_info.MadaclimLayers")
+    def _validate_madaclim_layers(self, madaclim_layers: py_madaclim.madaclim_info.MadaclimLayers) -> py_madaclim.madaclim_info.MadaclimLayers:
+        if not isinstance(madaclim_layers, py_madaclim.madaclim_info.MadaclimLayers):
+            raise TypeError("'madaclim_layers' must be of an instance of py_madaclim.madaclim_info.MadaclimLayers")
         
         if madaclim_layers.clim_raster is None or madaclim_layers.env_raster is None:
             raise ValueError("The MadaclimLayers instance must have defined 'clim_raster' and 'env_raster attributes.")
@@ -439,7 +439,7 @@ class MadaclimRasters:
             env_raster (pathlib.Path): Path to the environmental raster file.
         
         Examples:
-            >>> from madaclim_clustpred.raster_manipulation import MadaclimRasters
+            >>> from py_madaclim.raster_manipulation import MadaclimRasters
             >>> mada_rasters = MadaclimRasters(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
             >>> mada_rasters.clim_crs
             <Derived Projected CRS: EPSG:32738>
@@ -682,14 +682,14 @@ class MadaclimRasters:
 
         Example:
             >>> # Extract environmental layers labels
-            >>> from madaclim_clustpred.madaclim_info import MadaclimLayers
+            >>> from py_madaclim.madaclim_info import MadaclimLayers
             >>> mada_info = MadaclimLayers(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
             >>> env_labels = mada_info.get_layers_labels("env", as_descriptive_labels=True)
             >>> >>> env_labels[0]    # Using altitude as our example
             'env_71_altitude (Altitude in meters)'
             
             >>> # Default visualization of the raster map
-            >>> from madaclim_clustpred.raster_manipulation import MadaclimRasters
+            >>> from py_madaclim.raster_manipulation import MadaclimRasters
             >>> mada_rasters = MadaclimRasters(clim_raster=mada_info.clim_raster, env_raster=mada_info.env_raster)    # Using common attr btw the instances
             >>> mada_rasters.plot_layer(env_layers_labels[0])
 
@@ -793,7 +793,7 @@ class MadaclimPoint:
             source_crs (pyproj.crs.crs.CRS, optional): The coordinate reference system of the point. Defaults to WGS84 (EPSG:4326).
             **kwargs: Additional keyword arguments to store as instance attributes.
         Examples:
-            >>> from madaclim_clustpred.raster_manipulation import MadaclimPoint
+            >>> from py_madaclim.raster_manipulation import MadaclimPoint
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2)    # Default CRS of EPSG:4326
             
             >>> # Creates a shapely point object according to the Madaclim CRS' projection when instantiating a new instance. 
@@ -1173,7 +1173,7 @@ class MadaclimPoint:
 
         Examples:
             >>> # Fetching bioclim layers from the MadaclimLayers class
-            >>> from madaclim_clustpred.madaclim_info import MadaclimLayers
+            >>> from py_madaclim.madaclim_info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
 
@@ -1788,7 +1788,7 @@ class MadaclimPoint:
                 instance's attributes.
 
         Example:
-            >>> from madaclim_clustpred.raster_manipulation import MadaclimRasters, MadaclimPoint
+            >>> from py_madaclim.raster_manipulation import MadaclimRasters, MadaclimPoint
             >>> mada_rasters = MadaclimRasters("madaclim_current.tif", "madaclim_enviro.tif")
             >>> spe2 = MadaclimPoint(
             ... specimen_id="spe2_humb", 
@@ -1887,7 +1887,7 @@ class MadaclimCollection:
         Args:
             madaclim_points (Optional[Union[MadaclimPoint, List[MadaclimPoint]]], optional): A single MadaclimPoint object or a list of MadaclimPoint objects to be added to the MadaclimCollection. Initialize an empty MadaclimCollection by default (None).
         Examples:
-            >>> from madaclim_clustpred.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
+            >>> from py_madaclim.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1", latitude=-23.574583, longitude=46.419806, source_crs="epsg:4326")
             >>> specimen_2 = MadaclimPoint(specimen_id="spe2", latitude=-2622095.832726487, longitude=5048512.906023483, source_crs=3857)
             
@@ -2363,7 +2363,7 @@ class MadaclimCollection:
             TypeError: If the input is not a MadaclimPoint object or a list of MadaclimPoint objects.
             ValueError: If the input MadaclimPoint(s) is/are already in the MadaclimCollection or if their specimen_id(s) are not unique.
         Examples:
-            >>> from madaclim_clustpred.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
+            >>> from py_madaclim.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
 
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1", latitude=-23.574583, longitude=46.419806, source_crs="epsg:4326")
             >>> collection = MadaclimCollection()
@@ -2390,7 +2390,7 @@ class MadaclimCollection:
             >>> other_collection.add_points(specimen_1)
             Traceback (most recent call last):
             File "<stdin>", line 1, in <module>
-            File ".../coffeaphylogeo/src/madaclim_clustpred/geoclim/raster_manipulation.py", line 1013, in add_points
+            File ".../coffeaphylogeo/src/py_madaclim/geoclim/raster_manipulation.py", line 1013, in add_points
                 MadaclimPoint(specimen_id=spe2, mada_geom_point=POINT (610233.867750987 7772846.143786541))
                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             ValueError: MadaclimPoint(
@@ -2682,14 +2682,14 @@ class MadaclimCollection:
         Examples:
         #TODO FIX EXAMPLES
             >>> # Start with a collection
-            >>> from madaclim_clustpred.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
+            >>> from py_madaclim.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
             >>> specimen_2 = MadaclimPoint(specimen_id="spe2_humb", latitude=-12.716667, longitude=45.066667, source_crs=4326, genus="Coffea", species="humblotiana", has_sequencing=True)
             >>> collection = MadaclimCollection()
             >>> collection.add_points([specimen_1, specimen_2])
 
             >>> # Fetch a specific set of layers to sample(using the MadaclimLayers class utilities)
-            >>> from madaclim_clustpred.geoclim.madaclim_info import MadaclimLayers
+            >>> from py_madaclim.geoclim.madaclim_info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
             >>> bio1 = bioclim_labels[0]
