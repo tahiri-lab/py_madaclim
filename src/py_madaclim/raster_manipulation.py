@@ -9,7 +9,7 @@ import re
 
 import py_madaclim
 from py_madaclim._constants import Constants
-from py_madaclim.madaclim_info import MadaclimLayers
+from py_madaclim.info import MadaclimLayers
 
 import rasterio
 import pyproj
@@ -682,7 +682,7 @@ class MadaclimRasters:
 
         Example:
             >>> # Extract environmental layers labels
-            >>> from py_madaclim.madaclim_info import MadaclimLayers
+            >>> from py_madaclim.info import MadaclimLayers
             >>> mada_info = MadaclimLayers(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
             >>> env_labels = mada_info.get_layers_labels("env", as_descriptive_labels=True)
             >>> >>> env_labels[0]    # Using altitude as our example
@@ -1173,7 +1173,7 @@ class MadaclimPoint:
 
         Examples:
             >>> # Fetching bioclim layers from the MadaclimLayers class
-            >>> from py_madaclim.madaclim_info import MadaclimLayers
+            >>> from py_madaclim.info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
 

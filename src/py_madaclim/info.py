@@ -40,7 +40,7 @@ class MadaclimLayers:
 
         
         Example:
-            >>> from py_madaclim.madaclim_info import MadaclimLayers
+            >>> from py_madaclim.info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> # Access the all layers df
             >>> all_layers_df = madaclim_info.all_layers
