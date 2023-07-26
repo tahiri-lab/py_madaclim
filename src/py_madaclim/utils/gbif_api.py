@@ -83,7 +83,7 @@ def get_taxon_key_by_species_match(
 
 def search_occ_mdg_valid_coordinates(taxon_key: int, year_range: Optional[tuple[int]]=None) -> list:
     """
-    Searches for occurrences with valid coordinates for a given taxon key using the GBIF API '/occurrence/search' endpoint. 
+    Searches for occurrences in Madagascar with valid coordinates for a given taxon key using the GBIF API '/occurrence/search' endpoint. 
 
     Uses a set of predetermined search params for the Madagascar GADM geographic identifier and geographic coordinates requirements.    
     Provides limited customization for taxon key and year range.
@@ -218,7 +218,7 @@ def request_occ_download_mdg_valid_coordinates(
     year_range: Optional[tuple[int]]=None,
 ) -> Union[requests.models.Response, str]:
     """
-    Makes a POST request to GBIF API to download occurrence data for a specific taxon key.
+    Makes a POST request to GBIF API to download occurrence data in Madagascar for a specific taxon key.
 
     Uses a set of predetermined payload information such as Madagascar GADM geographic identifier and geographic coordinates requirements.    
     Allows limited customization for taxon key and year range for the payload.
