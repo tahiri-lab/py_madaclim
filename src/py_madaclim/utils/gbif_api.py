@@ -323,7 +323,8 @@ def request_occ_download_mdg_valid_coordinates(
     
 def download_extract_read_occ(
         download_id: str, 
-        target_dir: Optional[Union[str, pathlib.Path]]=None
+        target_dir: Optional[Union[str, pathlib.Path]]=None,
+        low_memory=False
     ) -> Union[None, pd.DataFrame]:
     """
     Downloads, extracts and read the content of an occurrence data file from the GBIF API
@@ -332,11 +333,13 @@ def download_extract_read_occ(
         download_id (str): The ID of the download to fetch
         target_dir (Optional[Union[str, pathlib.Path]], optional): The directory path to save the download and extracted files to. 
             Defaults to the current working directory
+        low_memory (bool): Loads the entire file into memory if true instead of chunks. 
+            Avoid guessing incorrect dtypes upon read when false. Defaults to False
 
     Returns:
         Union[None, pd.DataFrame]: A pandas dataframe containing all the occurrences data with columns according to the requested format.
             If data could not be properly extracted from the download, it returns None.
-            
+
     Raises:
         TypeError: If the 'download_id' is not a string.
         TypeError: If the 'target_dir' is not a string or a pathlib.Path object.
@@ -372,10 +375,11 @@ def download_extract_read_occ(
         data = response.json()
     except ValueError:
         raise ValueError("Error: Response is not a valid JSON.")
-    print(f"Response OK from endpoint {url.rsplit('/', 1)[0]} with {download_id=}.")
+    print(f"Response OK from {url.rsplit('/', 1)[0]} for the given 'download_id'")
 
     # Get download properties for status bar and I/O name
-    zipfile_name = Path(data["downloadLink"].split("/")[-1])
+    default_zipfile_name = data["downloadLink"].split("/")[-1]
+    zipfile_name = Path(f"download_{default_zipfile_name}")
     total_size = data["size"]  # total_size is in bytes
 
     # Make a new request to get the actual file data
@@ -403,9 +407,9 @@ def download_extract_read_occ(
     # Unzipping file to target location
     with ZipFile(target_dir / zipfile_name, mode="r") as zObj:
         zipped_files = zObj.infolist()
-        download_container = target_dir / f"download_{zipfile_name.stem}"
+        download_container = target_dir / zipfile_name.stem
         Path.mkdir(download_container, exist_ok=True)    
-        print(f"Extracting all {len(zipped_files)} files to target location: {download_container}...")
+        print(f"Extracting all {len(zipped_files)} files to target location: .../{download_container.name}/")
         zObj.extractall(download_container)
 
     # Read to pandas df according to download format
@@ -416,7 +420,7 @@ def download_extract_read_occ(
 
     if download_format == "DWCA":
         with DwCAReader(target_dir / zipfile_name) as dwca:
-            df = dwca.pd_read("occurrence.txt", parse_dates=True)
+            df = dwca.pd_read("occurrence.txt", parse_dates=True, low_memory=low_memory)
             print(f"Read and saved core data into pandas df: {dwca.descriptor.core.file_location}") # 'occurrence.txt'
 
     elif download_format == "SIMPLE_CSV" or download_format == "SPECIES_LIST":
