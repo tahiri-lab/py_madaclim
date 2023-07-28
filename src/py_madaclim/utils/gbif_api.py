@@ -257,9 +257,7 @@ def request_occ_download_mdg_valid_coordinates(
     except TypeError:
         raise TypeError("'dotenv_filepath' must be a valid type for the pathlib.Path constructor (str or system-specific pathlib.Path/PurePath)")
     
-    if dotenv_filepath.is_file():
-        print(".env file found.")
-    else:
+    if not dotenv_filepath.is_file():
         raise FileNotFoundError(f"Could not find .env file: {dotenv_filepath}")
     
     dotenv_keys = Constants.GBIF_DOTENV_KEYS
@@ -295,7 +293,7 @@ def request_occ_download_mdg_valid_coordinates(
             raise ValueError("First year element in range must be smaller than the second.")
     
     # Query parameters for payload specific to mascarocoffea with valid coordinates
-    url = Constants.GBIF_BASEURLS["occurence"] + "/download/request"
+    url = Constants.GBIF_BASEURLS["occurrence"] + "/download/request"
     predicates = [
         {"type": "equals", "key": "GADM_GID", "value": "MDG"},
         {"type": "equals", "key": "HAS_COORDINATE", "value": "true"},
@@ -335,6 +333,10 @@ def download_extract_read_occ(
         target_dir (Optional[Union[str, pathlib.Path]], optional): The directory path to save the download and extracted files to. 
             Defaults to the current working directory
 
+    Returns:
+        Union[None, pd.DataFrame]: A pandas dataframe containing all the occurrences data with columns according to the requested format.
+            If data could not be properly extracted from the download, it returns None.
+            
     Raises:
         TypeError: If the 'download_id' is not a string.
         TypeError: If the 'target_dir' is not a string or a pathlib.Path object.
@@ -343,10 +345,6 @@ def download_extract_read_occ(
         ValueError: If the JSON response could not be parsed.
         ValueError: If the 'format' object from the response is not valid.
         FileNotFoundError: If no '.csv' files are found in files from a non-DWCA download format.
-
-    Returns:
-        Union[None, pd.DataFrame]: A pandas dataframe containing all the occurrences data with columns according to the requested format.
-            If data could not be properly extracted from the download, it returns None.
     """
     
     if not isinstance(download_id, str):
