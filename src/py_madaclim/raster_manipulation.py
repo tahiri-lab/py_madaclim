@@ -167,7 +167,7 @@ class _LayerPlotter:
             and their raster data.
         plot_args (dict): A dictionary containing optional arguments for the plot.
     """
-    def __init__(self, layer_num: int, madaclim_layers: py_madaclim.madaclim_info.MadaclimLayers, plot_args: dict) -> None:
+    def __init__(self, layer_num: int, madaclim_layers: py_madaclim.info.MadaclimLayers, plot_args: dict) -> None:
         """
         Initialize _LayerPlotter with a specific layer number, a MadaclimLayers object, and plot arguments.
         
@@ -181,7 +181,7 @@ class _LayerPlotter:
         self.plot_args = plot_args
 
     @property
-    def madaclim_layers(self) -> py_madaclim.madaclim_info.MadaclimLayers:
+    def madaclim_layers(self) -> py_madaclim.info.MadaclimLayers:
         """
         Gets or sets for the '_madaclim_layers' attribute.
 
@@ -194,7 +194,7 @@ class _LayerPlotter:
         return self._madaclim_layers
     
     @madaclim_layers.setter
-    def madaclim_layers(self, new_instance: py_madaclim.madaclim_info.MadaclimLayers):
+    def madaclim_layers(self, new_instance: py_madaclim.info.MadaclimLayers):
         self._validate_madaclim_layers(madaclim_layers=new_instance)
         self._madaclim_layers = new_instance
 
@@ -404,9 +404,9 @@ class _LayerPlotter:
             fig.tight_layout()
 
 
-    def _validate_madaclim_layers(self, madaclim_layers: py_madaclim.madaclim_info.MadaclimLayers) -> py_madaclim.madaclim_info.MadaclimLayers:
-        if not isinstance(madaclim_layers, py_madaclim.madaclim_info.MadaclimLayers):
-            raise TypeError("'madaclim_layers' must be of an instance of py_madaclim.madaclim_info.MadaclimLayers")
+    def _validate_madaclim_layers(self, madaclim_layers: py_madaclim.info.MadaclimLayers) -> py_madaclim.info.MadaclimLayers:
+        if not isinstance(madaclim_layers, py_madaclim.info.MadaclimLayers):
+            raise TypeError("'madaclim_layers' must be of an instance of py_madaclim.info.MadaclimLayers")
         
         if madaclim_layers.clim_raster is None or madaclim_layers.env_raster is None:
             raise ValueError("The MadaclimLayers instance must have defined 'clim_raster' and 'env_raster attributes.")
@@ -2689,7 +2689,7 @@ class MadaclimCollection:
             >>> collection.add_points([specimen_1, specimen_2])
 
             >>> # Fetch a specific set of layers to sample(using the MadaclimLayers class utilities)
-            >>> from py_madaclim.geoclim.madaclim_info import MadaclimLayers
+            >>> from py_madaclim.info import MadaclimLayers
             >>> madaclim_info = MadaclimLayers()
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
             >>> bio1 = bioclim_labels[0]
