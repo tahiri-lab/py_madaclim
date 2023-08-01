@@ -1,30 +1,35 @@
 <h1 align="center">py-madaclim: a simple Python API to interact with the Madaclim database</h1>
     <!-- badges should work when repo will go public -->
     <p align="center">
-        <img src="https://img.shields.io/github/license/tahiri-lab/aPhyloGeo-CM"></img>
-        <img src="https://img.shields.io/github/contributors/tahiri-lab/aphylogeo-cm?color=blue&logo=github"></img>
-        <img src="https://img.shields.io/github/last-commit/tahiri-lab/aphylogeo-cm?color=purple&logo=github"></img>
+        <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/tahiri-lab/py-madaclim?logoColor=blue">
+        <img src="https://img.shields.io/github/contributors/tahiri-lab/py-madaclim?color=orange&logo=github"></img>
+        <img src="https://img.shields.io/github/last-commit/tahiri-lab/py-madaclim?color=purple&logo=github"></img>
+        <img src="https://img.shields.io/website/https/tahirinadia.github.io.svg">
     </p>
 <!-- table of contents -->
 <details open>
     <summary>Table of Contents</summary>
         <ol style>
-            <li><a href=#project-description>Project Description</a></li>
+            <li>
+                <a href=#package-description>Package Description</a>
+            </li>
             <li><a href=#installation>Installation</a></li>
+                <details><summary>OS-specific steps</summary>
                 <ul>
-                    <li><a href=#install-linux>Linux/UNIX-based systems</a></li>
-                    <li><a href=#install-win>Windows 10/11</a></li>
+                    <li ><a href=#install-linux>Linux/UNIX-based systems</a></li>
+                    <li ><a href=#install-win>Windows 10/11</a></li>
                     <li><a href=#install-mac>macOS</a></li>
                 </ul>
+                </details>
             <li><a href=#workflow>General workflow</a></li>
             <li><a href=#example>Getting started (quick example)</a></li>
             <li><a href=#refs>References</a></li>
             <li><a href=#contact>Contact us</a></li>
         </ol>
 </details>
-<!-- Project description -->
+<!-- package description -->
 <section>
-    <h2 id="project-description">Package Description</h2>
+    <h2 id="package-description">Package Description</h2>
         <p>
             <code>py-madaclim</code> is a Python 3+ package that allows to interact with the <a href="https://madaclim.cirad.fr/">Madaclim db</a>, an open-source climate and environmental database for Madagascar.
         </p>
