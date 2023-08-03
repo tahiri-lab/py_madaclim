@@ -313,16 +313,50 @@ class MadaclimLayers:
         Returns:
             str: All the object's attributes as attr_name for keys and attr_value for values.
         """
-        info = (
-            f"all_layers = \n{self.all_layers.head().to_string(index=False)}\n...\n"
-            f"{len(self.all_layers)} rows x {len(self.all_layers.columns)} columns\n\n"  
-            f"clim_raster = {self.clim_raster}\n"
-            f"clim_crs = {self.clim_crs if self.clim_raster else None}\n"
-            f"env_raster = {self.env_raster}\n"
-            f"env_crs = {self.env_crs if self.env_raster else None}\n"   
+        categ_layer_nums = self.categorical_layers['layer_number'].unique().astype(str)
+        
+        custom_public_methods = []
+        for attr in dir(self):
+            attr_passed = False
+            try:
+                attr_val = getattr(self, attr)
+                attr_passed = True
+            except:
+                attr_val = None
+            if (attr_passed and
+                callable(attr_val) and not
+                attr.startswith("_")):
+                custom_public_methods.append(attr)
+        # Remove raster specific methods if not present in instance
+        if not self.clim_raster and not self.env_raster:
+            raster_specif_pub_meth = ["get_bandnums_from_layers"] 
+            custom_public_methods = [
+                method for method in custom_public_methods if method not in raster_specif_pub_meth
+            ]
+        
+        clim_raster_info = (
+            f"\tclim_raster = {self.clim_raster.name if self.clim_raster else None}\n"
+            f"\tclim_crs = {self.clim_crs if self.clim_raster else None}\n"
+        ) if self.clim_raster else ""
+        env_raster_info = (
+            f"\tenv_raster = {self.env_raster.name if self.env_raster else None}\n"
+            f"\tenv_crs = {self.env_crs if self.env_raster else None}\n"
+        ) if self.env_raster else ""
+
+        base_info = (
+            
+            f"\tall_layers = {type(self.all_layers).__name__}({self.all_layers.shape[0]} rows x {self.all_layers.shape[1]} columns)\n"
+            f"\tcategorical_layers = {type(self.categorical_layers).__name__}"
+            f"(Layers {', '.join(categ_layer_nums)} "
+            f"with a total of {len(self.categorical_layers)} categories\n"
+            f"{clim_raster_info}"
+            f"{env_raster_info}"
+            f"\tpublic methods -> {', '.join(custom_public_methods[:3])}\n"
+            f"\t\t\t {', '.join(custom_public_methods[3:])}\n"
         )
-        info = "MadaclimLayers\n" + info
-        return info
+
+        full_info = "MadaclimLayers(\n" + base_info + ")"
+        return full_info
     
     def __repr__(self) -> str:
         return self.__str__()
