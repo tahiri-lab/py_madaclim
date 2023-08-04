@@ -130,7 +130,7 @@ class MadaclimLayers:
         self._env_metadata = self._load_metadata(Constants.ENV_METADATA_FILE)
         
         self._all_layers = self._get_madaclim_layers()
-        self.categorical_layers = self._get_categorical_df()
+        self._categorical_layers = self._get_categorical_df()
 
     @property
     def clim_raster(self) -> pathlib.Path:
@@ -318,13 +318,25 @@ class MadaclimLayers:
         """
         return self._all_layers
     
+    @property
+    def categorical_layers(self) -> pd.DataFrame:
+        """
+        Retrieves the 'categorical_layers' Dataframe using the private '_get_categorical_df' method.
+
+        Contains detailed information about the categorical layers from the rasters in the Madaclim db.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing information for each categorical value in each layer
+        """
+        return self._categorical_layers
+    
     def __str__(self) -> str:
         """Prints the `MadaclimLayers` instance's attributes.
 
         Returns:
             str: All the object's attributes as attr_name for keys and attr_value for values.
         """
-        categ_layer_nums = self.categorical_layers['layer_number'].unique().astype(str)
+        categ_layer_nums = self._categorical_layers['layer_number'].unique().astype(str)
         
         custom_public_methods = []
         for attr in dir(self):
@@ -357,9 +369,9 @@ class MadaclimLayers:
         base_info = (
             
             f"\tall_layers = {type(self._all_layers).__name__}({self._all_layers.shape[0]} rows x {self._all_layers.shape[1]} columns)\n"
-            f"\tcategorical_layers = {type(self.categorical_layers).__name__}"
+            f"\tcategorical_layers = {type(self._categorical_layers).__name__}"
             f"(Layers {', '.join(categ_layer_nums)} "
-            f"with a total of {len(self.categorical_layers)} categories\n"
+            f"with a total of {len(self._categorical_layers)} categories\n"
             f"{clim_raster_info}"
             f"{env_raster_info}"
             f"\tpublic methods -> {', '.join(custom_public_methods[:3])}\n"
@@ -967,7 +979,7 @@ class MadaclimLayers:
                 }
             }
         """
-        cat_df = self.categorical_layers.copy()
+        cat_df = self._categorical_layers.copy()
         
         # Validate layers_labels
         possible_layers_num_format = self.get_layers_labels()
