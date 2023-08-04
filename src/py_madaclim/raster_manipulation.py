@@ -795,55 +795,47 @@ class MadaclimPoint:
             source_crs (pyproj.crs.crs.CRS, optional): The coordinate reference system of the point. Defaults to WGS84 (EPSG:4326).
             **kwargs: Additional keyword arguments to store as instance attributes.
         Examples:
+            Create a MadaclimPoint instance with required parameters `specimen_id`, `longitude`, `latitude`
+            
             >>> from py_madaclim.raster_manipulation import MadaclimPoint
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2)    # Default CRS of EPSG:4326
-            
-            >>> # Creates a shapely point object according to the Madaclim CRS' projection when instantiating a new instance. 
-            >>> specimen_1.mada_geom_point
-            <POINT (837072.915 7903496.321)>
-
-            >>> # Uses default EPSG:4326 CRS when not specified
-            >>> specimen_1.source_crs
-            <Geographic 2D CRS: EPSG:4326>
-            Name: WGS 84
-            Axis Info [ellipsoidal]:
-            - Lat[north]: Geodetic latitude (degree)
-            - Lon[east]: Geodetic longitude (degree)
-            Area of Use:
-            - name: World.
-            - bounds: (-180.0, -90.0, 180.0, 90.0)
-            Datum: World Geodetic System 1984 ensemble
-            - Ellipsoid: WGS 84
-            - Prime Meridian: Greenwich
-
-            >>> # Also accepts any other kwargs and saves them as attributes with specific typing
-            >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
-            >>> specimen_1.species
-            'arenesiana'
-            >>> specimen_1.has_sequencing
-            True
-            >>> specimen_1
+            >>> print(specimen_1)
             MadaclimPoint(
-                    specimen_id = spe1_aren,
-                    source_crs = 4326,
-                    latitude = -18.9333,
-                    longitude = 48.2,
-                    mada_geom_point = POINT (837072.9150244407 7903496.320897499),
-                    sampled_layers = None (Not sampled yet),
-                    nodata_layers = None (Not sampled yet),
-                    genus = Coffea,
-                    species = arenesiana,
-                    has_sequencing = True,
-                    gdf.shape = (1, 10)
+                specimen_id = spe1_aren,
+                source_crs = 4326,
+                longitude = 48.2,
+                latitude = -18.9333,
+                mada_geom_point = POINT (837072.9150244407 7903496.320897499),
+                sampled_layers = None (Not sampled yet),
+                nodata_layers = None (Not sampled yet),
+                is_categorical_encoded = False,
+                gdf.shape = (1, 8)
             )
 
-            >>> # Core and additionnal attributes are save to a GeoDataFrame with `mada_geom_point` for geometry
-            >>> specimen1.gdf
-              specimen_id  source_crs  latitude  longitude                 mada_geom_point sampled_layers nodata_layers   genus     species  has_sequencing
-            0   spe1_aren        4326  -18.9333       48.2  POINT (837072.915 7903496.321)         None          None  Coffea  arenesiana            True
+            Also accepts any other kwargs and saves them as attributes with specific typing
 
+            >>> specimen_1 = MadaclimPoint(specimen_id="spe1_aren", latitude=-18.9333, longitude=48.2, genus="Coffea", species="arenesiana", has_sequencing=True)
+            >>> print(specimen_1)
+            MadaclimPoint(
+                specimen_id = spe1_aren,
+                source_crs = 4326,
+                longitude = 48.2,
+                latitude = -18.9333,
+                mada_geom_point = POINT (837072.9150244407 7903496.320897499),
+                sampled_layers = None (Not sampled yet),
+                nodata_layers = None (Not sampled yet),
+                is_categorical_encoded = False,
+                genus = Coffea,
+                species = arenesiana,
+                has_sequencing = 1.0,
+                gdf.shape = (1, 11)
+            )
+            Core and additionnal attributes are save to a GeoDataFrame with `mada_geom_point` for geometry
+
+            >>> specimen1.gdf
+            specimen_id	source_crs	longitude	latitude	mada_geom_point	sampled_layers	nodata_layers	is_categorical_encoded	genus	species	has_sequencing
+            0	spe1_aren	4326	48.2	-18.9333	POINT (837072.915 7903496.321)	None	None	False	Coffea	arenesiana	1.0
         """
-        
         self.specimen_id = specimen_id
         self._source_crs = self._validate_crs(source_crs)
         self._longitude, self._latitude = self._validate_lonlat(longitude, latitude)
