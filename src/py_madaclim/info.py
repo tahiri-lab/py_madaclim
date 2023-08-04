@@ -1036,7 +1036,7 @@ class MadaclimLayers:
             else:
                 categorical_key = self.get_layers_labels(layer_number)[0]
             categorical_dict[categorical_key] = {
-                int(row["value"]): row["category"] 
+                int(row["raster_value"]): row["category"] 
                 for _, row in select_cat_df.loc[select_cat_df["layer_number"] == layer_number].iterrows()
             }
         return categorical_dict
@@ -1491,7 +1491,7 @@ class MadaclimLayers:
         raster_to_check = getattr(self, raster_attr_name)    # Fetch current value of raster attr
 
         if raster_to_check is None:
-            raise ValueError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
+            raise AttributeError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
 
         # Check if raster file exists
         if not raster_to_check.is_file():
