@@ -172,7 +172,6 @@ class MadaclimLayers:
             self._clim_raster = value
 
     @property
-    
     def env_raster(self) -> pathlib.Path:
         """pathlib.Path: Get or set the path to the environment raster file.
 
@@ -840,7 +839,7 @@ class MadaclimLayers:
         all_layers_df = self.all_layers.copy()    # Reference to all clim and env metadata df
 
         # Validate layers_labels
-        possible_layers_num_format = [f"layer_{num}" for num in all_layers_df["layer_number"].to_list()]
+        possible_layers_num_format = self.get_layers_labels()
         possible_layers_desc_format = self.get_layers_labels(as_descriptive_labels=True)
 
         if isinstance(layers_labels, list):
