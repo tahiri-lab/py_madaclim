@@ -39,85 +39,33 @@ class MadaclimLayers:
             The instance can also access various methods to extract relevant information from the Madaclim database.
 
         
-        Example:
+        Examples:
+            Instantiate the MadaclimLayers without the rasters
+
             >>> from py_madaclim.info import MadaclimLayers
-            >>> madaclim_info = MadaclimLayers()
-            >>> # Access the all layers df
-            >>> all_layers_df = madaclim_info.all_layers
-            >>> all_layers_df.shape
-            (79, 6)
-            >>> all_layers_df
-            geoclim_type  layer_number layer_name                                  layer_description  is_categorical                                              units
-            0          clim             1      tmin1              Monthly minimum temperature - January           False                                            °C x 10
-            1          clim             2      tmin2             Monthly minimum temperature - February           False                                            °C x 10
-            2          clim             3      tmin3                Monthly minimum temperature - March           False                                            °C x 10
-            3          clim             4      tmin4                Monthly minimum temperature - April           False                                            °C x 10
-            4          clim             5      tmin5                  Monthly minimum temperature - May           False                                            °C x 10
-            ..          ...           ...        ...                                                ...             ...                                                ...
-            74          env            75        geo                                         Rock types            True  [1=Alluvial_&_Lake_deposits, 2=Unconsolidated_...
-            75          env            76        soi                                         Soil types            True  [1=Bare_Rocks, 2=Raw_Lithic_Mineral_Soils, 3=P...
-            76          env            77        veg                                   Vegetation types            True  [1=VegCat_1, 2=VegCat_2, 3=VegCat_3, 4=VegCat_...
-            77          env            78        wat                                         Watersheds            True  [1=N-Bemarivo, 2=S-Bemarivo,_N-Mangoro, 3=S-Ma...
-            78          env            79     forcov  Percentage of forest cover in 1 km by 1 km gri...           False                                                  %
-
-            [79 rows x 6 columns]
-
-            >>> # Categorical layers only df
-            >>> madaclim_info.categorical_layers
-            geoclim_type  layer_number layer_name layer_description value                              category
-            0           env            75        geo        Rock types     1              Alluvial_&_Lake_deposits
-            1           env            75        geo        Rock types     2                  Unconsolidated_Sands
-            2           env            75        geo        Rock types     4                        Mangrove_Swamp
-            3           env            75        geo        Rock types     5  Tertiary_Limestones_+_Marls_&_Chalks
-            4           env            75        geo        Rock types     6                            Sandstones
-            ..          ...           ...        ...               ...   ...                                   ...
-            73          env            78        wat        Watersheds    20                  ret-disp_Tsiribihina
-            74          env            78        wat        Watersheds    21                    ret-disp_Betsiboka
-            75          env            78        wat        Watersheds    22            ret-disp_Maevarana_(1/2_N)
-            76          env            78        wat        Watersheds    23                    ret-disp_Sambirano
-            77          env            78        wat        Watersheds    24                     ret-disp_Mahavavy
-
-            [78 rows x 6 columns]
-
-
-            >>> # 'clim_raster' and 'env_raster' attributes are empty by default
-            >>> print(madaclim_info.clim_raster)
-            None
-            >>> print(madaclim_info.env_raster)
-            None
+            >>> mada_info = MadaclimLayers()
+            >>> print(mada_info)
+            MadaclimLayers(
+                all_layers = DataFrame(79 rows x 6 columns)
+                categorical_layers = DataFrame(Layers 75, 76, 77, 78 with a total of 79 categories
+                public methods -> download_data, fetch_specific_layers, get_categorical_combinations
+                        get_layers_labels, select_geoclim_type_layers
+            )
             
-            >>> # Certain attributes and methods need a valid 'clim_raster' or 'env_raster' attribute a-priori
-            >>> madaclim_info.clim_crs
-            Traceback (most recent call last):
-            File "<stdin>", line 1, in <module>
-            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaphylogeo/src/py_madaclim/madaclim_info.py", line 223, in clim_crs
-                self._validate_raster("clim_raster")
-            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/coffeaphylogeo/src/py_madaclim/madaclim_info.py", line 1111, in _validate_raster
-                raise ValueError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
-            ValueError: Undefined attribute: 'clim_raster'. You need to assign a valid pathlib.Path to the related raster attribute first.
-            
-            >>> # You can download the rasters using the 'download_data' method
-            >>> madaclim_info.download_data()    # Defaults to current working dir otherwise specify save_dir pathlib.Path
-        
-            >>> madaclim_info.clim_raster = "madaclim_current.tif"
-            >>> madaclim_info.env_raster = "madaclim_enviro.tif"
-            >>> madaclim_info.clim_raster
-            PosixPath('madaclim_current.tif')
-            >>> madaclim_info.clim_crs
-            <Derived Projected CRS: EPSG:32738>
-            Name: WGS 84 / UTM zone 38S
-            Axis Info [cartesian]:
-            - E[east]: Easting (metre)
-            - N[north]: Northing (metre)
-            Area of Use:
-            - name: Between 42°E and 48°E, southern hemisphere between 80°S and equator, onshore and offshore. Madagascar.
-            - bounds: (42.0, -80.0, 48.0, 0.0)
-            Coordinate Operation:
-            - name: UTM zone 38S
-            - method: Transverse Mercator
-            Datum: World Geodetic System 1984 ensemble
-            - Ellipsoid: WGS 84
-            - Prime Meridian: Greenwich
+            Full method access when instantiating with the rasters
+
+            >>> mada_info_rasters = MadaclimLayers(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
+            >>> print(mada_info_rasters)
+            MadaclimLayers(
+            all_layers = DataFrame(79 rows x 6 columns)
+            categorical_layers = DataFrame(Layers 75, 76, 77, 78 with a total of 79 categories
+            clim_raster = madaclim_current.tif
+            clim_crs = EPSG:32738
+            env_raster = madaclim_enviro.tif
+            env_crs = EPSG:32738
+            public methods -> download_data, fetch_specific_layers, get_bandnums_from_layers
+                    get_categorical_combinations, get_layers_labels, select_geoclim_type_layers
+        )
 
         """
         self.clim_raster = clim_raster
@@ -223,30 +171,16 @@ class MadaclimLayers:
             pyproj.crs.crs.CRS: The CRS object derived from the EPSG code of the climate raster.
 
         Example:
-            >>> # You need to have a valid 'clim_raster' attribute before
-            >>> madaclim_info = MadaclimLayers()
-            >>> madaclim_info.clim_crs
-            Traceback (most recent call last):
-            ...
-                raise ValueError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
-            ValueError: Undefined attribute: 'clim_raster'. You need to assign a valid pathlib.Path to the related raster attribute first.
+            You need to have valid 'clim_raster' attribute before accessing the 'clim_crs' attr.
 
-            >>> madaclim_info.clim_raster = Path("madaclim_current.tif")
-            >>> madaclim_info.clim_crs
-            <Derived Projected CRS: EPSG:32738>
-            Name: WGS 84 / UTM zone 38S
-            Axis Info [cartesian]:
-            - E[east]: Easting (metre)
-            - N[north]: Northing (metre)
-            Area of Use:
-            - name: Between 42°E and 48°E, southern hemisphere between 80°S and equator, onshore and offshore. Madagascar.
-            - bounds: (42.0, -80.0, 48.0, 0.0)
-            Coordinate Operation:
-            - name: UTM zone 38S
-            - method: Transverse Mercator
-            Datum: World Geodetic System 1984 ensemble
-            - Ellipsoid: WGS 84
-            - Prime Meridian: Greenwich
+            >>> mada_info = MadaclimLayers()
+            >>> mada_info.clim_crs
+            Traceback (most recent call last):
+                raise AttributeError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
+            AttributeError: Undefined attribute: 'clim_raster'. You need to assign a valid pathlib.Path to the related raster attribute first.
+            >>> mada_info.clim_raster = Path("./madaclim_current.tif")
+            >>> print(mada_info.clim_crs)
+            EPSG:32738
         """
         
         # Validate raster attr value, IO path, integrity
@@ -271,30 +205,16 @@ class MadaclimLayers:
             pyproj.crs.crs.CRS: The CRS object derived from the EPSG code of the environmental raster.
         
         Example:
-            >>> # You need to have a valid 'env_raster' attribute
-            >>> madaclim_info = MadaclimLayers()
-            >>> madaclim_info.env_crs
+            You need to have valid 'env_raster' attribute before accessing the 'env_crs' attr.
+
+            >>> mada_info = MadaclimLayers()
+            >>> mada_info.env_crs
             Traceback (most recent call last):
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            ...                
-            ValueError: Undefined attribute: 'env_raster'. You need to assign a valid pathlib.Path to the related raster attribute first.
-            
-            >>> madaclim_info.env_raster = Path("madaclim_enviro.tif")
-            >>> madaclim_info.env_crs
-            <Derived Projected CRS: EPSG:32738>
-            Name: WGS 84 / UTM zone 38S
-            Axis Info [cartesian]:
-            - E[east]: Easting (metre)
-            - N[north]: Northing (metre)
-            Area of Use:
-            - name: Between 42°E and 48°E, southern hemisphere between 80°S and equator, onshore and offshore. Madagascar.
-            - bounds: (42.0, -80.0, 48.0, 0.0)
-            Coordinate Operation:
-            - name: UTM zone 38S
-            - method: Transverse Mercator
-            Datum: World Geodetic System 1984 ensemble
-            - Ellipsoid: WGS 84
-            - Prime Meridian: Greenwich
+                raise AttributeError(f"Undefined attribute: '{raster_attr_name}'. You need to assign a valid pathlib.Path to the related raster attribute first.")
+            AttributeError: Undefined attribute: 'env_raster'. You need to assign a valid pathlib.Path to the related raster attribute first.
+            >>> mada_info.env_raster = Path("./madaclim_current.tif")
+            >>> print(mada_info.env_crs)
+            EPSG:32738
         """
         
         # Validate raster attr value, IO path, integrity
@@ -398,9 +318,8 @@ class MadaclimLayers:
             ValueError: If geoclim_type does not corresponds to a valid geoclim type.
         
         Example:
-            >>> from py_madaclim.madaclim_layers import MadaclimLayers
-            >>> madaclim_info = MadaclimLayers()
-            >>> clim_df = madaclim_info.select_geoclim_type_layers(geoclim_type="clim")
+            >>> mada_info = MadaclimLayers()
+            >>> clim_df = mada_info.select_geoclim_type_layers(geoclim_type="clim")
             >>> clim_df.head()
             geoclim_type  layer_number layer_name                       layer_description  is_categorical    units
             0         clim             1      tmin1   Monthly minimum temperature - January           False  °C x 10
@@ -408,7 +327,6 @@ class MadaclimLayers:
             2         clim             3      tmin3     Monthly minimum temperature - March           False  °C x 10
             3         clim             4      tmin4     Monthly minimum temperature - April           False  °C x 10
             4         clim             5      tmin5       Monthly minimum temperature - May           False  °C x 10
-
         """
         all_layers_df = self._all_layers.copy()
         # Validate geoclim_type
@@ -447,38 +365,36 @@ class MadaclimLayers:
             list: A list of unique layer labels. These labels are either in the "layer_<num>" format or the descriptive format, 
             based on `as_descriptive_labels`.
         
-        Example:
-            >>> # Get labels for all layers
-            >>> from py_madaclim.madaclim_layers import MadaclimLayers
-            >>> madaclim_info = MadaclimLayers()
-            >>> all_layers = madaclim_info.get_layers_labels()
+        Examples:
+            Get labels for all layers
+
+            >>> mada_info = MadaclimLayers()
+            >>> all_layers = mada_info.get_layers_labels()
             >>> len(all_layers)
             79
             >>> # Basic format 'layer_<num>'
             >>> all_layers[:5]
             ['layer_1', 'layer_2', 'layer_3', 'layer_4', 'layer_5']
 
-            >>> # Specify a geoclim subset
-            >>> env_layers = madaclim_info.get_layers_labels(layers_subset="env")
+            Specify a geoclim subset
+
+            >>> env_layers = mada_info.get_layers_labels(layers_subset="env")
             >>> env_layers
             ['layer_71', 'layer_72', 'layer_73', 'layer_74', 'layer_75', 'layer_76', 'layer_77', 'layer_78', 'layer_79']
             
-            >>> # Extract more information
-            >>> # Format is a list of 'type_num_uniqname_description (units)' elements
-            >>> informative_labels = madaclim_info.get_layers_labels(as_descriptive_labels=True)
-            >>> informative_labels[:5]
+            Extract more information
+
+            >>> informative_labels = mada_info.get_layers_labels(as_descriptive_labels=True)
             >>> informative_labels[:2]
             ['clim_1_tmin1_Monthly minimum temperature - January (°C x 10)', 'clim_2_tmin2_Monthly minimum temperature - February (°C x 10)']
-            >>> # Any output from `get_layers_labels` can be used as input for other methods in other classes such as `fetch_specific_layers` from `MadaclimLayers`
 
-            >>> # Specify a single layer or a subset of layers
-            >>> madaclim_info.get_layers_labels(37, as_descriptive_labels=True)
+            Specify a single layer or a subset of layers
+
+            >>> mada_info.get_layers_labels(37, as_descriptive_labels=True)
             ['clim_37_bio1_Annual mean temperature (degrees)']
-            >>> madaclim_info.get_layers_labels([68, 75], as_descriptive_labels=True)
+            >>> mada_info.get_layers_labels([68, 75], as_descriptive_labels=True)
             ['clim_68_pet_Annual potential evapotranspiration from the Thornthwaite equation (mm)', 'env_75_geo_Rock types (categ_vals: 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 13)']
 
-            >>> # Example to get bioclim layers only
-            >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
         """
         all_layers_df = self._all_layers.copy()
         layers_numbers = all_layers_df["layer_number"].to_list()
@@ -578,57 +494,39 @@ class MadaclimLayers:
             ValueError: If any layer_number does not fall between the minimum and maximum layer numbers.
             KeyError: If any value in args is not a column in `all_layers` DataFrame.
 
-        Example:
-            >>> from py_madaclim.madaclim_layers import MadaclimLayers
-            >>> madaclim_info = MadaclimLayers()
-            >>> madaclim_info.fetch_specific_layers([1, 15, 55, 71])
-            geoclim_type  layer_number layer_name                      layer_description  is_categorical         units
+        Examples:
+            Using a list of layer numbers
+
+            >>> mada_info = MadaclimLayers()
+            >>> mada_info.fetch_specific_layers([1, 15, 55, 71])
+               geoclim_type  layer_number layer_name                      layer_description  is_categorical         units
             0          clim             1      tmin1  Monthly minimum temperature - January           False       °C x 10
             14         clim            15      tmax3    Monthly maximum temperature - March           False       °C x 10
             54         clim            55      bio19       Precipitation of coldest quarter           False  mm.3months-1
             70          env            71        alt                               Altitude           False        meters
 
-            >>> # Using the output from `get_layers_labels` method
-            >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
-            >>> bio1_to_bio5_labels = bioclim_labels[0:6]
-            >>> madaclim_info.fetch_specific_layers(bio1_to_bio5_labels)
+            Using the output from `get_layers_labels` method
+
+            >>> bioclim_labels = [label for label in mada_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
+            >>> bio1_bio2_labels = bioclim_labels[0:3]
+            >>> mada_info.fetch_specific_layers(bio1_bio2_labels)
             geoclim_type  layer_number layer_name                 layer_description  is_categorical                                       units
             36         clim            37       bio1           Annual mean temperature           False                                     degrees
             37         clim            38       bio2                Mean diurnal range           False  mean of monthly max temp - monthy min temp
-            38         clim            39       bio3   Isothermality = BIO2/BIO7 x 100           False                                    No units
-            39         clim            40       bio4           Temperature seasonality           False                    standard deviation x 100
-            40         clim            41       bio5  Max temperature of warmest month           False                                     degrees
-            41         clim            42       bio6  Min temperature of coldest month           False                                     degrees
 
             >>> # Or from descriptive_labels as well
+            >>> pet_layers = [label for label in mada_info.get_layers_labels(as_descriptive_labels=True) if "pet" in label]
             >>> len(pet_layers)
             13
-            >>> pet_layers[-1]
-            'clim_68_pet_Annual potential evapotranspiration from the Thornthwaite equation (mm)'
-            >>> madaclim_info.fetch_specific_layers(pet_layers)
-            geoclim_type  layer_number layer_name                                  layer_description  is_categorical       units
-            55         clim            56       pet1  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            56         clim            57       pet2  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            57         clim            58       pet3  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            58         clim            59       pet4  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            59         clim            60       pet5  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            60         clim            61       pet6  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            61         clim            62       pet7  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            62         clim            63       pet8  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            63         clim            64       pet9  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            64         clim            65      pet10  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            65         clim            66      pet11  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            66         clim            67      pet12  Monthly potential evapotranspiration from the ...           False  mm.month-1
-            67         clim            68        pet  Annual potential evapotranspiration from the T...           False          mm
+            >>> mada_info.fetch_specific_layers(pet_layers[-1])
+               geoclim_type  layer_number layer_name                                  layer_description  is_categorical units
+            67         clim            68        pet  Annual potential evapotranspiration from the T...           False    mm
+            
+            Fetch as dict with keys as layer_<num> and vals of choice using 
 
-            >>> # Fetch as dict with keys as layer_<num> and vals of choice using 
-            >>> madaclim_info.fetch_specific_layers([15, 55, 75], "geoclim_type", "layer_name", "is_categorical")
+            >>> mada_info.fetch_specific_layers([55, 75], "geoclim_type", "layer_name", "is_categorical")
             {
-                'layer_15': {
-                    'geoclim_type': 'clim',
-                    'layer_name': 'tmax3',
-                    'is_categorical': False
-                },
+                
                 'layer_55': {
                     'geoclim_type': 'clim',
                     'layer_name': 'bio19',
@@ -642,15 +540,13 @@ class MadaclimLayers:
             }
             >>> # Only col names will be accepted as additionnal args
             >>> bio1 = next((layer for layer in mada_info.get_layers_labels(as_descriptive_labels=True) if "bio1" in layer), None)
-            >>> madaclim_info.fetch_specific_layers(bio1, "band_number")
+            >>> mada_info.fetch_specific_layers(bio1, "band_number")
             Traceback (most recent call last):
-            File "<stdin>", line 1, in <module>
-            File "/home/local/USHERBROOKE/lals2906/programming/python_projects/py_madaclim/src/py_madaclim/madaclim_info.py", line 604, in fetch_specific_layers
                 if not min_layer <= layer_number <= max_layer:
                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             KeyError: "Invalid args: ['band_number']. Args must be one of a key of ['geoclim_type', 'layer_number', 'layer_name', 'layer_description', 'is_categorical', 'units'] or 'all'"
             >>> # Get all keys with the `all` argument
-            >>> madaclim_info.fetch_specific_layers(bio1, "all")
+            >>> mada_info.fetch_specific_layers(bio1, "all")
             {
                 'layer_37': {
                     'geoclim_type': 'clim',
@@ -748,21 +644,6 @@ class MadaclimLayers:
 
         Raises:
             ValueError: If save_dir is not a directory.
-
-        Example:
-            >>> madaclim_info.download_data()    # Defaults to current working directory
-
-            ####   Trying get request to Madaclim website...   ####
-            madaclim_current.tif is 21.8 MB
-            Server response OK from madaclim.cirad.fr, starting to download madaclim_current.tif
-            Progress for madaclim_current.tif : 100.00 % completed of 21.8 MB downloaded [ average speed of  3.3 MB/s ]
-            Done downloading madaclim_current.tif in 6.65 seconds !
-
-            ####   Trying get request to Madaclim website...   ####
-            madaclim_enviro.tif is 5.5 MB
-            Server response OK from madaclim.cirad.fr, starting to download madaclim_enviro.tif
-            Progress for madaclim_enviro.tif : 100.00 % completed of 5.5 MB downloaded [ average speed of  2.7 MB/s ]
-            Done downloading madaclim_enviro.tif in 2.07 seconds !
         """
         
         def download_single_file(url: str, dir_savepath: pathlib.Path, filename: str)-> pathlib.Path:
@@ -853,10 +734,9 @@ class MadaclimLayers:
             List[int]: A list of band numbers corresponding to the provided layer labels.
 
         Example:
-            >>> from py_madaclim.madaclim_layers import MadaclimLayers
-            >>> madaclim_info = MadaclimLayers()
-            >>> last_20 = madaclim_info.get_layers_labels()[-20:]
-            >>> band_nums = madaclim_info.get_bandnums_from_layers(last_20)
+            >>> mada_info = MadaclimLayers(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
+            >>> last_20 = mada_info.get_layers_labels()[-20:]
+            >>> band_nums = mada_info.get_bandnums_from_layers(last_20)
             >>> band_nums
             [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         """
@@ -944,8 +824,9 @@ class MadaclimLayers:
             If a single layer was specified, the dictionary keys are the categorical values, and the values are the 
             categories themselves. 
 
-        Example:
-            >>> # If multiple layers specified, it returns:
+        Examples:
+            If multiple layers specified, it returns:
+
             >>> madaclim_info = MadaclimLayers()
             >>> >>> madaclim_info.get_categorical_combinations([75, 76])
             {
@@ -961,7 +842,9 @@ class MadaclimLayers:
                 },
                 ...
             }
-            >>> # If a single layer is specified, it returns:
+
+            If a single layer is specified, it returns:
+
             >>> madaclim_info.get_categorical_combinations("layer_76")
             {
                 'layer_76: {
@@ -970,7 +853,9 @@ class MadaclimLayers:
                 ...
                 }
             }
-            >>> # For more descriptive keys (same output from as_descriptive_labels)
+            
+            For more descriptive keys (same output from as_descriptive_labels)
+            
             >>> madaclim_info.get_categorical_combinations("layer_76", as_descriptive_keys=True)
             {
                 'env_76_soi_Soil types (categ_vals: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)': {
