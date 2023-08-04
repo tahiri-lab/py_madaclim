@@ -705,7 +705,9 @@ class MadaclimRasters:
             TypeError: If the input value is not a pathlib.Path or str.
             ValueError: If a pathlib.Path object could not be created from the input value.
             FileExistsError: If the file does not exist.
-            IOError: If the raster file could not be opened.
+            RasterioIOError: If the raster file could not be opened.
+            NotGeoreferencedWarning: If the raster file is not georeferenced.
+
         """
             # Validate type
         if not isinstance(raster, (pathlib.Path, str)):
