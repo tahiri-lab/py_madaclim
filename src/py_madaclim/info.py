@@ -129,7 +129,7 @@ class MadaclimLayers:
         self._env_dataformat = self._load_dataformat(Constants.ENV_DATAFORMAT_FILE)
         self._env_metadata = self._load_metadata(Constants.ENV_METADATA_FILE)
         
-        self.all_layers = self._get_madaclim_layers()
+        self._all_layers = self._get_madaclim_layers()
         self.categorical_layers = self._get_categorical_df()
 
     @property
@@ -306,6 +306,18 @@ class MadaclimLayers:
             env_crs = pyproj.CRS.from_epsg(env_epsg)  # Create a pyproj CRS object
         return env_crs
     
+    @property
+    def all_layers(self) -> pd.DataFrame:
+        """
+        Retrieves the 'all_layers' Dataframe using the private '_get_madaclim_layers' method.
+
+        Contains all information about all the raster layers in the Madaclim db.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing a complete and formatted version of all Madaclim layers.
+        """
+        return self._all_layers
+    
     def __str__(self) -> str:
         """Prints the `MadaclimLayers` instance's attributes.
 
@@ -344,7 +356,7 @@ class MadaclimLayers:
 
         base_info = (
             
-            f"\tall_layers = {type(self.all_layers).__name__}({self.all_layers.shape[0]} rows x {self.all_layers.shape[1]} columns)\n"
+            f"\tall_layers = {type(self._all_layers).__name__}({self._all_layers.shape[0]} rows x {self._all_layers.shape[1]} columns)\n"
             f"\tcategorical_layers = {type(self.categorical_layers).__name__}"
             f"(Layers {', '.join(categ_layer_nums)} "
             f"with a total of {len(self.categorical_layers)} categories\n"
@@ -386,7 +398,7 @@ class MadaclimLayers:
             4         clim             5      tmin5       Monthly minimum temperature - May           False  °C x 10
 
         """
-        all_layers_df = self.all_layers.copy()
+        all_layers_df = self._all_layers.copy()
         # Validate geoclim_type
         if not isinstance(geoclim_type, str):
             raise TypeError("geoclim_type must be a string.")
@@ -456,7 +468,7 @@ class MadaclimLayers:
             >>> # Example to get bioclim layers only
             >>> bioclim_labels = [label for label in madaclim_info.get_layers_labels(as_descriptive_labels=True) if "bio" in label]
         """
-        all_layers_df = self.all_layers.copy()
+        all_layers_df = self._all_layers.copy()
         layers_numbers = all_layers_df["layer_number"].to_list()
         possible_geoclim_types = all_layers_df["geoclim_type"].unique()
 
@@ -639,7 +651,7 @@ class MadaclimLayers:
             }
 
         """
-        all_layers_df = self.all_layers.copy()    # Reference to all clim and env metadata df
+        all_layers_df = self._all_layers.copy()    # Reference to all clim and env metadata df
 
         # Validate layers_labels
         possible_layers_num_format = self.get_layers_labels()
@@ -836,7 +848,7 @@ class MadaclimLayers:
             >>> band_nums
             [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         """
-        all_layers_df = self.all_layers.copy()    # Reference to all clim and env metadata df
+        all_layers_df = self._all_layers.copy()    # Reference to all clim and env metadata df
 
         # Validate layers_labels
         possible_layers_num_format = self.get_layers_labels()
@@ -1395,7 +1407,7 @@ class MadaclimLayers:
                 - 'category': Description of the category within the layer.
         """
         # Extract categorical only from all layers
-        all_layers_df = self.all_layers.copy()
+        all_layers_df = self._all_layers.copy()
         cat_df = all_layers_df.loc[all_layers_df["is_categorical"] == True]
 
         # Split units list into separate val, category columns
