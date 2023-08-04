@@ -640,10 +640,10 @@ class MadaclimRasters:
         
     def __str__(self) -> str:
         info = (
-            f"MadaclimRasters(\n\tclim_raster = {self._clim_raster},"
+            f"MadaclimRasters(\n\tclim_raster = {self._clim_raster.name},"
             f"\n\tclim_crs = {self.clim_crs},"
             f"\n\tclim_nodata_val = {self.clim_nodata_val}"
-            f"\n\tenv_raster = {self._env_raster},"
+            f"\n\tenv_raster = {self._env_raster.name},"
             f"\n\tenv_crs = {self.env_crs},"
             f"\n\tenv_nodata_val = {self.env_nodata_val}\n)"
     )
