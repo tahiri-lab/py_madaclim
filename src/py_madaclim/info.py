@@ -926,10 +926,11 @@ class MadaclimLayers:
 
         Args:
             layers_labels (Optional[Union[int, str, List[Union[int, str]]]]): The layer labels to fetch. Can be a single 
-            integer or string value, or a list of integer or string values. The input can also be in the format 
-            "layer_{num}" or "{geotype}_{num}_{name}_({unit})" (output from `get_layers_labels(as_descriptive_labels=True)` method).
-            If `layers_labels` is `None`, all categorical layers are fetched.
-            as_descriptive_keys(bool)
+                integer or string value, or a list of integer or string values. The input can also be in the format 
+                "layer_{num}" or "{geotype}_{num}_{name}_({unit})" (output from `get_layers_labels(as_descriptive_labels=True)` method).
+                If `layers_labels` is `None`, all categorical layers are fetched.
+            as_descriptive_keys(bool):  If True, returns the descriptive layer labels. Otherwise, returns 
+                the "layer_<num>" format. Defaults to False
 
         Raises:
             TypeError: If `layers_labels` is not a list of integers or strings, a single integer or a string 
