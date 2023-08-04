@@ -1424,7 +1424,7 @@ class MadaclimLayers:
 
         # Split units list into separate val, category columns
         cat_df = cat_df.explode("units").reset_index().drop(columns=["index", "is_categorical"])
-        cat_df[["value", "category"]] = cat_df["units"].str.split("=", expand=True)
+        cat_df[["raster_value", "category"]] = cat_df["units"].str.split("=", expand=True)
         cat_df = cat_df.drop(columns="units")
 
         return cat_df
