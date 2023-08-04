@@ -6,12 +6,14 @@ from typing import Optional, Union, List, Optional, Tuple, Dict
 import time
 from tqdm import tqdm
 import re
+import warnings
 
 import py_madaclim
 from py_madaclim._constants import Constants
 from py_madaclim.info import MadaclimLayers
 
 import rasterio
+import rasterio.errors
 import pyproj
 import shapely
 from pyproj import Transformer
@@ -438,7 +440,7 @@ class MadaclimRasters:
             clim_raster (pathlib.Path): Path to the climate raster file.
             env_raster (pathlib.Path): Path to the environmental raster file.
         
-        Examples:
+        Example:
             >>> from py_madaclim.raster_manipulation import MadaclimRasters
             >>> mada_rasters = MadaclimRasters(clim_raster="madaclim_current.tif", env_raster="madaclim_enviro.tif")
             >>> mada_rasters.clim_crs
@@ -458,8 +460,8 @@ class MadaclimRasters:
             - Prime Meridian: Greenwich
        
         """
-        self._clim_raster = clim_raster
-        self._env_raster = env_raster
+        self._clim_raster = self._validate_raster(clim_raster)
+        self._env_raster = self._validate_raster(env_raster)
     
     @property
     def clim_raster(self) -> pathlib.Path:
@@ -469,12 +471,6 @@ class MadaclimRasters:
         Args:
             value (pathlib.Path): The new climate raster file path.
 
-        Raises:
-            TypeError: If the input value is not a pathlib.Path or str.
-            ValueError: If a pathlib.Path object could not be created from the input value.
-            FileExistsError: If the file does not exist.
-            IOError: If the raster file could not be opened.
-
         Returns:
             pathlib.Path: The climate raster file path.
         """
@@ -482,27 +478,8 @@ class MadaclimRasters:
     
     @clim_raster.setter
     def clim_raster(self, value: pathlib.Path) -> None:
-        # Validate type
-        if not isinstance(value, (pathlib.Path, str)):
-            raise TypeError("'clim_raster' must be a pathlib.Path object or str.")
+        self._clim_raster = self._validate_raster(value)
         
-        # Validate path and file
-        try:
-            value = Path(value)
-        except:
-            raise ValueError(f"Could not create a pathlib.Path object from {value}")
-            
-        # Check if raster file exists
-        if not value.exists():
-            raise FileExistsError(f"Could not find 'clim_raster' file: {value}")
-              
-        # Catch any IO errors
-        try:
-            with rasterio.open(value) as raster_file:
-                self._clim_raster = value
-        except rasterio.errors.RasterioIOError as e:
-            raise IOError(f"Could not open 'clim_raster' file: {value}. Error: {e}")
-
     @property
     def env_raster(self) -> pathlib.Path:
         """
@@ -511,12 +488,6 @@ class MadaclimRasters:
         Args:
             value (pathlib.Path): The new environmental raster file path.
 
-        Raises:
-            TypeError: If the input value is not a pathlib.Path or str.
-            ValueError: If a pathlib.Path object could not be created from the input value.
-            FileExistsError: If the file does not exist.
-            IOError: If the raster file could not be opened.
-
         Returns:
             pathlib.Path: The environmental raster file path.
         """
@@ -524,26 +495,7 @@ class MadaclimRasters:
     
     @env_raster.setter
     def env_raster(self, value: pathlib.Path) -> None:
-        # Validate type
-        if not isinstance(value, (pathlib.Path, str)):
-            raise TypeError("'env_raster' must be a pathlib.Path object or str.")
-        
-        # Validate path and file
-        try:
-            value = Path(value)
-        except:
-            raise ValueError(f"Could not create a pathlib.Path object from {value}")
-            
-        # Check if raster file exists
-        if not value.exists():
-            raise FileExistsError(f"Could not find 'env_raster' file: {value}")
-              
-        # Catch any IO errors
-        try:
-            with rasterio.open(value) as raster_file:
-                self._env_raster = value
-        except rasterio.errors.RasterioIOError as e:
-            raise IOError(f"Could not open 'env_raster' file: {value}. Error: {e}")
+        self._env_raster = self._validate_raster(value)
         
     @property
     def clim_crs(self) -> pyproj.crs.crs.CRS:
@@ -739,6 +691,54 @@ class MadaclimRasters:
         # Use LayerPlotter instance helper class to handle customization + plot layer
         plotter = _LayerPlotter(layer_num=layer_num, madaclim_layers=madaclim_info, plot_args=kwargs)
         plotter.plot_layer()
+
+    def _validate_raster(self, raster: Union[str, pathlib.Path]) -> pathlib.Path:
+        """
+        Validates given the raster file.
+
+        Args:
+            raster (Union[str, pathlib.Path]): The raster file name or path to validate
+        
+        Returns:
+            pathlib.Path: The path to the validated raster file.
+        Raises:
+            TypeError: If the input value is not a pathlib.Path or str.
+            ValueError: If a pathlib.Path object could not be created from the input value.
+            FileExistsError: If the file does not exist.
+            IOError: If the raster file could not be opened.
+        """
+            # Validate type
+        if not isinstance(raster, (pathlib.Path, str)):
+            raise TypeError("'env_raster' must be a pathlib.Path object or str.")
+        
+        # Validate path and file
+        try:
+            raster = Path(raster)
+        except:
+            raise ValueError(f"Could not create a pathlib.Path object from {raster}")
+            
+        # Check if raster file exists
+        if not raster.exists():
+            raise FileExistsError(f"Could not find 'env_raster' file: {raster}")
+        
+        # Save current warning filters
+        original_filters = warnings.filters[:]
+        
+        # Convert NotGeoreferencedWarning to an error
+        warnings.filterwarnings("error", category=rasterio.errors.NotGeoreferencedWarning)
+        # Catch any RasterIO errors
+        try:
+            with rasterio.open(raster) as raster_file:
+                print(raster_file)
+                return raster
+        except rasterio.errors.RasterioIOError as e:
+            raise OSError(f"Could not open file: {raster.name}.\nError: {e}")
+        except rasterio.errors.NotGeoreferencedWarning as e:
+            raise UserWarning(f"Raster file {raster.name} is not georeferenced: {e}")
+        finally:
+            # Restore original warning filters
+            warnings.filters = original_filters
+        
 
 class MadaclimPoint:
     #TODO IMPLEMENT VIZ METHODS
