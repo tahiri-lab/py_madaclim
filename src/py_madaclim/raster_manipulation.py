@@ -1538,7 +1538,7 @@ class MadaclimPoint:
                 clim_raster: Union[str, pathlib.Path],
                 env_raster: Union[str, pathlib.Path],
                 layer: Union[str, int]
-            ) -> None:
+            ) -> py_madaclim.info.MadaclimLayers:
             """
             Validates the input layer before the visualization. Checks for valid types and values
             based on the MadaclimLayers properties.
@@ -1555,16 +1555,16 @@ class MadaclimPoint:
                 ValueError: If 'layer' is not found within the range of layers.
 
             Returns:
-                None
+                py_madaclim.info.MadaclimLayers: An 'MadaclimLayers' instance if layer is valid.
             """
             
             # Fetch metadata and layer nums with a MadaclimLayers instance
-            madaclim_info = MadaclimLayers(clim_raster=clim_raster, env_raster=env_raster)
-            all_layers_df = madaclim_info.all_layers
+            mada_info = MadaclimLayers(clim_raster=clim_raster, env_raster=env_raster)
+            all_layers_df = mada_info.all_layers
             
             # Validate layers to sample
-            possible_layers_num_format = madaclim_info.get_layers_labels()
-            possible_layers_desc_format = madaclim_info.get_layers_labels(as_descriptive_labels=True)
+            possible_layers_num_format = mada_info.get_layers_labels()
+            possible_layers_desc_format = mada_info.get_layers_labels(as_descriptive_labels=True)
 
 
             if not isinstance(layer, (str, int)):
@@ -1585,6 +1585,8 @@ class MadaclimPoint:
             if not min_layer <= layer_num <= max_layer:
                 raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_num=} is not valid.")
 
+            return mada_info
+
         # Validate object's raster-sampled state
         if (self._MadaclimPoint__clim_raster is None or
             self._MadaclimPoint__env_raster is None):
@@ -1592,9 +1594,24 @@ class MadaclimPoint:
                 "No 'clim_raster' and 'env_raster' found, use 'sample_from_rasters' prior to setup a reference to the raster files location."
             )
         
+        if self._sampled_layers is None:
+            raise ValueError("No sampled layers to plot.")
+
         # Layer validation pre-plotting
         mada_rasters = MadaclimRasters(self._MadaclimPoint__clim_raster, self._MadaclimPoint__env_raster)
-        layer_name_range_validation(mada_rasters.clim_raster, mada_rasters.env_raster, layer)
+        mada_info = layer_name_range_validation(mada_rasters.clim_raster, mada_rasters.env_raster, layer)
+
+        layer_number = mada_info.fetch_specific_layers(layer)["layer_number"].values[0]
+        simple_layer_label = mada_info.get_layers_labels(layer_number)[0]
+        detailed_layer_label = mada_info.get_layers_labels(layer_number, as_descriptive_labels=True)[0]
+
+        if not (simple_layer_label in self._sampled_layers or
+            detailed_layer_label in self._sampled_layers):
+            raise ValueError(
+                f"Input layer '{simple_layer_label}' or '{detailed_layer_label}'\n"
+                f"cannot be found within the 'sampled_layers' at this current state. "
+                f"Use the 'sample_from_rasters' method to address that prior to 'plot_on_layer'."
+                )
 
         mada_rasters.plot_layer(layer=layer)
 
