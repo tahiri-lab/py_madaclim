@@ -1627,7 +1627,6 @@ class MadaclimPoint:
                 )
 
         fig, axes = mada_rasters.plot_layer(layer=layer)
-        fig.suptitle("TEST")
 
 
     def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
