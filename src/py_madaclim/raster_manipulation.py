@@ -1534,7 +1534,7 @@ class MadaclimPoint:
         self._encoded_categ_labels = list(encoded_categ.keys())
 
     def plot_on_layer(self, layer: Union[str, int], **kwargs) -> None:
-        def layer_validation(
+        def layer_name_range_validation(
                 clim_raster: Union[str, pathlib.Path],
                 env_raster: Union[str, pathlib.Path],
                 layer: Union[str, int]
@@ -1593,8 +1593,8 @@ class MadaclimPoint:
             )
         
         # Layer validation pre-plotting
-        mada_rasters = MadaclimRasters(clim_raster=self._MadaclimPoint__clim_raster, env_raster=self._MadaclimPoint__env_raster)
-        layer_validation(mada_rasters.clim_raster, mada_rasters.env_raster, layer)
+        mada_rasters = MadaclimRasters(self._MadaclimPoint__clim_raster, self._MadaclimPoint__env_raster)
+        layer_name_range_validation(mada_rasters.clim_raster, mada_rasters.env_raster, layer)
 
         mada_rasters.plot_layer(layer=layer)
 
