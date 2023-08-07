@@ -23,6 +23,7 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 import seaborn as sns
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap, BoundaryNorm
@@ -200,7 +201,7 @@ class _LayerPlotter:
         self._validate_madaclim_layers(madaclim_layers=new_instance)
         self._madaclim_layers = new_instance
 
-    def plot_layer(self):
+    def plot_layer(self) -> Tuple[matplotlib.figure.Figure, List[matplotlib.axes.Axes]]:
         """
         Plots the raster map of the specified geoclimatic layer, along with a 
         distribution histogram of the layer values. The distribution can be plotted 
@@ -224,7 +225,7 @@ class _LayerPlotter:
 
         Returns:
             fig (matplotlib.figure.Figure): The top-level container for all plot elements.
-            axes (numpy array of matplotlib.axes.Axes): An array containing the Axes objects 
+            axes (List[matplotlib.axes.Axes]): An array containing the Axes objects 
                 of the subplots.
 
         Raises:
@@ -610,7 +611,7 @@ class MadaclimRasters:
     def __repr__(self) -> str:
         return self.__str__()
     
-    def plot_layer(self, layer: Union[str, int], **kwargs) -> None:
+    def plot_layer(self, layer: Union[str, int], **kwargs) -> Tuple[matplotlib.figure.Figure, List[matplotlib.axes.Axes]]:
         """
         Method to plot a specific layer from the Madagascan climate/environmental raster datasets. The layer 
         is displayed as a raster map and its distribution is plotted in a histogram. 
@@ -630,12 +631,17 @@ class MadaclimRasters:
                     Use "subplots_<arg>", "imshow_<arg>", "cax_<arg>", and "histplot_<arg>" formats to customize corresponding 
                     matplotlib/sns arguments.
 
+        Returns:
+            fig (matplotlib.figure.Figure): The top-level container for all plot elements.
+            axes (List[matplotlib.axes.Axes]): An array containing the Axes objects 
+                of the subplots.
+        
         Raises:
             TypeError: If 'layer' is not a str or an int.
             ValueError: If 'layer' is not found within the range of layers.
         
         Note:
-            This method returns the 
+            This method returns the fig and axes object for further customization when used by other classes.
             It uses the private _PlotConfig and _LayerPlotter utility classes for the checks and vizualisation.
 
         Example:
@@ -696,7 +702,8 @@ class MadaclimRasters:
         
         # Use LayerPlotter instance helper class to handle customization + plot layer
         plotter = _LayerPlotter(layer_num=layer_num, madaclim_layers=madaclim_info, plot_args=kwargs)
-        plotter.plot_layer()
+        fig, axes = plotter.plot_layer()
+        return fig, axes
 
     def _validate_raster(self, raster: Union[str, pathlib.Path]) -> pathlib.Path:
         """
@@ -1619,7 +1626,8 @@ class MadaclimPoint:
                 f"Use the 'sample_from_rasters' method to address that prior to 'plot_on_layer'."
                 )
 
-        mada_rasters.plot_layer(layer=layer)
+        fig, axes = mada_rasters.plot_layer(layer=layer)
+        fig.suptitle("TEST")
 
 
     def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
