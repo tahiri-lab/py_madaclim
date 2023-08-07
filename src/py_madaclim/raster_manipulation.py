@@ -222,12 +222,17 @@ class _LayerPlotter:
 
         The appearance of the plots can be customized using the 'plot_args' attribute (see _PlotConfig).
 
+        Returns:
+            fig (matplotlib.figure.Figure): The top-level container for all plot elements.
+            axes (numpy array of matplotlib.axes.Axes): An array containing the Axes objects 
+                of the subplots.
+
         Raises:
             TypeError: If 'subplots_figsize' is not a tuple.
             ValueError: If 'subplots_figsize' does not contain 2 elements.
             TypeError: If elements of 'subplots_figsize' are not integers.
             ValueError: If the keys from `get_categorical_combinations` do not match 
-                        the raster values for categorical layer data.
+                the raster values for categorical layer data.
 
         """
         
@@ -405,6 +410,7 @@ class _LayerPlotter:
 
             fig.tight_layout()
 
+            return fig, axes
 
     def _validate_madaclim_layers(self, madaclim_layers: py_madaclim.info.MadaclimLayers) -> py_madaclim.info.MadaclimLayers:
         if not isinstance(madaclim_layers, py_madaclim.info.MadaclimLayers):
@@ -629,7 +635,7 @@ class MadaclimRasters:
             ValueError: If 'layer' is not found within the range of layers.
         
         Note:
-            This method does not return anything; it directly generates and displays the plots.
+            This method returns the 
             It uses the private _PlotConfig and _LayerPlotter utility classes for the checks and vizualisation.
 
         Example:
