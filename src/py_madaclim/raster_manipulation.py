@@ -1534,12 +1534,70 @@ class MadaclimPoint:
         self._encoded_categ_labels = list(encoded_categ.keys())
 
     def plot_on_layer(self, layer: Union[str, int], **kwargs) -> None:
-        # Validate sampling state
+        def layer_validation(
+                clim_raster: Union[str, pathlib.Path],
+                env_raster: Union[str, pathlib.Path],
+                layer: Union[str, int]
+            ) -> None:
+            """
+            Validates the input layer before the visualization. Checks for valid types and values
+            based on the MadaclimLayers properties.
 
-        # Sanity check with clim/env rasters attributes
+            Args:
+                clim_raster (Union[str, pathlib.Path]): Path to the climate raster file.
+                env_raster (Union[str, pathlib.Path]): Path to the environmental raster file.
+                layer (Union[str, int]): Layer to validate. Accepts layer numbers as integers, or layer labels in 
+                    descriptive or `layer_<num>` format.descriptive or `layer_<num>` format.
+
+            Raises:
+                TypeError: If 'layer' is not a str or an int.
+                TypeError: If 'layer' is a number and cannot be converted to an int.
+                ValueError: If 'layer' is not found within the range of layers.
+
+            Returns:
+                None
+            """
+            
+            # Fetch metadata and layer nums with a MadaclimLayers instance
+            madaclim_info = MadaclimLayers(clim_raster=clim_raster, env_raster=env_raster)
+            all_layers_df = madaclim_info.all_layers
+            
+            # Validate layers to sample
+            possible_layers_num_format = madaclim_info.get_layers_labels()
+            possible_layers_desc_format = madaclim_info.get_layers_labels(as_descriptive_labels=True)
+
+
+            if not isinstance(layer, (str, int)):
+                raise TypeError("'layer' must be a str or an int.")
+            
+            if layer in possible_layers_num_format or layer in possible_layers_desc_format:    # Check layer_<num> or descriptive format
+                layer_num = int(layer.split("_")[1])
+            else:
+                try:
+                    layer_num = int(layer)    # As single item int list
+                except (ValueError, TypeError):
+                    raise TypeError("layer must be either a single int value or a string that can be converted to an int")
+    
+            # Validate layer number range for layer_numbers as in
+            min_layer = min(all_layers_df["layer_number"])
+            max_layer = max(all_layers_df["layer_number"])
+
+            if not min_layer <= layer_num <= max_layer:
+                raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_num=} is not valid.")
+
+        # Validate object's raster-sampled state
         if (self._MadaclimPoint__clim_raster is None or
             self._MadaclimPoint__env_raster is None):
-            raise AttributeError("No 'clim_raster' and 'env_raster' found, use 'sample_from_rasters' prior to setup a reference to the raster files location.")
+            raise AttributeError(
+                "No 'clim_raster' and 'env_raster' found, use 'sample_from_rasters' prior to setup a reference to the raster files location."
+            )
+        
+        # Layer validation pre-plotting
+        mada_rasters = MadaclimRasters(clim_raster=self._MadaclimPoint__clim_raster, env_raster=self._MadaclimPoint__env_raster)
+        layer_validation(mada_rasters.clim_raster, mada_rasters.env_raster, layer)
+
+        mada_rasters.plot_layer(layer=layer)
+
 
     def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
         """
