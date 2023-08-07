@@ -721,7 +721,7 @@ class MadaclimRasters:
             
         # Check if raster file exists
         if not raster.exists():
-            raise FileExistsError(f"Could not find 'env_raster' file: {raster}")
+            raise FileExistsError(f"Could not find raster file: {raster}")
         
         # Save current warning filters
         original_filters = warnings.filters[:]
@@ -1539,7 +1539,7 @@ class MadaclimPoint:
         # Sanity check with clim/env rasters attributes
         if (self._MadaclimPoint__clim_raster is None or
             self._MadaclimPoint__env_raster is None):
-            raise AttributeError("")
+            raise AttributeError("No 'clim_raster' and 'env_raster' found, use 'sample_from_rasters' prior to setup a reference to the raster files location.")
 
     def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
         """
