@@ -731,7 +731,6 @@ class MadaclimRasters:
         # Catch any RasterIO errors
         try:
             with rasterio.open(raster) as raster_file:
-                print(raster_file)
                 return raster
         except rasterio.errors.RasterioIOError as e:
             raise OSError(f"Could not open file: {raster.name}.\nError: {e}")
@@ -787,7 +786,6 @@ class MadaclimPoint:
         Optionally, provide additional keyword arguments to store as instance attributes.
         A GeoDataFrame is also created and updated taking the object's attribute and using the `mada_geom_point` for geometry.
 
-        
         Args:
             specimen_id (str): An identifier for the point.
             latitude (float): The latitude of the point.
@@ -851,6 +849,10 @@ class MadaclimPoint:
         # Sampled/encoding states and values
         self._sampled_layers = None
         self._nodata_layers = None
+
+        # Rasters updated post-sampling
+        self.__clim_raster = None
+        self.__env_raster = None
         
         self._is_categorical_encoded = False
         self._encoded_categ_layers = None
@@ -1034,7 +1036,9 @@ class MadaclimPoint:
             
             if k not in [
                 "_MadaclimPoint__base_attr", 
-                "_MadaclimPoint__initial_attributes", 
+                "_MadaclimPoint__initial_attributes",
+                "_MadaclimPoint__clim_raster",
+                "_MadaclimPoint__env_raster",
                 "_encoded_categ_layers",
                 "_encoded_categ_labels"
                 ]:
@@ -1275,6 +1279,9 @@ class MadaclimPoint:
             nodata_layers    1
 
         """
+        # Reset rasters attributes bound to sampled_state
+        self._MadaclimPoint__clim_raster = None
+        self._MadaclimPoint__env_raster = None
 
         # Create a MadaclimRasters to validate both rasters
         mada_rasters = MadaclimRasters(clim_raster=clim_raster, env_raster=env_raster)
@@ -1444,6 +1451,10 @@ class MadaclimPoint:
         self._encoded_categ_layers = None
         self._encoded_categ_labels = None
 
+        # Update private rasters attributes for plot_method
+        self._MadaclimPoint__clim_raster = mada_rasters.clim_raster
+        self._MadaclimPoint__env_raster = mada_rasters.env_raster
+        
         # Update related-instance attributes
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
         nodata_val = nodata_clim if has_clim_data else nodata_env    # OK because clim_nodata == env_nodata
@@ -1523,7 +1534,12 @@ class MadaclimPoint:
         self._encoded_categ_labels = list(encoded_categ.keys())
 
     def plot_on_layer(self, layer: Union[str, int], **kwargs) -> None:
-        pass
+        # Validate sampling state
+
+        # Sanity check with clim/env rasters attributes
+        if (self._MadaclimPoint__clim_raster is None or
+            self._MadaclimPoint__env_raster is None):
+            raise AttributeError("")
 
     def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
         """
@@ -1808,7 +1824,9 @@ class MadaclimPoint:
                 "_encoded_categ_layers",
                 "_encoded_categ_labels",
                 "_MadaclimPoint__base_attr", 
-                "_MadaclimPoint__initial_attributes"
+                "_MadaclimPoint__initial_attributes",
+                "_MadaclimPoint__clim_raster",
+                "_MadaclimPoint__env_raster"
             ]:      
                 if k == "_source_crs":    # Display EPSG code for readability
                     point_attributes[k.lstrip("_")] = [v.to_epsg()]
