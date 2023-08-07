@@ -14,6 +14,7 @@ from py_madaclim.info import MadaclimLayers
 
 import rasterio
 import rasterio.errors
+import rasterio.plot
 import pyproj
 import shapely
 from pyproj import Transformer
@@ -322,9 +323,12 @@ class _LayerPlotter:
                 bounds = list(sorted_categ_combinations.keys())
                 norm = BoundaryNorm(bounds, cmap.N)
 
-                # Plot the raster map
-                axes[0].imshow(band_data.squeeze(), cmap=cmap, norm=norm, **plot_cfg.imshow_args)    # Draw raster map from masked array
+                # Calculate extent of raster
+                left, bottom, right, top = raster.bounds
 
+                # Plot the raster map
+                # axes[0].imshow(band_data.squeeze(), cmap=cmap, norm=norm, **plot_cfg.imshow_args)    # Draw raster map from masked array
+                axes[0].imshow(band_data.squeeze(), cmap=cmap, norm=norm, extent=[left, right, bottom, top], **plot_cfg.imshow_args)
                 # Create the legend with categorical labels
                 categ_labels = [categ_combinations[cat] for cat in sorted_categ_combinations.keys()]
                 legend_elements = [Patch(facecolor=color, edgecolor=color, 
@@ -364,10 +368,14 @@ class _LayerPlotter:
                 subplots_figsize = (12, 6) if subplots_figsize is None else subplots_figsize
                 fig, axes = plt.subplots(nrows=subplots_nrows, ncols=subplots_ncols, figsize=subplots_figsize)
 
+                # Calculate extent of raster
+                left, bottom, right, top = raster.bounds
                 # Raster map with cbar
                 imshow_vmin = plot_cfg.imshow_args.pop("vmin", np.nanmin(band_data.squeeze()))
                 imshow_vmax = plot_cfg.imshow_args.pop("vmax", np.nanmax(band_data.squeeze()))
-                im = axes[0].imshow(band_data.squeeze(), cmap=imshow_cmap, vmin=imshow_vmin, vmax=imshow_vmax, **plot_cfg.imshow_args)    # Draw raster map from masked array
+                # im = axes[0].imshow(band_data.squeeze(), cmap=imshow_cmap, vmin=imshow_vmin, vmax=imshow_vmax, **plot_cfg.imshow_args)    # Draw raster map from masked array
+                rasterio.plot.show(band_data.squeeze(), ax=axes[0], cmap=imshow_cmap, vmin=imshow_vmin, vmax=imshow_vmax, extent=[left, right, bottom, top], **plot_cfg.imshow_args)    # Use rasterio.plot.show() instead                
+                im = axes[0].get_images()[0]  # get the first image
                 
                 # Colorbar customization
                 divider = make_axes_locatable(axes[0])
@@ -1547,6 +1555,12 @@ class MadaclimPoint:
         self._encoded_categ_labels = list(encoded_categ.keys())
 
     def plot_on_layer(self, layer: Union[str, int], **kwargs) -> None:
+        """
+        **kwargs: Additional arguments to customize the subplots, imshow, colorbar, histplot and Point objects from matplotlib. 
+                    Use "subplots_<arg>", "imshow_<arg>", "cax_<arg>", and "histplot_<arg>" formats to customize corresponding 
+                    the base Raster and histogram plots as matplotlib/sns arguments. 
+                    Use "point_<arg>" to customize the Point objects on the raster.
+        """
         def layer_name_range_validation(
                 clim_raster: Union[str, pathlib.Path],
                 env_raster: Union[str, pathlib.Path],
@@ -1626,8 +1640,30 @@ class MadaclimPoint:
                 f"Use the 'sample_from_rasters' method to address that prior to 'plot_on_layer'."
                 )
 
+        #TODO IMPLEMENT CUSTOM KWARGS TO RASTER + POINT
+        # Plot base raster and distribution histograms
         fig, axes = mada_rasters.plot_layer(layer=layer)
-
+        raster_legend = axes[0].get_legend()
+        
+        # Overlay with mada_geom_point
+        gdf = self._gdf.copy()
+        gdf.plot(
+            column="specimen_id", 
+            ax=axes[0], 
+            cmap='Blues_r', 
+            markersize=50, 
+            marker="o", 
+            legend=True, 
+            edgecolor="black", 
+            legend_kwds={'loc': (0.1, 0.9)}
+        )
+        
+        # Add the raster legend back to the plot in a different location
+        if raster_legend is not None:
+            axes[0].add_artist(raster_legend)
+            raster_legend.set_bbox_to_anchor((1.05, 1))
+        
+        fig.tight_layout()
 
     def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
         """
