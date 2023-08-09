@@ -56,7 +56,7 @@ class _PlotConfig:
         {'data': 123, 'plot': True}
     """
 
-    POSSIBLE_PREFIXES = ["imshow_", "cax_", "histplot_", "subplots_"]
+    POSSIBLE_PREFIXES = ["imshow_", "cax_", "histplot_", "subplots_", "rasterpoint_"]
 
     def __init__(self, plot_element_args: Optional[dict]=None) -> None:
         """
@@ -75,10 +75,12 @@ class _PlotConfig:
         self._cax_args = self._classify_args(prefix="cax_", args=self._plot_element_args)
         self._histplot_args = self._classify_args(prefix="histplot_", args=self._plot_element_args)
         self._subplots_args = self._classify_args(prefix="subplots_", args=self._plot_element_args)
+        self._rasterpoint_args = self._classify_args(prefix="rasterpoint_", args=self._plot_element_args)
 
     @property
     def imshow_args(self) -> dict:
-        """Get the arguments for imshow, stripped of the 'imshow_' prefix.
+        """
+        Get the arguments for imshow, stripped of the 'imshow_' prefix.
 
         Returns:
             dict: A dictionary containing the imshow arguments with 'imshow_' prefix removed.
@@ -88,7 +90,8 @@ class _PlotConfig:
     
     @property
     def cax_args(self) -> dict:
-        """Get the arguments for cax, stripped of the 'cax_' prefix.
+        """
+        Get the arguments for cax, stripped of the 'cax_' prefix.
 
         Returns:
             dict: A dictionary containing the cax arguments with 'cax_' prefix removed.
@@ -98,7 +101,8 @@ class _PlotConfig:
     
     @property
     def histplot_args(self) -> dict:
-        """Get the arguments for histplot, stripped of the 'histplot_' prefix.
+        """
+        Get the arguments for histplot, stripped of the 'histplot_' prefix.
 
         Returns:
             dict: A dictionary containing the histplot arguments with 'histplot_' prefix removed.
@@ -108,16 +112,30 @@ class _PlotConfig:
     
     @property
     def subplots_args(self) -> dict:
-        """Get the arguments for histplot, stripped of the 'subplots_' prefix.
+        """
+        Get the arguments for histplot, stripped of the 'subplots_' prefix.
 
         Returns:
             dict: A dictionary containing the histplot arguments with 'subplots_' prefix removed.
                 Empty if no args with prefix.
         """
         return self._subplots_args
+    
+    @property
+    def rasterpoint_args(self) -> dict:
+        """
+        Get the arguments for the Geodataframe Point plotting on the raster representation.
+        The arguments are stripped of the 'point_' prefix.
+
+        Returns:
+            dict: A dictionary containing the Geodataframe Point plotting arguments for the raster 
+                representation with the 'point_' prefix removed. Empty if no args with prefix.
+        """
+        return self._rasterpoint_args
 
     def _classify_args(self, prefix: str, args: dict):
-        """Private helper method that classifies (filters and strips prefixes from) arguments.
+        """
+        Private helper method that classifies (filters and strips prefixes from) arguments.
 
         Args:
             prefix (str): The prefix to use for filtering and stripping.
@@ -327,8 +345,8 @@ class _LayerPlotter:
                 left, bottom, right, top = raster.bounds
 
                 # Plot the raster map
-                # axes[0].imshow(band_data.squeeze(), cmap=cmap, norm=norm, **plot_cfg.imshow_args)    # Draw raster map from masked array
                 axes[0].imshow(band_data.squeeze(), cmap=cmap, norm=norm, extent=[left, right, bottom, top], **plot_cfg.imshow_args)
+                
                 # Create the legend with categorical labels
                 categ_labels = [categ_combinations[cat] for cat in sorted_categ_combinations.keys()]
                 legend_elements = [Patch(facecolor=color, edgecolor=color, 
@@ -1640,9 +1658,20 @@ class MadaclimPoint:
                 f"Use the 'sample_from_rasters' method to address that prior to 'plot_on_layer'."
                 )
 
-        #TODO IMPLEMENT CUSTOM KWARGS TO RASTER + POINT
+        # Extract gdf Point plotting configs + defaults
+        plot_cfg = _PlotConfig(plot_element_args=kwargs)
+        rasterpoint_args = {
+            "cmap": plot_cfg.rasterpoint_args.pop("cmap", "Blues_r"),
+            "markersize": plot_cfg.rasterpoint_args.pop("markersize", 50),
+            "marker": plot_cfg.rasterpoint_args.pop("marker", "o"),
+            "legend": plot_cfg.rasterpoint_args.pop("legend", True),
+            "edgecolor": plot_cfg.rasterpoint_args.pop("edgecolor", "black"),
+            "legend_kwds": plot_cfg.rasterpoint_args.pop("legend_kwds", {"loc": (0.1, 0.9)})           
+
+        }
+
         # Plot base raster and distribution histograms
-        fig, axes = mada_rasters.plot_layer(layer=layer)
+        fig, axes = mada_rasters.plot_layer(layer=layer, **kwargs)
         raster_legend = axes[0].get_legend()
         
         # Overlay with mada_geom_point
@@ -1650,13 +1679,15 @@ class MadaclimPoint:
         gdf.plot(
             column="specimen_id", 
             ax=axes[0], 
-            cmap='Blues_r', 
-            markersize=50, 
-            marker="o", 
-            legend=True, 
-            edgecolor="black", 
-            legend_kwds={'loc': (0.1, 0.9)}
+            cmap=rasterpoint_args["cmap"], 
+            markersize=rasterpoint_args["markersize"], 
+            marker=rasterpoint_args["marker"],
+            edgecolor=rasterpoint_args["edgecolor"], 
+            legend=rasterpoint_args["legend"], 
+            legend_kwds=rasterpoint_args["legend_kwds"]
         )
+
+        #TODO ADD VERTICAL LINE FOR SPECIMEN VALUE ON DISTRIBUTION PLOT
         
         # Add the raster legend back to the plot in a different location
         if raster_legend is not None:
