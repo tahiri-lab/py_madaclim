@@ -28,6 +28,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap, BoundaryNorm
+from matplotlib.lines import Line2D
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 class _PlotConfig:
@@ -1661,12 +1662,14 @@ class MadaclimPoint:
         # Extract gdf Point plotting configs + defaults
         plot_cfg = _PlotConfig(plot_element_args=kwargs)
         rasterpoint_args = {
-            "cmap": plot_cfg.rasterpoint_args.pop("cmap", "Blues_r"),
+            "color": plot_cfg.rasterpoint_args.pop("color", "black"),
             "markersize": plot_cfg.rasterpoint_args.pop("markersize", 50),
             "marker": plot_cfg.rasterpoint_args.pop("marker", "o"),
-            "legend": plot_cfg.rasterpoint_args.pop("legend", True),
             "edgecolor": plot_cfg.rasterpoint_args.pop("edgecolor", "black"),
-            "legend_kwds": plot_cfg.rasterpoint_args.pop("legend_kwds", {"loc": (0.1, 0.9)})           
+            "linestyle": plot_cfg.rasterpoint_args.pop("linestyle", "-"),
+            "legend": plot_cfg.rasterpoint_args.pop("legend", True),
+            "legend_kwds": plot_cfg.rasterpoint_args.pop("legend_kwds", {"loc": (0.1, 0.9)}),
+            "customlabel": plot_cfg.rasterpoint_args.pop("customlabel", None)
 
         }
 
@@ -1679,22 +1682,34 @@ class MadaclimPoint:
         gdf.plot(
             column="specimen_id", 
             ax=axes[0], 
-            cmap=rasterpoint_args["cmap"], 
+            color=rasterpoint_args["color"], 
             markersize=rasterpoint_args["markersize"], 
             marker=rasterpoint_args["marker"],
-            edgecolor=rasterpoint_args["edgecolor"], 
+            edgecolor=rasterpoint_args["edgecolor"],
+            linestyle=rasterpoint_args["linestyle"],
             legend=rasterpoint_args["legend"], 
-            legend_kwds=rasterpoint_args["legend_kwds"]
+            legend_kwds=rasterpoint_args["legend_kwds"],
+            **plot_cfg.rasterpoint_args
         )
 
-        #TODO ADD VERTICAL LINE FOR SPECIMEN VALUE ON DISTRIBUTION PLOT
-        
+        # Create a custom legend based on the rasterpoint_args
+        if rasterpoint_args["legend"]:
+            legend_handle = Line2D(
+                [0], [0], 
+                marker=rasterpoint_args["marker"],
+                color=rasterpoint_args["color"], 
+                linestyle=rasterpoint_args["linestyle"],
+                label=self._specimen_id if "customlabel" in rasterpoint_args else rasterpoint_args["customlabel"]
+            )
+            axes[0].legend(handles=[legend_handle], loc=rasterpoint_args["legend_kwds"]["loc"])
+
         # Add the raster legend back to the plot in a different location
         if raster_legend is not None:
             axes[0].add_artist(raster_legend)
             raster_legend.set_bbox_to_anchor((1.05, 1))
-        
-        fig.tight_layout()
+
+        # Add vertical line on the plot
+                
 
     def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
         """
