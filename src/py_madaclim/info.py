@@ -6,7 +6,6 @@ import time
 from calendar import month_name
 from pathlib import Path
 from typing import List, Union, Optional, Dict
-from itertools import zip_longest
 
 import pandas as pd
 import numpy as np
@@ -15,14 +14,17 @@ import pyproj
 
 from py_madaclim._constants import Constants
 
+
 class MadaclimLayers:
-    """A class that represents all of the information and data from the climate and environmental variable layers 
-        that can be found from the rasters of the Madaclim database.
+    """
+    A class that represents all of the information and data from the climate
+    and environmental variable layers that can be found from the rasters of
+    the Madaclim database.
 
     The main metadata retrieval tool for the Madaclim database. Access all layers information with the `all_layers` attribute.
-        Also provides methods to filter, generate unique labels from the `all_layers` attr.
-        Access the crs and band number from the climate and environmental rasters when they are provided in the constructor.
-        Categorical data can be explored in details with the `categorical_layers` attribute and the value:category pairs with the `get_categorical_combinations`.
+    Also provides methods to filter, generate unique labels from the `all_layers` attr.
+    Access the crs and band number from the climate and environmental rasters when they are provided in the constructor.
+    Categorical data can be explored in details with the `categorical_layers` attribute and the value:category pairs with the `get_categorical_combinations`.
     
     Attributes:
         clim_raster (pathlib.Path): The path to the Madaclim climate raster GeoTiff file. Defaults to None if not specified.
@@ -31,7 +33,7 @@ class MadaclimLayers:
         categorical_layers (pd.DataFrame):  A DataFrame containing the in depth information about the layers with categorical data.
     
     """
-    def __init__(self, clim_raster: Optional[pathlib.Path]=None, env_raster: Optional[pathlib.Path]=None):
+    def __init__(self, clim_raster: Optional[pathlib.Path] = None, env_raster: Optional[pathlib.Path] = None):
         """Initializes a new instance of the MadaclimLayers class.
 
         This constructor generates a DataFrame containing all Madaclim layers' information though the `all_layers` attribute.
@@ -85,8 +87,8 @@ class MadaclimLayers:
         """pathlib.Path: Get or set the path to the climate raster file.
 
         This property allows you to get the current path to the climate raster file, or set a new
-            path. If setting a new path, the value must be a pathlib.Path object or a str. If the value 
-            is a str, it will be converted to a pathlib.Path object. The path must exist, otherwise a 
+            path. If setting a new path, the value must be a pathlib.Path object or a str. If the value
+            is a str, it will be converted to a pathlib.Path object. The path must exist, otherwise a
             FileNotFoundError will be raised.
 
         Returns:
@@ -107,16 +109,16 @@ class MadaclimLayers:
             # Validate type
             if not isinstance(value, (pathlib.Path, str)):
                 raise TypeError("clim_raster must be a pathlib.Path object or str.")
-            
+
             # Validate path and file
             try:
                 value = Path(value)
-            except:
+            except ValueError:
                 raise ValueError(f"Could not create a pathlib.Path object from {value}")
-            
+
             if not value.exists():
                 raise FileNotFoundError(f"{value} does not exists.")
-            
+
             self._clim_raster = value
 
     @property
@@ -137,12 +139,12 @@ class MadaclimLayers:
             FileNotFoundError: If the new path does not exist.
         """
         return self._env_raster
-    
+
     @env_raster.setter
     def env_raster(self, value: Optional[pathlib.Path]) -> None:
         if value is None:
             self._env_raster = value
-        else:       
+        else:
             # Validate type
             if not isinstance(value, (pathlib.Path, str)):
                 raise TypeError("env_raster must be a pathlib.Path object or str.")
@@ -150,7 +152,7 @@ class MadaclimLayers:
             # Validate path and file
             try:
                 value = Path(value)
-            except:
+            except ValueError:
                 raise ValueError(f"Could not create a pathlib.Path object from {value}")
             
             if not value.exists():
@@ -268,7 +270,7 @@ class MadaclimLayers:
                 attr_val = None
             if (attr_passed and
                 callable(attr_val) and not
-                attr.startswith("_")):
+                    attr.startswith("_")):
                 custom_public_methods.append(attr)
         # Remove raster specific methods if not present in instance
         if not self.clim_raster and not self.env_raster:
