@@ -1680,7 +1680,6 @@ class MadaclimPoint:
         # Overlay with mada_geom_point
         gdf = self._gdf.copy()
         gdf.plot(
-            column="specimen_id", 
             ax=axes[0], 
             color=rasterpoint_args["color"], 
             markersize=rasterpoint_args["markersize"], 
