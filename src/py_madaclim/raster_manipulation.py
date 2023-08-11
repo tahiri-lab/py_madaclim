@@ -18,7 +18,7 @@ import rasterio.plot
 import pyproj
 from pyproj import Transformer
 import shapely
-from shapely import Point
+from shapely.geometry import Point
 import geopandas as gpd
 
 import pandas as pd
