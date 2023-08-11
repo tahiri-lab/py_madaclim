@@ -36,7 +36,6 @@ class _PlotConfig:
     A class that handles the additional keyword arguments to pass to the LayerPlotter instances.
 
     This class provides properties that filter a dictionary of arguments based on specified prefixes.
-    The prefix "imshow_", "cax_", "histplot_" corresponds to the properties `imshow_args`, `cax_args`, `histplot_args` respectively.
     The properties return a dictionary that consists of only the key-value pairs where the key starts with the specified prefix, 
     with the prefix removed from the keys.
 
@@ -57,7 +56,7 @@ class _PlotConfig:
         {'data': 123, 'plot': True}
     """
 
-    POSSIBLE_PREFIXES = ["imshow_", "cax_", "histplot_", "subplots_", "rasterpoint_"]
+    POSSIBLE_PREFIXES = ["imshow_", "cax_", "histplot_", "subplots_", "rasterpoint_", "vline_"]
 
     def __init__(self, plot_element_args: Optional[dict]=None) -> None:
         """
@@ -69,6 +68,8 @@ class _PlotConfig:
             cax_args (dict): The dictionary of the cax arguments stripped of the prefix.
             histplot_args (dict): The dictionary of the histplot arguments stripped of the prefix.
             subplots_args (dict): The dictionary of the subplots arguments stripped of the prefix.
+            rasterpoint_args (dict): The dictionary of the Geopandas.plot arguments stripped of the prefix.
+            vline_args (dict): The dictionary of the axvline arguments stripped of the prefix.
         """
         self._plot_element_args = plot_element_args if plot_element_args else {}
         
@@ -77,6 +78,7 @@ class _PlotConfig:
         self._histplot_args = self._classify_args(prefix="histplot_", args=self._plot_element_args)
         self._subplots_args = self._classify_args(prefix="subplots_", args=self._plot_element_args)
         self._rasterpoint_args = self._classify_args(prefix="rasterpoint_", args=self._plot_element_args)
+        self._vline_args = self._classify_args(prefix="vline_", args=self._plot_element_args)
 
     @property
     def imshow_args(self) -> dict:
@@ -126,13 +128,25 @@ class _PlotConfig:
     def rasterpoint_args(self) -> dict:
         """
         Get the arguments for the Geodataframe Point plotting on the raster representation.
-        The arguments are stripped of the 'point_' prefix.
+        The arguments are stripped of the 'rasterpoint_' prefix.
 
         Returns:
             dict: A dictionary containing the Geodataframe Point plotting arguments for the raster 
-                representation with the 'point_' prefix removed. Empty if no args with prefix.
+                representation with the 'rasterpoint_' prefix removed. Empty if no args with prefix.
         """
         return self._rasterpoint_args
+    
+    @property
+    def vline_args(self) -> dict:
+        """
+        Get the arguments for the vertical line on the distribution plot.
+        The arguments are stripped of the 'vline_' prefix.
+
+        Returns:
+            dict: A dictionary containing the vertical line arguments for the histogram 
+                representation with the 'vline_' prefix removed. Empty if no args with prefix.
+        """
+        return self._vline_args
 
     def _classify_args(self, prefix: str, args: dict):
         """
@@ -392,7 +406,6 @@ class _LayerPlotter:
                 # Raster map with cbar
                 imshow_vmin = plot_cfg.imshow_args.pop("vmin", np.nanmin(band_data.squeeze()))
                 imshow_vmax = plot_cfg.imshow_args.pop("vmax", np.nanmax(band_data.squeeze()))
-                # im = axes[0].imshow(band_data.squeeze(), cmap=imshow_cmap, vmin=imshow_vmin, vmax=imshow_vmax, **plot_cfg.imshow_args)    # Draw raster map from masked array
                 rasterio.plot.show(band_data.squeeze(), ax=axes[0], cmap=imshow_cmap, vmin=imshow_vmin, vmax=imshow_vmax, extent=[left, right, bottom, top], **plot_cfg.imshow_args)    # Use rasterio.plot.show() instead                
                 im = axes[0].get_images()[0]  # get the first image
                 
@@ -1669,7 +1682,7 @@ class MadaclimPoint:
             "linestyle": plot_cfg.rasterpoint_args.pop("linestyle", "-"),
             "legend": plot_cfg.rasterpoint_args.pop("legend", True),
             "legend_kwds": plot_cfg.rasterpoint_args.pop("legend_kwds", {"loc": (0.1, 0.9)}),
-            "customlabel": plot_cfg.rasterpoint_args.pop("customlabel", None)
+            "customlabel": plot_cfg.rasterpoint_args.pop("customlabel", self._specimen_id)
 
         }
 
@@ -1696,9 +1709,11 @@ class MadaclimPoint:
             legend_handle = Line2D(
                 [0], [0], 
                 marker=rasterpoint_args["marker"],
+                markersize=rasterpoint_args["markersize"] / 20,
+                markeredgecolor=rasterpoint_args["edgecolor"],
                 color=rasterpoint_args["color"], 
                 linestyle=rasterpoint_args["linestyle"],
-                label=self._specimen_id if "customlabel" in rasterpoint_args else rasterpoint_args["customlabel"]
+                label=rasterpoint_args["customlabel"]
             )
             axes[0].legend(handles=[legend_handle], loc=rasterpoint_args["legend_kwds"]["loc"])
 
@@ -1707,7 +1722,33 @@ class MadaclimPoint:
             axes[0].add_artist(raster_legend)
             raster_legend.set_bbox_to_anchor((1.05, 1))
 
-        # Add vertical line on the plot
+        # Extract value to plot vline on dist plot        
+        if simple_layer_label in self._sampled_layers:
+            sampled_layer_val = self._sampled_layers[simple_layer_label]
+        elif detailed_layer_label in self._sampled_layers:
+            sampled_layer_val = self._sampled_layers[detailed_layer_label]
+        else:
+            raise ValueError(    # Failsafe
+                f"Could not find {simple_layer_label} or {detailed_layer_label} in {self._sampled_layers}"
+            )
+            
+        # default kwargs for vline
+        vline_args = {
+            "color": plot_cfg.vline_args.pop("color", rasterpoint_args["color"]),
+            "linestyle": plot_cfg.vline_args.pop("linestyle", rasterpoint_args["linestyle"]),
+            "linewidth": plot_cfg.vline_args.pop("linewidth", rasterpoint_args["markersize"] / 25),
+            "label": plot_cfg.vline_args.pop("label", self._specimen_id)
+        }
+        
+        axes[1].axvline(
+            x=sampled_layer_val,
+            color=vline_args["color"],
+            linestyle=vline_args["linestyle"],
+            linewidth=vline_args["linewidth"],
+            label=vline_args["label"],
+            **plot_cfg.vline_args
+        )
+        axes[1].legend()
                 
 
     def _validate_crs(self, crs) -> pyproj.crs.crs.CRS:
