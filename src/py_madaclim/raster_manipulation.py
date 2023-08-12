@@ -1212,7 +1212,8 @@ class MadaclimPoint:
             clim_raster_path (pathlib.Path): Path to the climate raster file.
             env_raster_path (pathlib.Path): Path to the environment raster file.
             layers_to_sample (Union[int, str, List[Union[int, str]]], optional): The layer number(s) to sample from the raster files.
-                Can be a single int, a single string in the format 'layer_<num>', or a list of ints or such strings. Defaults to 'all'.
+                Can be a single int, a single string in the format 'layer_<num>', or the descriptive label 
+                or a list of ints or such strings. Defaults to 'all'.
             layer_info (bool, optional): Whether to use descriptive labels for the returned dictionary keys. Defaults to False.
 
         Raises:
@@ -1588,10 +1589,27 @@ class MadaclimPoint:
 
     def plot_on_layer(self, layer: Union[str, int], **kwargs) -> None:
         """
-        **kwargs: Additional arguments to customize the subplots, imshow, colorbar, histplot and Point objects from matplotlib. 
-                    Use "subplots_<arg>", "imshow_<arg>", "cax_<arg>", and "histplot_<arg>" formats to customize corresponding 
-                    the base Raster and histogram plots as matplotlib/sns arguments. 
-                    Use "point_<arg>" to customize the Point objects on the raster.
+        Plot a layer as a raster map and distribution plot with a focus on the MadaclimPoint object.
+        
+        Based on the Madaclim's CRS, the MadaclimPoint's geometry (`mada_geom_point`) is plotted
+        on the raster map and the sampled value is displayed against a distribution of all
+        possible values for that layer in Madaclim db. Pass addition kwargs to customize each
+        subplots (See **kwargs, _LayerPlotter and _LayerConfig for more details).
+        
+        Parameters:
+            layer (Union[str, int]): Layer to plot. Accepts layer numbers as integers, or layer labels in 
+                descriptive or `layer_<num>` format.
+            **kwargs: Additional arguments to customize the subplots, imshow, colorbar, histplot and Point objects from matplotlib. 
+                Use "subplots_<arg>", "imshow_<arg>", "cax_<arg>", and "histplot_<arg>" formats to customize corresponding 
+                the base Raster and histogram plots as matplotlib/sns arguments. 
+                Use "point_<arg>" to customize the Point objects on the raster.
+                Use "vline_<arg>" to customize the vertical line on the distribution plot.
+        Returns:
+            None
+        Raises:
+            ValueError: If the specified layer to plot is not has not been sampled yet.
+            ValueError: If the layer label cannot be found within the sampled layers.
+                    
         """
         def layer_name_range_validation(
                 clim_raster: Union[str, pathlib.Path],
@@ -2097,10 +2115,6 @@ class MadaclimPoint:
     
 class MadaclimCollection:
     
-    #TODO DOCSTRINGS CLS
-
-    #TODO CHECK IF SAMPLED_LAYERS + CATEGORICAL ENCODING WORKS
-    
     def __init__(self, madaclim_points: Optional[Union[MadaclimPoint, List[MadaclimPoint]]]=None) -> None:
         """
         Instantiate a collection of MadaclimPoint objects. By default, the MadaclimCollection is empty.
@@ -2194,7 +2208,6 @@ class MadaclimCollection:
             >>> # MadaclimPoints are stored in the .all_points attributes in a list
             >>> sample_A = MadaclimPoint()
             >>> collection = MadaclimCollection(sample_A)
-            #TODO FIX EXAMPLE
             >>> collection.all_points[0]
             MadaclimPoint(
                 specimen_id = sample_A,
@@ -3149,6 +3162,9 @@ class MadaclimCollection:
                     collection_gdf = collection_gdf.loc[:, reordered_cols]
 
         return collection_gdf
+    
+    def plot_on_layer(self, layer: Union[str, int], **kwargs) -> None:
+        pass
     
     def _update_gdf(self) -> None:
         """
