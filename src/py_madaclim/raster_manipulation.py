@@ -2123,17 +2123,13 @@ class MadaclimCollection:
         Args:
             madaclim_points (Optional[Union[MadaclimPoint, List[MadaclimPoint]]], optional): A single MadaclimPoint object or a list of MadaclimPoint objects to be added to the MadaclimCollection. Initialize an empty MadaclimCollection by default (None).
         Examples:
-            >>> from py_madaclim.geoclim.raster_manipulation import MadaclimPoint, MadaclimCollection
+            >>> from py_madaclim.raster_manipulation import MadaclimPoint, MadaclimCollection
             >>> specimen_1 = MadaclimPoint(specimen_id="spe1", latitude=-23.574583, longitude=46.419806, source_crs="epsg:4326")
             >>> specimen_2 = MadaclimPoint(specimen_id="spe2", latitude=-2622095.832726487, longitude=5048512.906023483, source_crs=3857)
             
             >>> # Add points to the collection when constructing
             >>> collection = MadaclimCollection([specimen_1, specimen_2])
-            >>> collection
-            MadaclimCollection = [
-                MadaclimPoint(specimen_id=spe1, mada_geom_point=POINT (644890.8921103649 7392153.658976035)),
-                MadaclimPoint(specimen_id=spe2, mada_geom_point=POINT (536050.6239664567 7465523.013290589))
-            ]
+            
             >>> # You can also initiliaze an empty collection
             >>> collection = MadaclimCollection()
             >>> collection
@@ -2141,30 +2137,8 @@ class MadaclimCollection:
 
             >>> # Add a single MadaclimPoint
             >>> collection.add_points(specimen_1)
-            >>> collection
-            MadaclimCollection = [
-                MadaclimPoint(specimen_id=spe1, mada_geom_point=POINT (644890.8921103649 7392153.658976035))
-            ]
             
-            >>> # Populate the collection from a csv or df
-            >>> collection = MadaclimCollection.populate_from_csv("some_samples.csv")
-            Warning! No source_crs column in the csv. Using the default value of EPSG:4326...
-            Creating MadaclimPoint(specimen_id=sample_A...)
-            \Creating MadaclimPoint(specimen_id=sample_B...)
-            Creating MadaclimPoint(specimen_id=sample_C...)
-            Creating MadaclimPoint(specimen_id=sample_D...)
-            Creating MadaclimPoint(specimen_id=sample_E...)
-            Created new MadaclimCollection with 5 samples.
-            >>> collection
-            MadaclimCollection = [
-                MadaclimPoint(specimen_id=sample_A, mada_geom_point=POINT (837072.9150244407 7903496.320897499)),
-                MadaclimPoint(specimen_id=sample_B, mada_geom_point=POINT (695186.2170220022 8197477.647690434)),
-                MadaclimPoint(specimen_id=sample_C, mada_geom_point=POINT (761613.8281386737 7651088.106452912)),
-                MadaclimPoint(specimen_id=sample_D, mada_geom_point=POINT (955230.600222457 8005985.896187438)),
-                MadaclimPoint(specimen_id=sample_E, mada_geom_point=POINT (757247.2175273325 7618631.528869408))
-            ]
-
-            >>> # MadaclimPoints are stored in the .all_points attributes in a list
+            >>> # MadaclimPoints are stored in the 'all_points' attributes in a list
             >>> collection.all_points[0]
             MadaclimPoint(
                 specimen_id = sample_A,
@@ -2181,17 +2155,21 @@ class MadaclimCollection:
         if madaclim_points:
             self.add_points(madaclim_points)
         
-        # Sampled/encoding states and values
+        # Sampled states and values
         self._sampled_layers = None
         self._nodata_layers = None
+        
+        # Rasters updated post-sampling
+        self.__clim_raster = None
+        self.__env_raster = None
 
+        # Categ encoding state and vals
         self._is_categorical_encoded = False
         self._encoded_categ_layers = None
         self._encoded_categ_labels = None
         
         # GeoDataframe construction and updating
         self._gdf = self._construct_geodataframe()
-
 
 
     @property
@@ -2380,17 +2358,8 @@ class MadaclimCollection:
             Creating MadaclimPoint(specimen_id=sample_D...)
             Creating MadaclimPoint(specimen_id=sample_E...)
             Created new MadaclimCollection with 5 samples.
-            >>> collection
-            MadaclimCollection = [
-                MadaclimPoint(specimen_id=sample_A, mada_geom_point=POINT (837072.9150244407 7903496.320897499), sampled=False),
-                MadaclimPoint(specimen_id=sample_B, mada_geom_point=POINT (695186.2170220022 8197477.647690434), sampled=False),
-                MadaclimPoint(specimen_id=sample_C, mada_geom_point=POINT (761613.8281386737 7651088.106452912), sampled=False),
-                MadaclimPoint(specimen_id=sample_D, mada_geom_point=POINT (955230.600222457 8005985.896187438), sampled=False),
-                MadaclimPoint(specimen_id=sample_E, mada_geom_point=POINT (757247.2175273325 7618631.528869408), sampled=False)
-            ]
 
             >>> # Can accept other non-required data for MadaclimPoint instantiation
-            
             >>> # CSV example #2: "other_samples.csv"
             specimen_id,latitude,longitude,source_crs,has_sequencing,specie
             sample_F,-19.9333,47.2,4326,True,bojeri
@@ -2402,42 +2371,7 @@ class MadaclimCollection:
             Creating MadaclimPoint(specimen_id=sample_G...)
             Creating MadaclimPoint(specimen_id=sample_H...)
             Created new MadaclimCollection with 3 samples.
-            >>> for point in other_collection.all_points:
-            ...     print(point)
-            ... 
-            MadaclimPoint(
-                specimen_id = sample_F,
-                source_crs = 4326,
-                latitude = -19.9333,
-                longitude = 47.2,
-                mada_geom_point = POINT (730272.0056458472 7794391.966030249),
-                sampled_layers = None,
-                nodata_layers = None,
-                has_sequencing = True,
-                specie = bojeri
-            )
-            MadaclimPoint(
-                specimen_id = sample_G,
-                source_crs = 4326,
-                latitude = -18.295741,
-                longitude = 45.826763,
-                mada_geom_point = POINT (587378.6907481698 7976896.406900212),
-                sampled_layers = None,
-                nodata_layers = None,
-                has_sequencing = False,
-                specie = periwinkle
-            )
-            MadaclimPoint(
-                specimen_id = sample_H,
-                source_crs = 4326,
-                latitude = -21.223,
-                longitude = 44.5204,
-                mada_geom_point = POINT (450229.7195355138 7653096.609718417),
-                sampled_layers = None,
-                nodata_layers = None,
-                has_sequencing = False,
-                specie = spectabilis
-            )
+            
         """
 
         # Convert str to pathlib.Path
@@ -3015,17 +2949,22 @@ class MadaclimCollection:
             >>> collection.sample_from_rasters(37)
             {'spe1_aren': {'layer_37': 196}, 'spe2_humb': {'layer_37': 238}}
         """
+        # Reset raster properties before sampling
+        self.__MadaclimCollection_clim_raster = None
+        self.__MadaclimCollection_env_raster = None
         
         if not len(self._all_points) > 0:
             raise ValueError("No MadaclimPoint to sample from in the Collection.")
-
-        sampled_layers, nodata_layers = {}, {}
+        
+        # Use MadaclimRasters built-in validation for raster files
+        mada_rasters = MadaclimRasters(clim_raster=clim_raster, env_raster=env_raster)
 
         # Sample rasters for whole collection
+        sampled_layers, nodata_layers = {}, {}
         for point in self._all_points:
             point.sample_from_rasters(
-                clim_raster=clim_raster,
-                env_raster=env_raster,
+                clim_raster=mada_rasters.clim_raster,
+                env_raster=mada_rasters.env_raster,
                 layers_to_sample=layers_to_sample,
                 layer_info=layer_info,
             )
@@ -3044,6 +2983,10 @@ class MadaclimCollection:
         # Update instance attributes
         self._sampled_layers = sampled_layers
         self._nodata_layers = nodata_layers if len(nodata_layers) > 0 else None
+        
+        self._MadaclimCollection__clim_raster = mada_rasters.clim_raster
+        self._MadaclimCollection__env_raster = mada_rasters.env_raster
+        
         self._update_gdf()
 
     def binary_encode_categorical(self) -> None:
