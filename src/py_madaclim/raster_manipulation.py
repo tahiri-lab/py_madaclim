@@ -3234,8 +3234,16 @@ class MadaclimCollection:
 
         # Extract gdf Point plotting configs + defaults
         plot_cfg = _PlotConfig(plot_element_args=kwargs)
+        
+        if "palette" in plot_cfg.rasterpoint_args and "palette" in plot_cfg.barplot_args:
+            raise ValueError("Only set a palette for 'rasterpoint_palette' or 'barplot_palette")
+        if "palette" in plot_cfg.rasterpoint_args:
+            common_palette = plot_cfg.rasterpoint_args.pop("palette", "tab20")
+        if "palette" in plot_cfg.barplot_args:
+            common_palette = plot_cfg.barplot_args.pop("palette", "tab20")
+        
         rasterpoint_args = {
-            "palette": plot_cfg.rasterpoint_args.pop("color", "tab20"),
+            "palette": common_palette,
             "markersize": plot_cfg.rasterpoint_args.pop("markersize", 50),
             "marker": plot_cfg.rasterpoint_args.pop("marker", "o"),
             "edgecolor": plot_cfg.rasterpoint_args.pop("edgecolor", "black"),
@@ -3254,7 +3262,7 @@ class MadaclimCollection:
         # Generate a color palette for both raster and barplots
         gdf = self._gdf.copy()
         specimen_ids = gdf["specimen_id"]
-        palette = sns.color_palette(rasterpoint_args["palette"], len(specimen_ids))
+        palette = sns.color_palette(common_palette, len(specimen_ids))
         color_map = dict(zip(specimen_ids, palette))
         gdf["_color"] = gdf["specimen_id"].map(color_map)
 
