@@ -3238,9 +3238,11 @@ class MadaclimCollection:
         if "palette" in plot_cfg.rasterpoint_args and "palette" in plot_cfg.barplot_args:
             raise ValueError("Only set a palette for 'rasterpoint_palette' or 'barplot_palette")
         if "palette" in plot_cfg.rasterpoint_args:
-            common_palette = plot_cfg.rasterpoint_args.pop("palette", "tab20")
-        if "palette" in plot_cfg.barplot_args:
-            common_palette = plot_cfg.barplot_args.pop("palette", "tab20")
+            common_palette = plot_cfg.rasterpoint_args.pop("palette", "husl")
+        elif "palette" in plot_cfg.barplot_args:
+            common_palette = plot_cfg.barplot_args.pop("palette", "husl")
+        else:
+            common_palette = "husl"
         
         rasterpoint_args = {
             "palette": common_palette,
