@@ -1,5 +1,7 @@
-Species,specimen_id,Population code,GBS sequence,Botanical series,Genome size (2C. pg),latitude,longitude
-C.abbayesii,ABA,A601,C_abbayesii_A601,Millotii,1.25,-24.7541,46.8624
-C.ambodirianenis,AMB,A572,C_ambodirianensis_A572,Millotii,1.27,-18.4522,48.9433
-C.ambongensis,AMBON,BR071,C_ambongensis,Baracoffea,1.16,-15.5745833,46.4198056
-C.ankaranensis,ANK1,A525,C_ankaranensis_A525,Multiflorae ,1.17,-12.9491,49.5433
+Species,specimen_id,Botanical series,Genome size (2C. pg),latitude,longitude
+C.abbayesii,ABA,Millotii,1.25,-24.7541,46.8624
+C.ambodirianenis,AMB,Millotii,1.27,-18.4522,48.9433
+C.ankaranensis,ANK1,Multiflorae ,1.17,-12.9491,49.5433
+C.bissetiae,BISS,Baracoffea,1.19,-16.315048,46.812299
+C.costei,COS,Multiflorae,1.16,-13.750000,50.0133
+C.kianjavatensis,KIA,Verae,1.23,-24.754100,46.8625
