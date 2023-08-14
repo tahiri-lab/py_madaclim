@@ -56,7 +56,7 @@ class _PlotConfig:
         {'data': 123, 'plot': True}
     """
 
-    POSSIBLE_PREFIXES = ["imshow_", "cax_", "histplot_", "subplots_", "rasterpoint_", "vline_"]
+    POSSIBLE_PREFIXES = ["imshow_", "cax_", "histplot_", "subplots_", "rasterpoint_", "vline_", "barplot_"]
 
     def __init__(self, plot_element_args: Optional[dict]=None) -> None:
         """
@@ -70,6 +70,7 @@ class _PlotConfig:
             subplots_args (dict): The dictionary of the subplots arguments stripped of the prefix.
             rasterpoint_args (dict): The dictionary of the Geopandas.plot arguments stripped of the prefix.
             vline_args (dict): The dictionary of the axvline arguments stripped of the prefix.
+            barplot_args (dict): The dictionary of the barplot arguments stripped of the prefix.
         """
         self._plot_element_args = plot_element_args if plot_element_args else {}
         
@@ -79,6 +80,7 @@ class _PlotConfig:
         self._subplots_args = self._classify_args(prefix="subplots_", args=self._plot_element_args)
         self._rasterpoint_args = self._classify_args(prefix="rasterpoint_", args=self._plot_element_args)
         self._vline_args = self._classify_args(prefix="vline_", args=self._plot_element_args)
+        self._barplot_args = self._classify_args(prefix="barplot_", args=self._plot_element_args)
 
     @property
     def imshow_args(self) -> dict:
@@ -147,6 +149,18 @@ class _PlotConfig:
                 representation with the 'vline_' prefix removed. Empty if no args with prefix.
         """
         return self._vline_args
+    
+    @property
+    def barplot_args(self) -> dict:
+        """
+        Get the arguments for the barplot of each sample/value.
+        The arguments are stripped of the 'barplot_' prefix.
+
+        Returns:
+            dict: A dictionary containing the barplot arguments for the barplot 
+                representation with the 'barplot_' prefix removed. Empty if no args with prefix.
+        """
+        return self._barplot_args
 
     def _classify_args(self, prefix: str, args: dict):
         """
@@ -3107,7 +3121,196 @@ class MadaclimCollection:
         return collection_gdf
     
     def plot_on_layer(self, layer: Union[str, int], **kwargs) -> None:
-        pass
+        """
+        Plot a layer as a raster map and distribution plot with a focus on the MadaclimPoint object.
+        
+        Based on the Madaclim's CRS, the MadaclimPoint's geometry (`mada_geom_point`) is plotted
+        on the raster map and the sampled value is displayed against a distribution of all
+        possible values for that layer in Madaclim db. Pass addition kwargs to customize each
+        subplots (See **kwargs, _LayerPlotter and _LayerConfig for more details).
+        
+        Parameters:
+            layer (Union[str, int]): Layer to plot. Accepts layer numbers as integers, or layer labels in 
+                descriptive or `layer_<num>` format.
+            **kwargs: Additional arguments to customize the subplots, imshow, colorbar, histplot and Point objects from matplotlib. 
+                Use "subplots_<arg>", "imshow_<arg>", "cax_<arg>", and "barplot_<arg>" formats to customize corresponding 
+                the base Raster and barplot plots as matplotlib/sns arguments. 
+                Use "point_<arg>" to customize the Point objects on the raster.
+        Returns:
+            None
+        Raises:
+            ValueError: If the specified layer to plot is not has not been sampled yet.
+            ValueError: If the layer label cannot be found within the sampled layers.
+        """
+        """
+        #TODO REFACTOR layer_name_range_val and further validation in MadaPoint/Collection as a single class
+        #TODO TO AVOID BAD COPY PRACTICES
+        """
+        def layer_name_range_validation(
+                clim_raster: Union[str, pathlib.Path],
+                env_raster: Union[str, pathlib.Path],
+                layer: Union[str, int]
+            ) -> py_madaclim.info.MadaclimLayers:
+            """
+            Validates the input layer before the visualization. Checks for valid types and values
+            based on the MadaclimLayers properties.
+
+            Args:
+                clim_raster (Union[str, pathlib.Path]): Path to the climate raster file.
+                env_raster (Union[str, pathlib.Path]): Path to the environmental raster file.
+                layer (Union[str, int]): Layer to validate. Accepts layer numbers as integers, or layer labels in 
+                    descriptive or `layer_<num>` format.descriptive or `layer_<num>` format.
+
+            Raises:
+                TypeError: If 'layer' is not a str or an int.
+                TypeError: If 'layer' is a number and cannot be converted to an int.
+                ValueError: If 'layer' is not found within the range of layers.
+
+            Returns:
+                py_madaclim.info.MadaclimLayers: An 'MadaclimLayers' instance if layer is valid.
+            """
+            
+            # Fetch metadata and layer nums with a MadaclimLayers instance
+            mada_info = MadaclimLayers(clim_raster=clim_raster, env_raster=env_raster)
+            all_layers_df = mada_info.all_layers
+            
+            # Validate layers to sample
+            possible_layers_num_format = mada_info.get_layers_labels()
+            possible_layers_desc_format = mada_info.get_layers_labels(as_descriptive_labels=True)
+
+
+            if not isinstance(layer, (str, int)):
+                raise TypeError("'layer' must be a str or an int.")
+            
+            if layer in possible_layers_num_format or layer in possible_layers_desc_format:    # Check layer_<num> or descriptive format
+                layer_num = int(layer.split("_")[1])
+            else:
+                try:
+                    layer_num = int(layer)    # As single item int list
+                except (ValueError, TypeError):
+                    raise TypeError("layer must be either a single int value or a string that can be converted to an int")
+    
+            # Validate layer number range for layer_numbers as in
+            min_layer = min(all_layers_df["layer_number"])
+            max_layer = max(all_layers_df["layer_number"])
+
+            if not min_layer <= layer_num <= max_layer:
+                raise ValueError(f"layer_number must fall between {min_layer} and {max_layer}. {layer_num=} is not valid.")
+
+            return mada_info
+
+        # Validate object's raster-sampled state
+        if (self._MadaclimCollection__clim_raster is None or
+            self._MadaclimCollection__env_raster is None):
+            raise AttributeError(
+                "No 'clim_raster' and 'env_raster' found, use 'sample_from_rasters' prior to setup a reference to the raster files location."
+            )
+        
+        if self._sampled_layers is None:
+            raise ValueError("No sampled layers to plot.")
+
+        # Layer validation pre-plotting and helper MadaclimLayers instance
+        mada_rasters = MadaclimRasters(self._MadaclimCollection__clim_raster, self._MadaclimCollection__env_raster)
+        mada_info = layer_name_range_validation(mada_rasters.clim_raster, mada_rasters.env_raster, layer)
+
+        # Possible labels for layer to plot
+        layer_number = mada_info.fetch_specific_layers(layer)["layer_number"].values[0]
+        layer_possible_labels = (
+            mada_info.get_layers_labels(layer_number) + 
+            mada_info.get_layers_labels(layer_number, as_descriptive_labels=True)
+        )
+        
+        # Check for sampling state on instance
+        sampled_layers_labels = set()
+        for _, sampled_layers_dicts in self._sampled_layers.items():
+            for sampled_layer, _ in sampled_layers_dicts.items():
+                sampled_layers_labels.add(sampled_layer)
+        if not any([layer_to_plot in sampled_layers_labels for layer_to_plot in layer_possible_labels]):                
+            raise ValueError(
+                f"At this current state input layer '{layer}' (possible labels={layer_possible_labels}) "
+                f"has not been sampled yet (sampled_layers={list(sampled_layers_labels)}.\n"
+                f"Use the 'sample_from_rasters' method to address that prior to 'plot_on_layer'."
+                )
+
+        # Extract gdf Point plotting configs + defaults
+        plot_cfg = _PlotConfig(plot_element_args=kwargs)
+        rasterpoint_args = {
+            "palette": plot_cfg.rasterpoint_args.pop("color", "tab20"),
+            "markersize": plot_cfg.rasterpoint_args.pop("markersize", 50),
+            "marker": plot_cfg.rasterpoint_args.pop("marker", "o"),
+            "edgecolor": plot_cfg.rasterpoint_args.pop("edgecolor", "black"),
+            "linestyle": plot_cfg.rasterpoint_args.pop("linestyle", "-"),
+            "legend": plot_cfg.rasterpoint_args.pop("legend", True),
+            "legend_kwds": plot_cfg.rasterpoint_args.pop("legend_kwds", {"loc": (0.1, 0.9)}),
+            "customlabel": plot_cfg.rasterpoint_args.pop("customlabel", "Collection"),
+            "color": plot_cfg.rasterpoint_args.pop("color", "white")
+
+        }
+
+        # Plot base raster and distribution histograms
+        fig, axes = mada_rasters.plot_layer(layer=layer, **kwargs)
+        raster_legend = axes[0].get_legend()
+        
+        # Generate a color palette for both raster and barplots
+        gdf = self._gdf.copy()
+        specimen_ids = gdf["specimen_id"]
+        palette = sns.color_palette(rasterpoint_args["palette"], len(specimen_ids))
+        color_map = dict(zip(specimen_ids, palette))
+        gdf["_color"] = gdf["specimen_id"].map(color_map)
+
+        # Overlay with mada_geom_point
+        gdf.plot(
+            ax=axes[0], 
+            color=gdf["_color"], 
+            markersize=rasterpoint_args["markersize"], 
+            marker=rasterpoint_args["marker"],
+            edgecolor=rasterpoint_args["edgecolor"],
+            linestyle=rasterpoint_args["linestyle"],
+            legend=rasterpoint_args["legend"], 
+            legend_kwds=rasterpoint_args["legend_kwds"],
+            **plot_cfg.rasterpoint_args
+        )
+
+        # Create a custom legend based on the rasterpoint_args
+        if rasterpoint_args["legend"]:
+            legend_handle = Line2D(
+                [0], [0], 
+                marker=rasterpoint_args["marker"],
+                markersize=rasterpoint_args["markersize"] / 20,
+                markeredgecolor=rasterpoint_args["edgecolor"],
+                color=rasterpoint_args["color"], 
+                linestyle=rasterpoint_args["linestyle"],
+                label=rasterpoint_args["customlabel"]
+            )
+            axes[0].legend(handles=[legend_handle], loc=rasterpoint_args["legend_kwds"]["loc"])
+
+        # Add the raster legend back to the plot in a different location
+        if raster_legend is not None:
+            axes[0].add_artist(raster_legend)
+            raster_legend.set_bbox_to_anchor((1.05, 1))
+        
+        #TODO refactor inside _LayerPlotter.plot_layer instead of plot/clear/replot cycle
+        # Clear whole raster distribution and replace with collection data
+        axes[1].clear()
+        
+         # Set defaults for barplot
+        actual_layer_label = [l for l in layer_possible_labels if l in gdf.columns][0]
+        barplot_args = {
+            "x": plot_cfg.barplot_args.pop("x", actual_layer_label),
+            "y": plot_cfg.barplot_args.pop("y", "specimen_id"),
+        }
+        
+        bar = sns.barplot(
+            data=gdf,
+            y=barplot_args["y"],
+            x=barplot_args["x"],
+            ax=axes[1],
+            palette=color_map,
+            **plot_cfg.barplot_args
+        )
+        axes[1].set_title("Distribution of sampled raster values for specimens in the collection")
+        axes[1].set_ylabel("specimen id")
+        axes[1].set_xlabel("Raster value")
     
     def _update_gdf(self) -> None:
         """
