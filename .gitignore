@@ -30,3 +30,6 @@ docs_conf.py
 
 #exports png
 *.png
+
+#build folder
+build/
