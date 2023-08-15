@@ -27,3 +27,6 @@ docs_conf.py
 
 # ipynb pickle
 *.pkl
+
+#exports png
+*.png
