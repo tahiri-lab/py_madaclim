@@ -319,16 +319,6 @@ class MadaclimLayers:
             TypeError: If geoclim_type is not a string.
             ValueError: If geoclim_type does not corresponds to a valid geoclim type.
         
-        Example:
-            >>> mada_info = MadaclimLayers()
-            >>> clim_df = mada_info.select_geoclim_type_layers(geoclim_type="clim")
-            >>> clim_df.head()
-            geoclim_type  layer_number layer_name                       layer_description  is_categorical    units
-            0         clim             1      tmin1   Monthly minimum temperature - January           False  °C x 10
-            1         clim             2      tmin2  Monthly minimum temperature - February           False  °C x 10
-            2         clim             3      tmin3     Monthly minimum temperature - March           False  °C x 10
-            3         clim             4      tmin4     Monthly minimum temperature - April           False  °C x 10
-            4         clim             5      tmin5       Monthly minimum temperature - May           False  °C x 10
         """
         all_layers_df = self._all_layers.copy()
         # Validate geoclim_type
