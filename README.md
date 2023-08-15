@@ -44,12 +44,15 @@
 <!-- Installation -->
 <section>
     <h2 id="installation">Installation</h2>
-        <h3>Requirements</h3>
+        <h3>Environment setup and requirements</h3>
             <p>
-                Since <code>py-madaclim</code> is using various GIS packages under the hood, it is easier to create a functional environment using <a href="https://conda.io">Conda</a> to avoid conflicting versions. 
-            </p>
+                <code>py-madaclim</code> is working with Python 3.10 and 3.11. We have provided two ways to setup a working environment for both versions:</p>
+                <ul>
+                    <li>Using <code>pip</code> and <code>venv</code> for Python=3.10</li>
+                    <li>Using <a href="https://conda.io">Conda</a> for Python=3.11</li>
+                </ul>
             <p>
-                The requirements are listed in the <a href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/requirements.txt">requirements.txt</a>. OS-specific installation steps are listed below:
+                The requirements for the conda setup can be found in <a href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/conda_requirements.txt">conda_requirements.txt</a> and for the pip setup in <a href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/venv_requirements.txt">venv_requirements.txt</a>. OS-specific installation steps are listed below:
              </p>
         <h3 id="install-linux">Linux/Unix based systems</h3>
             <ol>
@@ -58,27 +61,31 @@
             </ol>
         <h3 id="install-win">Windows</h3>
             <ol>
-                <li>Lorem Ipsum</li>
-                <li>Lorem Ipsum</li>
+                <li>#TODO!</li>
             </ol>
         <h3 id="install-mac">macOS</h3>
             <ol>
-                <li>Lorem Ipsum</li>
-                <li>Lorem Ipsum</li>
+                <li>#TODO!</li>
             </ol>
 </section>
 
 <!-- Workflow -->
 <section>
     <h2 id="workflow">General Workflow</h2>
-        <p><p>Lorem ipsum dolor sit amet. Qui adipisci galisum et tempora rerum ad facilis vitae. 33 debitis tenetur non possimus reiciendis sit commodi soluta. Ut doloremque corrupti est pariatur eius est nobis perferendis! </p>
-</p>
+        <p>
+        Lorem ipsum dolor sit amet. Qui adipisci galisum et tempora rerum ad facilis vitae. 33 debitis tenetur non possimus reiciendis sit commodi soluta. Ut doloremque corrupti est pariatur eius est nobis perferendis!
+        </p>
 </section>
 <!-- Example -->
 <section>
     <h2 id="example">Getting started: quick example</h2>
-        <p>Lorem ipsum dolor sit amet. Qui adipisci galisum et tempora rerum ad facilis vitae. 33 debitis tenetur non possimus reiciendis sit commodi soluta. Ut doloremque corrupti est pariatur eius est nobis perferendis! </p>
-
+        <p>
+        ```python
+        def my_funct():
+            result = 1 + 1
+            return result
+        ```
+        </p>
 </section>
 
 <!-- References -->
