@@ -8,28 +8,18 @@ __pycache__
 # testfiles
 test.py
 test.ipynb
-layers.ipynb
 
 # editable package dev-mode
 *.egg-info
 
-# Trimmed fasta files
-gbs_trimmed/
 
-# coffea data files
-species_locations_all_positions.csv
-species_locations_with_gbs_only.csv
+# example data files
 *.tif
+gbif_example
 
 # sphinx documentation
 docs/
 docs_conf.py
-
-# ipynb pickle
-*.pkl
-
-#exports png
-*.png
 
 #build folder
 build/
