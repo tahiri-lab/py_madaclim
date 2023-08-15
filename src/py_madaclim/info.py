@@ -173,7 +173,7 @@ class MadaclimLayers:
             pyproj.crs.crs.CRS: The CRS object derived from the EPSG code of the climate raster.
 
         Example:
-            You need to have valid 'clim_raster' attribute before accessing the 'clim_crs' attr.
+            Valid 'clim_raster' attribute before accessing the 'clim_crs' attr.
 
             >>> mada_info = MadaclimLayers()
             >>> mada_info.clim_crs
@@ -207,7 +207,7 @@ class MadaclimLayers:
             pyproj.crs.crs.CRS: The CRS object derived from the EPSG code of the environmental raster.
         
         Example:
-            You need to have valid 'env_raster' attribute before accessing the 'env_crs' attr.
+            Valid 'env_raster' attribute before accessing the 'env_crs' attr.
 
             >>> mada_info = MadaclimLayers()
             >>> mada_info.env_crs
