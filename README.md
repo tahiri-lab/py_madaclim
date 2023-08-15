@@ -30,6 +30,7 @@
 <!-- package description -->
 <section>
     <h2 id="package-description">Package Description</h2>
+        <img src="example/example_coll_plot.png" alt="Example of a MadaclimCollection plot with layer 79">
         <p>
             <code>py-madaclim</code> is a Python 3+ package that allows to interact with the <a href="https://madaclim.cirad.fr/">Madaclim db</a>, an open-source climate and environmental database for Madagascar.
         </p>
@@ -43,59 +44,109 @@
 
 <!-- Installation -->
 <section>
-    <h2 id="installation">Installation</h2>
-        <h3>Environment setup and requirements</h3>
-            <p>
-                <code>py-madaclim</code> is working with Python 3.10 and 3.11. We have provided two ways to setup a working environment for both versions:</p>
-                <ul>
-                    <li>Using <code>pip</code> and <code>venv</code> for Python=3.10</li>
-                    <li>Using <a href="https://conda.io">Conda</a> for Python=3.11</li>
-                </ul>
-            <p>
-                The requirements for the conda setup can be found in <a href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/conda_requirements.txt">conda_requirements.txt</a> and for the pip setup in <a href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/venv_requirements.txt">venv_requirements.txt</a>. OS-specific installation steps are listed below:
-             </p>
-        <h3 id="install-linux">Linux/Unix based systems</h3>
-            <ol>
-                <li>Lorem Ipsum</li>
-                <li>Lorem Ipsum</li>
-            </ol>
-        <h3 id="install-win">Windows</h3>
-            <ol>
-                <li>#TODO!</li>
-            </ol>
-        <h3 id="install-mac">macOS</h3>
-            <ol>
-                <li>#TODO!</li>
-            </ol>
+<h2 id="installation">Installation</h2>
+<h3>Environment setup and requirements</h3>
+<p>
+<code>py-madaclim</code> is working with Python 3.10 and 3.11. We have provided two ways to setup a working environment for both versions:</p>
+<ul>
+    <li>Using <code>pip</code> and <code>venv</code> for Python=3.10</li>
+    <li>Using <a href="https://conda.io">Conda</a> for Python=3.11</li>
+</ul>
+<p>
+The requirements for the conda setup can be found in <a href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/conda_requirements.txt">conda_requirements.txt</a> and for the pip setup in <a href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/venv_requirements.txt">venv_requirements.txt</a>. OS-specific installation steps are listed below:
+</p>
+<!-- linux -->
+<h3 id="install-linux">Debian/Linux systems</h3>
+<h4>Steps for <code>pip</code> installation</h4>
+<ol>
+<li>Clone the repo and create a new venv</li>
+
+```bash
+git clone git@github.com:tahiri-lab/py_madaclim.git
+cd py_madaclim
+python -m venv ~/.pyenv/py_mada_env    #python=3.10
+source ~/.pyenv/py_mada_env/bin/activate
+```
+<li>Activate the environment and install the requirements</li>
+
+```bash
+pip install -r venv_requirements.txt    # reqs before py_madaclim
+pip install .    # to install py-madaclim
+```
+</ol>
+<h4>Steps for <code>conda</code> installation</h4>
+<ol start=0>
+<li>First follow these <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html">instructions</a> to install conda on your machine</li>
+<li>Clone the repo and create a conda environment</li>
+
+```bash
+git clone git@github.com:tahiri-lab/py_madaclim.git
+cd py_madaclim
+conda create -n py_mada_env --file conda_requirements.txt
+```
+<li>Activate the environment and install the requirements</li>
+
+```bash
+conda activate py_mada_env
+pip install .    # using pip inside conda env
+```
+</ol>
+
+
+<h3 id="install-win">Windows</h3>
+<ol>
+<li>#TODO!</li>
+</ol>
+<h3 id="install-mac">macOS</h3>
+<ol>
+<li>#TODO!</li>
+</ol>
 </section>
 
-<!-- Workflow -->
-<section>
-    <h2 id="workflow">General Workflow</h2>
-        <p>
-        Lorem ipsum dolor sit amet. Qui adipisci galisum et tempora rerum ad facilis vitae. 33 debitis tenetur non possimus reiciendis sit commodi soluta. Ut doloremque corrupti est pariatur eius est nobis perferendis!
-        </p>
-</section>
 <!-- Example -->
 <section>
-    <h2 id="example">Getting started: quick example</h2>
-        <p>
-        ```python
-        def my_funct():
-            result = 1 + 1
-            return result
-        ```
-        </p>
+<h2 id="example">Getting Started: Quick Example</h2>
+<h3>Madaclim db metadata with the <code>info</code> module</h3>
+
+```python
+# Get available methods and properties for MadaclimLayers
+>>> from py_madaclim.info import MadaclimLayers
+>>> mada_info = MadaclimLayers()
+>>> print(mada_info)
+MadaclimLayers(
+	all_layers = DataFrame(79 rows x 6 columns)
+	categorical_layers = DataFrame(Layers 75, 76, 77, 78 with a total of 79 categories
+	public methods -> download_data, fetch_specific_layers, get_categorical_combinations
+			 get_layers_labels, select_geoclim_type_layers
+)
+
+# To access all layers as a dataframe
+>>> mada_info.all_layers
+geoclim_type  layer_number layer_name                       layer_description  is_categorical    units
+0         clim             1      tmin1   Monthly minimum temperature - January           False  °C x 10
+...
+
+# Built-in method to download the Madaclim raster files
+from pathlib import Path
+cwd = Path.cwd()
+mada_info.download_data(save_dir=cwd)
+```
+<h3>Explore the Madaclim rasters with the <code>raster_manipulation</code> module</h3>
+<p>MadaclimRasters basic functionalities</p>
+
+```python
+#TODO!
+```
+
 </section>
 
 <!-- References -->
 <section>
     <h2 id="refs">References</h2>
-        <ol>
-            <li>ref1</li>
-            <li>ref2</li>
-            <li>etc.</li>
-        </ol>
+        <ul>
+            <li><a href="https://madaclim.cirad.fr">Madaclim</a> @ CIRAD</li>
+            <li><a href="https://madaclim.cirad.fr">Tahiri lab</a> @ Université de Sherbrooke</li>
+        </ul>
 </section>
 
 <!-- Contact -->
