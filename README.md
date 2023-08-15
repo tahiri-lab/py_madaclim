@@ -29,7 +29,7 @@
 </details>
 <!-- package description -->
 <section>
-    <h2 id="package-description">Package Description</h2>
+    <h2 id="package-description">py-madaclim Package Description</h2>
         <img src="example/example_coll_plot.png" alt="Example of a MadaclimCollection plot with layer 79">
         <p>
             <code>py-madaclim</code> is a Python 3+ package that allows to interact with the <a href="https://madaclim.cirad.fr/">Madaclim db</a>, an open-source climate and environmental database for Madagascar.
@@ -38,7 +38,7 @@
             Fetch and explore the raster-based data with metadata information support, create new datasets from existent spreadsheets/csv/dataframes from any Coordinate Reference System (CRS) and explore/manipulate your data with visualization and transformation tools.
         </p>
         <p>
-            Official document can be found here: <a href="">py-madaclim-docs</a>
+            Official documentation can be found here: <a href="">py-madaclim-docs</a>
         </p>
 </section>
 
