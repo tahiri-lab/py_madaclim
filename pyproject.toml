@@ -1,12 +1,11 @@
 [project]
 name = "py_madaclim"
-version = "0.0.1"
+version = "0.1.0"
 license = {file = "LICENSE.txt"}
-dynamic = ["readme"]    # Add dependencies "dependencies"
+dynamic = ["readme"]
 
 [tool.setuptools.packages.find]
 where =["src"]
 
 [tool.setuptools.dynamic]
 readme = {file = "README.md"}
-# dependencies = {file = ["requirements.txt"]}
