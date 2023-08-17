@@ -62,7 +62,7 @@ The requirements for the conda setup can be found in <a href="https://github.com
 <li>Clone the repo and create a new venv</li>
 
 ```bash
-git clone git@github.com:tahiri-lab/py_madaclim.git
+git clone https://github.com/tahiri-lab/py_madaclim.git
 cd py_madaclim
 python -m venv ~/.pyenv/py_mada_env    #python=3.10
 source ~/.pyenv/py_mada_env/bin/activate
@@ -80,7 +80,7 @@ pip install .    # to install py-madaclim
 <li>Clone the repo and create a conda environment</li>
 
 ```bash
-git clone git@github.com:tahiri-lab/py_madaclim.git
+git clone https://github.com/tahiri-lab/py_madaclim.git
 cd py_madaclim
 conda create -n py_mada_env --file conda_requirements.txt
 ```
