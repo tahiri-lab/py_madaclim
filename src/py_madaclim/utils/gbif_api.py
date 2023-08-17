@@ -356,13 +356,16 @@ def download_extract_read_occ(
     # target_dir default and validation
     if target_dir is None:
         target_dir = Path.cwd()
-    try:
-        target_dir = Path(target_dir)
-    except TypeError:
-        raise TypeError("'target_dir' must be a valid type for the pathlib.Path constructor (str or system-specific pathlib.Path/PurePath)")
-    
-    if not target_dir.is_dir():
-        raise NotADirectoryError(f"{target_dir} is not a valid directory.")
+    else:
+        try:
+            target_dir = Path(target_dir)
+        except TypeError:
+            raise TypeError("'target_dir' must be a valid type for the pathlib.Path constructor (str or system-specific pathlib.Path/PurePath)")
+        
+        target_dir.mkdir(parents=True, exist_ok=True)
+        
+        if not target_dir.is_dir():
+            raise NotADirectoryError(f"{target_dir} is not a valid directory.")
     
     url = Constants.GBIF_BASEURLS["occurrence"] + f"/download/{download_id}"
 
