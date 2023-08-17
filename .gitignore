@@ -17,9 +17,5 @@ test.ipynb
 *.tif
 gbif_example
 
-# sphinx documentation
-docs/
-docs_conf.py
-
 #build folder
 build/
