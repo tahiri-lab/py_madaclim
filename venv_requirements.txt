@@ -20,6 +20,7 @@ executing==1.2.0
 Fiona==1.9.4.post1
 fonttools==4.42.0
 geopandas==0.13.2
+ghp-import==2.1.0
 idna==3.4
 imagesize==1.4.1
 ipykernel==6.25.1
