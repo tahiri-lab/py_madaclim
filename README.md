@@ -38,8 +38,9 @@
             Fetch and explore the raster-based data with metadata information support, create new datasets from existent spreadsheets/csv/dataframes from any Coordinate Reference System (CRS) and explore/manipulate your data with visualization and transformation tools.
         </p>
         <p>
-            Official documentation can be found here: <a href="">py-madaclim-docs</a>
+            If you prefer Read-The-Docs style documentation go <a href="">here</a>.
         </p>
+        <p><a href="">API documentation</a> is also available.</p>
 </section>
 
 <!-- Installation -->
@@ -75,7 +76,7 @@ pip install -r venv_requirements.txt    # reqs before py_madaclim
 pip install .    # to install py-madaclim
 ```
 </ol>
-<h4>Steps for <code>conda</code> installation (Slow environment creation)</h4>
+<h4>Steps for <code>conda</code> installation (Slower option)</h4>
 <ol start=0>
 <li>First follow these <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html">instructions</a> to install conda on your machine</li>
 <li>Clone the repo and configure the <code>conda-forge</code> channel</li>
@@ -92,7 +93,7 @@ conda config --show channels
 #   - defaults
 #   - plotly
 ```
-<li>Create the environment with dependencies</li>
+<li>Create the environment with dependencies (slow step, be patient!)</li>
 
 ```bash
 conda create -n py_mada_env --file conda_requirements.txt
