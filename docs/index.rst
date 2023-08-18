@@ -492,7 +492,7 @@ References
 - `Tahiri lab`_ @ Université de Sherbrooke
 
 .. _Madaclim: https://madaclim.cirad.fr
-.. _Tahiri lab: https://madaclim.cirad
+.. _Tahiri lab: https://tahirinadia.github.io/
 
 
 py-madaclim API Documentation
