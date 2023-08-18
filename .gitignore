@@ -19,3 +19,6 @@ gbif_example
 
 #build folder
 build/
+
+# _build from docs
+_build
