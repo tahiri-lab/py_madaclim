@@ -4,7 +4,7 @@
         <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/tahiri-lab/py_madaclim?logoColor=blue">
         <img src="https://img.shields.io/github/contributors/tahiri-lab/py_madaclim?color=orange&logo=github"></img>
         <img src="https://img.shields.io/github/last-commit/tahiri-lab/py_madaclim?color=purple&logo=github"></img>
-        <img src="https://img.shields.io/website/https/tahirinadia.github.io.svg">
+        <img src="https://img.shields.io/website/https/tahiri-lab.github.io/py_madaclim.svg">
     </p>
 <!-- table of contents -->
 <details open>
@@ -38,9 +38,9 @@
             Fetch and explore the raster-based data with metadata information support, create new datasets from existent spreadsheets/csv/dataframes from any Coordinate Reference System (CRS) and explore/manipulate your data with visualization and transformation tools.
         </p>
         <p>
-            If you prefer Read-The-Docs style documentation go <a href="">here</a>.
+            If you prefer Read-The-Docs style documentation go <a href="https://tahiri-lab.github.io/py_madaclim/">here</a>.
         </p>
-        <p><a href="">API documentation</a> is also available.</p>
+        <p><a href="https://tahiri-lab.github.io/py_madaclim/modules.html">API documentation</a> is also available.</p>
 </section>
 
 <!-- Installation -->
@@ -345,8 +345,9 @@ recent_coffea = MadaclimCollection.populate_from_df(df.loc[df["year"] >= 2020])
 <section>
     <h2 id="refs">References</h2>
         <ul>
+            <li><a href="https://tahiri-lab.github.io/py_madaclim/">py-madaclim read-the-docs</a> @ Tahiri-lab</li>
             <li><a href="https://madaclim.cirad.fr">Madaclim</a> @ CIRAD</li>
-            <li><a href="https://madaclim.cirad.fr">Tahiri lab</a> @ Université de Sherbrooke</li>
+            <li><a href="https://tahirinadia.github.io/">Tahiri lab</a> @ Université de Sherbrooke</li>
         </ul>
 </section>
 
