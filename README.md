@@ -238,8 +238,10 @@ MadaclimPoint(
 ```
 <img src="example/rastplot_2.png" alt="Collection plot example" width=500>
 
+Binary encoding for downstream ML applications
+
 ```python
-# Binary encoding for ML-tasks
+# One Hot encoding updates the object dynamically
 >>> coll.binary_encode_categorical()
 >>> print(coll.is_categorical_encoded)
 True
@@ -264,7 +266,7 @@ Splitted 4 layers into 83 unique categories
 
 <!-- GBIF API PORTION -->
 <h3>GBIF API utilities for pre-data fetching in the <code>utils</code> module</h3>
-<h4>Request an occurence search download the data</h4>
+<h4>Request an occurence search and download the data</h4>
 
 ```python
 >>> from py_madaclim.utils import gbif_api
@@ -313,14 +315,14 @@ Read and saved core data into pandas df: occurrence.txt
 
 ```python
 # Keep relevant data
-df = coffea_gbif_df.loc[coffea_gbif_df["taxonRank"] == "SPECIES"]
-df = df.loc[:, ["verbatimScientificName", "decimalLongitude", "decimalLatitude", "year"]]
-df = df.reset_index().drop(columns="index")
-df["specimen_id"] = df.apply(lambda row: f"{row['verbatimScientificName']}_{row.name}", axis=1)
-df["specimen_id"] = df["specimen_id"].str.strip("Coffea ")
-# Format for MadaclimCollection constructor
-df.columns = ["genus_species", "longitude", "latitude", "year", "specimen_id"]
-df.head()
+>>> df = coffea_gbif_df.loc[coffea_gbif_df["taxonRank"] == "SPECIES"]
+>>> df = df.loc[:, ["verbatimScientificName", "decimalLongitude", "decimalLatitude", "year"]]
+>>> df = df.reset_index().drop(columns="index")
+>>> df["specimen_id"] = df.apply(lambda row: f"{row['verbatimScientificName']}_{row.name}", axis=1)
+>>> df["specimen_id"] = df["specimen_id"].str.strip("Coffea ")
+>>> # Format for MadaclimCollection constructor
+>>> df.columns = ["genus_species", "longitude", "latitude", "year", "specimen_id"]
+>>> df.head()
 ```
 | genus_species                    | longitude  | latitude   | year | specimen_id                     |
 |---------------------------------|------------|------------|------|---------------------------------|
