@@ -8,7 +8,7 @@
 
 project = 'py-madaclim'
 copyright = '2023, Tahiri Lab'
-author = 'Tahiri lab and Simon Lalonde'
+author = 'Tahiri Lab'
 
 version = '0.1.0'
 release = '0'
