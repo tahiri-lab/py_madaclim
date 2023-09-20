@@ -1,6 +1,6 @@
 ################ START ################
 # To generate the sphinx docs I first ran
-sphinx-quickstart docs --no-sep -p py-madaclim -a "Simon Lalonde" -q
+sphinx-quickstart docs --no-sep -p py-madaclim -a "Tahiri Lab" -q
 
 ################ CONFIG ################
 Then change the conf.py to have the rtd_theme + other extensions
