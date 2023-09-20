@@ -13,8 +13,8 @@ Then change the conf.py to have the rtd_theme + other extensions
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'py-madaclim'
-copyright = '2023, Simon Lalonde'
-author = 'Simon Lalonde'
+copyright = '2023, Tahiri Lab'
+author = 'Tahiri Lab'
 
 version = '0.1.0'
 release = '0'
