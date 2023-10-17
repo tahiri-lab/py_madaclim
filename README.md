@@ -57,8 +57,8 @@
 The requirements for the conda setup can be found in <a href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/conda_requirements.txt">conda_requirements.txt</a> and for the pip setup in <a href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/venv_requirements.txt">venv_requirements.txt</a>. OS-specific installation steps are listed below:
 </p>
 
-<!-- linux -->
-<h3 id="install-linux">Debian/Linux systems</h3>
+<!--  -->
+<h3 id="install-linux">Debian/Linux/macOS systems</h3>
 <h4>Steps for <code>pip</code> installation (Recommended)</h4>
 <ol>
 <li>Clone the repo and create a new venv</li>
@@ -112,10 +112,7 @@ pip install .    # using pip inside conda env
 <ol>
 <li>#TODO!</li>
 </ol>
-<h3 id="install-mac">macOS</h3>
-<ol>
-<li>#TODO!</li>
-</ol>
+
 </section>
 
 <!-- Example -->
