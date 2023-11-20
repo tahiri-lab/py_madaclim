@@ -110,7 +110,20 @@ pip install .    # using pip inside conda env
 
 <h3 id="install-win">Windows</h3>
 <ol>
-<li>#TODO!</li>
+<li>Clone the repo and create a new venv</li>
+
+```bash
+git clone https://github.com/tahiri-lab/py_madaclim.git
+cd py_madaclim
+python -m venv ~/.pyenv/py_mada_env    #python=3.10
+source ~/.pyenv/py_mada_env/Scripts/activate
+```
+<li>Activate the environment and install the requirements</li>
+
+```bash
+pip install -r venv_requirements.txt    # reqs before py_madaclim
+pip install .    # to install py-madaclim
+```
 </ol>
 
 </section>
