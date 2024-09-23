@@ -6,9 +6,9 @@ import cartopy.feature as cfeature
 import pandas as pd
 from Bio import Phylo
 
-nwk_file = "../tree/new_phylo_tree.nwk"
-gps_coords = '../data/gbif_coffea_ex3__w_caffeine.csv'
-offsets_file = "../data/offsets.csv"
+nwk_file = r"../input/aligned_tree.nwk"
+gps_coords = r'..\input\0026013-240906103802322_w_caffeine.csv'
+offsets_file = r"../input/offsets.csv"
 
 # Create a new map with PlateCarree projection
 fig = plt.figure(figsize=(26, 11))
@@ -54,7 +54,7 @@ def plot_adjusted_node_old(ax, node, y_offset, offsets_dict, color="blue"):
   # Check if node name is Tricalysia, then set color to red
   #if node.name == "Tricalysia":
   #  color = "red"
-  gps = pd.read_csv('../data/gbif_coffea_ex3__w_caffeine.csv')  
+  gps = pd.read_csv(gps_coords)  
   if node.name in gps['specimen_id'].values:
     color = "red"
 
@@ -117,8 +117,8 @@ gps = pd.read_csv(gps_coords)
 gps['color'] = gps['caffeine_percent'].apply(value_to_color)
 #text_colors = dict.fromkeys(gps['specimen_id'], 'red')
 text_colors = dict(zip(gps['specimen_id'], gps['color']))
-print(gps)
-print(text_colors)
+#print(gps)
+#print(text_colors)
 
 # Plot the tree
 #Phylo.draw(tree, do_show=False, axes=ax_tree, label_func=custom_label)
@@ -218,7 +218,7 @@ ax2.legend(['0 dmb caffeine'], loc='upper right')
             fig.add_artist(con) """
 gps_grouped = gps.groupby('specimen_id')[['longitude', 'latitude', 'color']].apply(
     lambda x: list(zip(x['longitude'], x['latitude'], x['color']))).to_dict()
-print(gps_grouped)
+#print(gps_grouped)
 # Iterate through each row in df to create connection patches
 for index, row in df.iterrows():
     # Get corresponding list of coordinates and color from gps DataFrame
@@ -239,4 +239,8 @@ for index, row in df.iterrows():
 
 # Adjust layout and display
 plt.tight_layout()
-plt.show()
+#plt.show()
+# Save the figure to a file instead of showing it
+output_file = r'../images/figure1.jpg'  # Specify your desired output file name
+plt.savefig(output_file, format='jpg', dpi=300)  # Save with specified DPI
+plt.close(fig)
