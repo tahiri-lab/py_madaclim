@@ -1,0 +1,63 @@
+﻿Sampleid,Family,Genus,Scientific_name,Habitat,Sector,Water_mass,Sediment,Lat_start_dec,Long_start_dec,Depth_start,Wind_start,Wind_end,Wind_speed_start,Wind_speed_end,Watertemp_ground,O2-saturation_ground
+ICE1-Bod001,Bodotriidae,Cyclaspis,Cyclaspis longicaudata,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Bod003,Bodotriidae,,,Deep sea,Irminger Basin,NAW,Sand,63.008,-28.068,1593.8,NE,NE,8,8,4.28,245.53
+ICE1-Bod004,Bodotriidae,Bathycuma,Bathycuma brevirostre,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Cer002,Ceratocumatidae,Cimmerius,Cimmerius reticulatus,Deep sea,Irminger Basin,NAW,Sand,63.008,-28.068,1593.8,NE,NE,8,8,4.28,245.53
+ICE1-Cer003,Ceratocumatidae,Cimmerius,Cimmerius reticulatus,Deep sea,Irminger Basin,NAW,Sand,63.008,-28.068,1593.8,NE,NE,8,8,4.28,245.53
+ICE1-Dia001,Diastylidae,Leptostylis,Leptostylis ampullacea,Slope,Denmark Strait,APW/NSAIW,Mud,67.214,-26.207,716.5,SW,WSW,2,3,0.07,292.966
+ICE1-Dia004,Diastylidae,Leptostylis,Leptostylis ampullacea,Slope,Denmark Strait,APW/NSAIW,Mud,67.214,-26.207,716.5,SW,WSW,2,3,0.07,292.966
+ICE1-Dia005,Diastylidae,Leptostylis,Leptostylis ampullacea,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Dia006,Diastylidae,Diastylis,Diastylis polaris,Deep sea,Norwegian Basin,NSDWc,Forams,67.644,-12.162,1819.3,SSE,SSE,11,10,-0.8511,
+ICE1-Dia007,Diastylidae,Leptostylis,Leptostylis ampullacea,Slope,Denmark Strait,APW/NSAIW,Mud,67.214,-26.207,716.5,SW,WSW,2,3,0.07,292.966
+ICE1-Dia008,Diastylidae,Leptostylis,Leptostylis ampullacea,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Dia009,Diastylidae,Diastylis,Diastylis polaris,Deep sea,Norwegian Basin,NSDWc,Forams,67.644,-12.162,1819.3,SSE,SSE,11,10,-0.8511,
+ICE1-Dia010,Diastylidae,Diastylis,Diastylis polaris,Deep sea,Denmark Strait,NSDWw,Mud,67.868,-23.696,1281,SSE,SE,5,6,-0.66561,278.7728
+ICE1-Dia011,Diastylidae,Diastyloides,Diastyloides atlanticus,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Dia012,Diastylidae,Leptostylis,,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Dia013,Diastylidae,Leptostylis,Leptostylis ampullacea,Deep sea,Denmark Strait,NSDWw,Mud,67.868,-23.696,1281,SSE,SE,5,6,-0.66561,278.7728
+ICE1-Dia014,Diastylidae,Leptostylis,Leptostylis ampullacea,Deep sea,Norwegian Sea,NSDWw,Mud,67.079,-13.064,1574.7,E,E,6,5,-0.74403,269.2512
+ICE1-Dia016,Diastylidae,Diastylis,Diastylis polaris,Deep sea,Denmark Strait,NSDWw,Mud,67.868,-23.696,1281,SSE,SE,5,6,-0.66561,278.7728
+ICE1-Dia017,Diastylidae,Leptostylis,Leptostylis borealis,Slope,Norwegian Sea,NSAIW,Gravel,66.289,-12.347,579.1,NW,NNW,10,7,-0.40217,283.581
+ICE1-Dia018,Diastylidae,Leptostylis,Leptostylis ampullacea,Slope,Denmark Strait,APW/NSAIW,Mud,67.214,-26.207,716.5,SW,WSW,2,3,0.07,292.966
+ICE1-Dia019,Diastylidae,Diastylis,Diastylis polaris,Deep sea,Norwegian Sea,NSDWw,Mud,67.079,-13.064,1574.7,E,E,6,5,-0.74403,269.2512
+ICE1-Dia024,Diastylidae,Diastyloides,Diastyloides atlanticus,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Dia025,Diastylidae,Leptostylis,,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Lam001,Lampropidae,Hemilamprops,Hemilamprops diversus,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Lam002,Lampropidae,Hemilamprops,Hemilamprops cristatus,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Lam004,Pseudocumatidae,Platysympus,Platysympus typicus,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Lam005,Lampropidae,Hemilamprops,Hemilamprops pterini,Deep sea,Irminger Basin,NAW,Sand,63.008,-28.068,1593.8,NE,NE,8,8,4.28,245.53
+ICE1-Lam008,Lampropidae,Hemilamprops,Hemilamprops cristatus,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Lam009,Lampropidae,Chalarostylis,Chalarostylis elegans,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Lam011,Lampropidae,Hemilamprops,Hemilamprops diversus,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Lam015,Lampropidae,Hemilamprops,,Deep sea,Irminger Basin,NAW,Sand,63.008,-28.068,1593.8,NE,NE,8,8,4.28,245.53
+ICE1-Lam016,Pseudocumatidae,Platysympus,Platysympus typicus,Deep sea,Irminger Basin,NAW,Sand,63.008,-28.068,1593.8,NE,NE,8,8,4.28,245.53
+ICE1-Lam017,Lampropidae,Chalarostylis,Chalarostylis elegans,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Lam018,Lampropidae,Hemilamprops,Hemilamprops cristatus,Slope,Denmark Strait,APW/NSAIW,Mud,67.214,-26.207,716.5,SW,WSW,2,3,0.07,292.966
+ICE1-Leu002,Leuconidae,Leucon,Leucon pallidus,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Leu003,Leuconidae,Leucon,Leucon pallidus,Deep sea,Denmark Strait,NSDWw,Mud,67.868,-23.696,1281,SSE,SE,5,6,-0.66561,278.7728
+ICE1-Leu006,Leuconidae,Leucon,Leucon pallidus,Deep sea,Denmark Strait,NSDWw,Mud,67.868,-23.696,1281,SSE,SE,5,6,-0.66561,278.7728
+ICE1-Leu007,Leuconidae,Leucon,Leucon profundus,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Leu008,Leuconidae,Leucon,Leucon pallidus,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Leu010,Leuconidae,Leucon,Leucon pallidus,Slope,Norwegian Sea,NSAIW,Gravel,66.289,-12.347,579.1,NW,NNW,10,7,-0.40217,283.581
+ICE1-Leu018,Leuconidae,Leucon,Leucon spinulosus,Slope,Denmark Strait,APW/NSAIW,Mud,67.214,-26.207,716.5,SW,WSW,2,3,0.07,292.966
+ICE1-Leu019,Leuconidae,Leucon,Leucon pallidus,Slope,Denmark Strait,APW/NSAIW,Mud,67.214,-26.207,716.5,SW,WSW,2,3,0.07,292.966
+ICE1-Nann002,Astacidae,Campylaspis,Campylaspis sulcata,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Nann004,Astacidae,Campylaspis,Campylaspis sulcata,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Nann006,Astacidae,Campylaspis,Campylaspis sulcata,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Nann008,Astacidae,Styloptocuma,Styloptocuma gracillimum,Deep sea,Irminger Basin,NAW,Sand,63.008,-28.068,1593.8,NE,NE,8,8,4.28,245.53
+ICE1-Nann013,Astacidae,Campylaspis,Campylaspis horrida,Deep sea,Irminger Basin,LSW,Muddy sand,61.642,-31.356,2504.7,NW,NNW,4,8,3.16,254.17
+ICE1-Nann014,Astacidae,Campylaspis,Campylaspis globosa,Deep sea,Irminger Basin,LSW,Muddy sand,61.642,-31.356,2504.7,NW,NNW,4,8,3.16,254.17
+ICE1-Bod002,Bodotriidae,Cyclaspis,Cyclaspis longicaudata,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Cer001,Ceratocumatidae,Cimmerius,Cimmerius reticulatus,Deep sea,Irminger Basin,LSW,Muddy sand,61.642,-31.356,2504.7,NW,NNW,4,8,3.16,254.17
+ICE1-Dia002,Diastylidae,Leptostylis,Leptostylis ampullacea,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Dia003,Diastylidae,Diastylis,Diastylis polaris,Deep sea,Norwegian Basin,NSDWc,Forams,67.644,-12.162,1819.3,SSE,SSE,11,10,-0.8511,
+ICE1-Dia015,Diastylidae,Leptostylis,Leptostylis borealis,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Lam003,Lampropidae,Hemilamprops,Hemilamprops uniplicatus,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Lam006,Lampropidae,Hemilamprops,Hemilamprops diversus,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Lam010,Lampropidae,Hemilamprops,Hemilamprops diversus,Deep sea,Iceland Basin,ISOW,Sandy mud,60.357,-18.136,2567.7,S,S,7,7,2.6581,258.389
+ICE1-Lam013,Lampropidae,Hemilamprops,Hemilamprops pterini,Deep sea,Irminger Basin,NAW,Sand,63.008,-28.068,1593.8,NE,NE,8,8,4.28,245.53
+ICE1-Leu001,Leuconidae,Leucon,Leucon profundus,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Leu004,Leuconidae,Leucon,Leucon profundus,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Leu005,Leuconidae,Leucon,Leucon pallidus,Shelf,Denmark Strait,APW,Mud,67.636,-26.767,315.9,SW,SW,6,6,0.706,290.9
+ICE1-Leu009,Leuconidae,Leucon,Leucon pallidus,Deep sea,Denmark Strait,NSDWw,Mud,67.868,-23.696,1281,SSE,SE,5,6,-0.66561,278.7728
+ICE1-Nann005,Astacidae,Campylaspis,,Deep sea,Irminger Basin,NAW,Sand,63.008,-28.068,1593.8,NE,NE,8,8,4.28,245.53
