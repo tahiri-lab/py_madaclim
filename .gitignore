@@ -1,5 +1,4 @@
 # env file
-.env 
 
 # cache
 __pycache__
@@ -15,7 +14,6 @@ test.ipynb
 
 # example data files
 *.tif
-gbif_example
 
 #build folder
 build/
