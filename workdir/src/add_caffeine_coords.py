@@ -9,18 +9,20 @@ def add_caffeine(input_file, caffeine_file):
     gbif_df = pd.read_csv(input_file)
     node_names_df = pd.read_csv(caffeine_file)
 
-    # Merge the two DataFrames based on the matching specimen_id columns
-    # Assuming 'specimen_id' in gbif_df and 'Specimen_id' in node_names_df are the corresponding columns
+    # Merge the two DataFrames based on 'specimen_id' in gbif_df and 'Species_name' in node_names_df
     merged_df = pd.merge(gbif_df, node_names_df[['Species_name', 'caffeine_percent']], 
-                        left_on='Node Name', right_on='Species_name', how='left')
+                         left_on='specimen_id', right_on='Species_name', how='left')
 
-    # Drop the 'Specimen_id' column if you no longer need it after the merge
-    merged_df = merged_df.drop(columns=['Species_name', 'specimen_id'])
-    merged_df = merged_df.rename(columns={'Node Name': 'specimen_id'})
+    # Drop the 'Species_name' column as it's no longer needed
+    merged_df = merged_df.drop(columns=['Species_name'])
+    
+    # Retain only the required columns
     merged_df = merged_df[['specimen_id', 'longitude', 'latitude', 'caffeine_percent']]
+    
+    # Drop rows where 'caffeine_percent' is NaN
     merged_df = merged_df.dropna(subset=['caffeine_percent'])
 
-
+    # Create output filename by replacing 'formatted' with 'w_caffeine'
     output_file = input_file.replace('formatted', 'w_caffeine')
 
     # Save the merged DataFrame to a new CSV file
