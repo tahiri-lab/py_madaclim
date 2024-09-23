@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.2/eml.xsd"
+packageId="10.15468/dl.6me4jq"  system="http://gbif.org" scope="system"
+xml:lang="en">
+
+    <dataset>
+                <alternateIdentifier>0065650-231002084531237</alternateIdentifier>
+        <title>GBIF Occurrence Download 10.15468/dl.6me4jq</title>
+            <creator>
+            <individualName>
+                    <surName>GBIF Download Service</surName>
+            </individualName>
+<electronicMailAddress>support@gbif.org</electronicMailAddress>            </creator>
+            <metadataProvider>
+            <individualName>
+                    <surName>GBIF Download Service</surName>
+            </individualName>
+<electronicMailAddress>support@gbif.org</electronicMailAddress>            </metadataProvider>
+            <pubDate>
+                2023-11-20
+            </pubDate>
+        <language>ENGLISH</language>
+            <abstract>
+                    <para>A dataset containing all occurrences available in GBIF matching the query:
+{
+  &quot;and&quot; : [
+    &quot;GadmGid is MDG&quot;,
+    &quot;HasCoordinate is true&quot;,
+    &quot;HasGeospatialIssue is false&quot;,
+    &quot;TaxonKey is Coffea L.&quot;,
+    &quot;Year is 2010,2023&quot;
+  ]
+}
+The dataset includes records from the following constituent datasets. The full metadata for each constituent is also included in this archive:
+1 records from National Herbarium of Victoria (MEL) AVH data
+11 records from Meise Botanic Garden Herbarium (BR)
+10 records from Geneva Herbarium – General Collection (G)
+1 records from Database on reference specimens for medicinal plants of the Rubiaceae family, conserved at the CNARP herbarium
+343 records from Tropicos Specimens Non-MO
+4 records from The vascular plants collection (P) at the Herbarium of the Muséum national d&apos;Histoire Naturelle (MNHN - Paris)
+145 records from Tropicos MO Specimen Data
+1 records from Arizona State University Vascular Plant Herbarium
+84 records from iNaturalist Research-grade Observations
+18 records from Phanerogamic Botanical Collections (S)</para>
+            </abstract>
+            <contact>
+            <individualName>
+                    <surName>GBIF Download Service</surName>
+            </individualName>
+<electronicMailAddress>support@gbif.org</electronicMailAddress>            </contact>
+
+    </dataset>
+
+    <additionalMetadata>
+        <metadata>
+            <gbif>
+                <dateStamp>2023-11-20T02:53:45Z</dateStamp>
+                <citation identifier="10.15468/dl.6me4jq">GBIF Occurrence Download 10.15468/dl.6me4jq</citation>
+                    <physical>
+                        <objectName>Darwin Core Archive</objectName>
+                        <characterEncoding>UTF-8</characterEncoding>
+                        <dataFormat>
+                            <externallyDefinedFormat>
+                                <formatName>Darwin Core Archive</formatName>
+                            </externallyDefinedFormat>
+                        </dataFormat>
+                        <distribution>
+                            <online>
+                                <url function="download">https://api.gbif.org/v1/occurrence/download/request/0065650-231002084531237.zip</url>
+                            </online>
+                        </distribution>
+                    </physical>
+            </gbif>
+        </metadata>
+    </additionalMetadata>
+
+</eml:eml>

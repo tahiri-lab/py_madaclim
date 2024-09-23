@@ -1,0 +1,11 @@
+When using this dataset please use the following citation and pay attention to the rights documented in rights.txt:
+Australia's Virtual Herbarium (2023). National Herbarium of Victoria (MEL) AVH data. Occurrence dataset https://doi.org/10.15468/rhzrxw accessed via GBIF.org on 2023-11-20.
+Meise Botanic Garden (2023). Meise Botanic Garden Herbarium (BR). Version 1.29. Meise Botanic Garden. Occurrence dataset https://doi.org/10.15468/wrthhx accessed via GBIF.org on 2023-11-20.
+Conservatoire et Jardin botaniques de la Ville de Genève - G. Geneva Herbarium – General Collection (G). Occurrence dataset https://doi.org/10.15468/rvjdu1 accessed via GBIF.org on 2023-11-20.
+RAKOTONDRAJAONA R, RAKOTOARISOA M, Ranaivo J, RAKOTONANDRASANA S, RANDRIAMBANONA H (2018). Database on reference specimens for medicinal plants of the Rubiaceae family, conserved at the CNARP herbarium. CNARP. Occurrence dataset https://doi.org/10.15468/nud2pn accessed via GBIF.org on 2023-11-20.
+Teisher J, Stimmel H (2023). Tropicos Specimens Non-MO. Version 1.39. Missouri Botanical Garden. Occurrence dataset https://doi.org/10.15468/rxbp4w accessed via GBIF.org on 2023-11-20.
+MNHN, Chagnoux S (2023). The vascular plants collection (P) at the Herbarium of the Muséum national d'Histoire Naturelle (MNHN - Paris). Version 69.337. MNHN - Museum national d'Histoire naturelle. Occurrence dataset https://doi.org/10.15468/nc6rxy accessed via GBIF.org on 2023-11-20.
+Teisher J, Stimmel H (2023). Tropicos MO Specimen Data. Missouri Botanical Garden. Occurrence dataset https://doi.org/10.15468/hja69f accessed via GBIF.org on 2023-11-20.
+Arizona State University Biocollections (2023). Arizona State University Vascular Plant Herbarium. Occurrence dataset https://doi.org/10.15468/a2o8vy accessed via GBIF.org on 2023-11-20.
+iNaturalist contributors, iNaturalist (2023). iNaturalist Research-grade Observations. iNaturalist.org. Occurrence dataset https://doi.org/10.15468/ab3s5x accessed via GBIF.org on 2023-11-20.
+Lundberg J (2023). Phanerogamic Botanical Collections (S). Swedish Museum of Natural History. Occurrence dataset https://doi.org/10.15468/yo3mmu accessed via GBIF.org on 2023-11-20.

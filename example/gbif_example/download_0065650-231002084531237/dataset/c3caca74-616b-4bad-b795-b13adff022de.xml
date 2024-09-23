@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.2/eml.xsd"
+packageId="c3caca74-616b-4bad-b795-b13adff022de"  system="http://gbif.org" scope="system"
+xml:lang="en">
+
+    <dataset>
+            <alternateIdentifier>10.15468/nud2pn</alternateIdentifier>
+                <alternateIdentifier>http://ipt.madbif.mg/resource?r=rubiaceae_db_cnarp</alternateIdentifier>
+        <title>Database on reference specimens for medicinal plants of the Rubiaceae family, conserved at the CNARP herbarium</title>
+            <creator>
+            <individualName>
+<givenName>Roland</givenName>                    <surName>RAKOTONDRAJAONA</surName>
+            </individualName>
+<organizationName>CNARP</organizationName><positionName>Researcher</positionName>            <address>
+<deliveryPoint>Ambodivoanjo, Rue Rahajarizafy RP</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261202242801</phone><electronicMailAddress>rolandrakotondrajaona@yahoo.fr</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Marrino</givenName>                    <surName>RAKOTOARISOA</surName>
+            </individualName>
+<organizationName>CNARP</organizationName><positionName>Researcher</positionName>            <address>
+<deliveryPoint>Ambodivoanjo, Rue Rahajarizafy RP</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261202242801</phone><electronicMailAddress>rino2r@hotmail.fr</electronicMailAddress>            </creator>
+            <metadataProvider>
+            <individualName>
+<givenName>Jaona</givenName>                    <surName>Ranaivo</surName>
+            </individualName>
+<organizationName>MadBIF</organizationName><positionName>Researcher</positionName>            <address>
+<deliveryPoint>Po Box 1739 Antananarivo</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261 33 772 79</phone><electronicMailAddress>ranaivo_jaona@yahoo.fr</electronicMailAddress>            </metadataProvider>
+            <metadataProvider>
+            <individualName>
+<givenName>Stéphan</givenName>                    <surName>RAKOTONANDRASANA</surName>
+            </individualName>
+<organizationName>CNARP</organizationName><positionName>Curator</positionName>            <address>
+<deliveryPoint>Ambodivoanjo, Rue Rahajarizafy RP</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261202242801</phone><electronicMailAddress>stephananandrasana@yahoo.fr</electronicMailAddress>            </metadataProvider>
+            <metadataProvider>
+            <individualName>
+<givenName>Herizo</givenName>                    <surName>RANDRIAMBANONA</surName>
+            </individualName>
+<organizationName>MadBIF</organizationName><positionName>Node manager</positionName>            <address>
+<deliveryPoint>Po Box 1739 Antananarivo</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261 34 60 384 86</phone><electronicMailAddress>zombanona@yahoo.fr</electronicMailAddress>            </metadataProvider>
+            <associatedParty>
+            <individualName>
+<givenName>Roland</givenName>                    <surName>RAKOTONDRAJAONA</surName>
+            </individualName>
+<organizationName>CNARP</organizationName><positionName>Researcher</positionName>            <address>
+<deliveryPoint>Ambodivoanjo, Rue Rahajarizafy RP</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261202242801</phone><electronicMailAddress>rolandrakotondrajaona@yahoo.fr</electronicMailAddress>            <role>CONTENT_PROVIDER</role>
+            </associatedParty>
+            <associatedParty>
+            <individualName>
+<givenName>Stéphan</givenName>                    <surName>RAKOTONANDRASANA</surName>
+            </individualName>
+<organizationName>CNARP</organizationName><positionName>Researcher</positionName>            <address>
+<deliveryPoint>Ambodivoanjo, Rue Rahajarizafy RP</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261202242801</phone><electronicMailAddress>stephanandrasana@yahoo.fr</electronicMailAddress>            <role>CURATOR</role>
+            </associatedParty>
+            <pubDate>
+                2018-07-27
+            </pubDate>
+        <language>FRENCH</language>
+            <abstract>
+                    <para>This collection concerns mainly plants, within the Rubiaceae family sensus lato, with medicinal properties or used in traditional medicine, but it does not exclude other sympatric species.</para>
+                    <para>This database was extracted from the four collections of reference specimens on medicinal plants deposited at the CNARP herbarium: http://ipt.madbif.mg/resource?r&amp;#61;medicinal_plants_orstom_cnarp&amp;amp;v&amp;#61;1.0, http://ipt.madbif.mg/resource?r&amp;#61;medecinal_plants_cnarp&amp;amp;v&amp;#61;1.0, http://ipt.madbif.mg/resource?r&amp;#61;medecinal_plants_nci_cnarp&amp;amp;v&amp;#61;1.0 and http://ipt.madbif.mg/resource?r&amp;#61;medecinal_plants_icbg_cnarp&amp;amp;v&amp;#61;1.1</para>
+            </abstract>
+                <keywordSet>
+                        <keyword>Occurrence; medicinal plant; biodiversity</keyword>
+                        <keywordThesaurus>GBIF Dataset Type Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_type.xml</keywordThesaurus>
+                </keywordSet>
+                <keywordSet>
+                        <keyword>Specimen</keyword>
+                        <keywordThesaurus>GBIF Dataset Subtype Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_subtype.xml</keywordThesaurus>
+                </keywordSet>
+            <intellectualRights>
+                    <para>This work is licensed under a <ulink url="http://creativecommons.org/licenses/by/4.0/legalcode"><citetitle>Creative Commons Attribution (CC-BY) 4.0 License</citetitle></ulink>.</para>
+            </intellectualRights>
+            <coverage>
+                    <geographicCoverage>
+                            <geographicDescription>This dataset concerns mainly taxa from Madagascar</geographicDescription>
+                            <boundingCoordinates>
+                                <westBoundingCoordinate>43.154</westBoundingCoordinate>
+                                <eastBoundingCoordinate>50.713</eastBoundingCoordinate>
+                                <northBoundingCoordinate>-11.437</northBoundingCoordinate>
+                                <southBoundingCoordinate>-25.879</southBoundingCoordinate>
+                            </boundingCoordinates>
+                    </geographicCoverage>
+                        <taxonomicCoverage>
+                                <generalTaxonomicCoverage>This dataset is mainly about medicinal plants of the Rubiaceae family</generalTaxonomicCoverage>
+                                <taxonomicClassification>
+                                        <taxonRankName>Kingdom</taxonRankName>
+                                    <taxonRankValue>Plantae</taxonRankValue>
+                                        <commonName>Plants</commonName>
+                                </taxonomicClassification>
+                                <taxonomicClassification>
+                                        <taxonRankName>Phylum</taxonRankName>
+                                    <taxonRankValue>Tracheophyta</taxonRankValue>
+                                        <commonName>Vascular plants</commonName>
+                                </taxonomicClassification>
+                                <taxonomicClassification>
+                                        <taxonRankName>Class</taxonRankName>
+                                    <taxonRankValue>Magnoliopsida</taxonRankValue>
+                                </taxonomicClassification>
+                                <taxonomicClassification>
+                                        <taxonRankName>Order</taxonRankName>
+                                    <taxonRankValue>Gentianales</taxonRankValue>
+                                </taxonomicClassification>
+                                <taxonomicClassification>
+                                        <taxonRankName>Family</taxonRankName>
+                                    <taxonRankValue>Rubiaceae</taxonRankValue>
+                                </taxonomicClassification>
+                        </taxonomicCoverage>
+            </coverage>
+            <maintenance>
+                <description>
+                    <para></para>
+                </description>
+                <maintenanceUpdateFrequency>unkown</maintenanceUpdateFrequency>
+            </maintenance>
+            <contact>
+            <individualName>
+<givenName>Jaona</givenName>                    <surName>Ranaivo</surName>
+            </individualName>
+<organizationName>CNRE</organizationName><positionName>Researcher</positionName>            <address>
+<deliveryPoint>Po Box 1739 Antananarivo</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261 33 772 79</phone><electronicMailAddress>ranaivo_jaona@yahoo.fr</electronicMailAddress>            </contact>
+            <contact>
+            <individualName>
+<givenName>Herizo</givenName>                    <surName>RANDRIAMBANONA</surName>
+            </individualName>
+<organizationName>MadBIF</organizationName><positionName>MadBIF node manager</positionName>            <address>
+<deliveryPoint>Po Box 1739 Antananarivo</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261346038486</phone><electronicMailAddress>zombanona@yahoo.fr</electronicMailAddress>            </contact>
+            <contact>
+            <individualName>
+<givenName>Marrino</givenName>                    <surName>RAKOTOARISOA</surName>
+            </individualName>
+<organizationName>CNARP</organizationName><positionName>Researcher</positionName>            <address>
+<deliveryPoint>Ambodivoanjo, Rue Rahajarizafy RP</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261202242801</phone><electronicMailAddress>rino2r@hotmail.fr</electronicMailAddress>            </contact>
+            <contact>
+            <individualName>
+<givenName>Stéphan</givenName>                    <surName>RAKOTONANDRASANA</surName>
+            </individualName>
+<organizationName>CNARP</organizationName><positionName>Curator</positionName>            <address>
+<deliveryPoint>Ambodivoanjo, Rue Rahajarizafy RP</deliveryPoint><city>Antananarivo</city><administrativeArea>Antananarivo</administrativeArea><postalCode>101</postalCode><country>MADAGASCAR</country>            </address>
+<phone>+261202242801</phone><electronicMailAddress>srephanandrasana@yahoo.fr</electronicMailAddress>            </contact>
+            <methods>
+                    <methodStep>
+                        <description>
+                            <para>Nomenclatural check,
+Scientific authorship check (Standard use)
+Typing check
+Data mapping
+Data publishing</para>
+                        </description>
+                    </methodStep>
+                    <sampling>
+                        <studyExtent>
+                            <description>
+                                <para>The digitization program concerns all specimens of the targeted families owned by CNARP</para>
+                            </description>
+                        </studyExtent>
+                        <samplingDescription>
+                            <para>All of the Rubiaceae family specimens from the herbarium were digitized. These specimens were collected from the Malagasy territory. The collection includes mainly medicinal plants but are not exclusively so.</para>
+                        </samplingDescription>
+                    </sampling>
+                    <qualityControl>
+                        <description>
+                            <para>Before publishing, the nomenclature was checked and updated with Catalogue of life, Tropicos database and/or IPNI, we used the OpenRefine tool as well to clean the data</para>
+                        </description>
+                    </qualityControl>
+            </methods>
+
+            <project id="BID-AF2015-0066-REG">
+                <title>Mobilization of reference specimens data on the Rubiaceae family, owned by CNARP, for conservation, sustainable use and decision making in Madagascar</title>
+                    <personnel>
+            <individualName>
+<givenName>Roland</givenName>                    <surName>RAKOTONDRAJAONA</surName>
+            </individualName>
+            <role>CONTENT_PROVIDER</role>
+                    </personnel>
+                    <personnel>
+            <individualName>
+<givenName>Stephan</givenName>                    <surName>RAKOTONANDRASANA</surName>
+            </individualName>
+            <role>CURATOR</role>
+                    </personnel>
+                    <personnel>
+            <individualName>
+<givenName>Jaona</givenName>                    <surName>RANAIVO</surName>
+            </individualName>
+            <role>METADATA_AUTHOR</role>
+                    </personnel>
+                    <personnel>
+            <individualName>
+<givenName>Herizo</givenName>                    <surName>RANDRIAMBANONA</surName>
+            </individualName>
+            <role>METADATA_AUTHOR</role>
+                    </personnel>
+                    <personnel>
+            <individualName>
+<givenName>Marrino</givenName>                    <surName>RAKOTOARISOA</surName>
+            </individualName>
+            <role>CONTENT_PROVIDER</role>
+                    </personnel>
+                <abstract>
+                    <para>The digitization of the reference specimens of medicinal plants conserved at the CNARP herbarium was initiated during SEP-CEPDEC 1, tne BID program allowed to continuing the digitization of some threatend and invasive species. (https://www.gbif.org/project/82750/capacity-building-and-biodiversity-data-mobilization-for-conservation-and-policy-in-africa)
+The digitization in itself was carried out by CNARP team and data cleaning, further georeferencing, formating and publishing were assured by MadBIF team.</para>
+                </abstract>
+                <funding>
+                    <para>The digitization of this family has been possible thanks to an European Union funding through the BID program coordinated by GBIF.</para>
+                </funding>
+                    <studyAreaDescription>
+                        <descriptor name="generic" citableClassificationSystem="false">
+                            <descriptorValue>Invasive alien species and endangered species were the two firsts of the 8 priority areas defined by the ACM in its WP 2015-2016. In this regard, the consortium retained 8 families of each category for the project. The Rubiaceae family was chosen by the consortium as one of the priority family of threatned species.</descriptorValue>
+                        </descriptor>
+                    </studyAreaDescription>
+                    <designDescription>
+                        <description>
+                            <para>alien species and endangered species were the two firsts of the 8 priority areas defined by the ACM in its WP 2015-2016. In this regard, the consortium retained 8 families of each category for the project. The Rubiaceae family was chosen by the consortium as one of the priority family of threatned species.</para>
+                        </description>
+                    </designDescription>
+            </project>
+    </dataset>
+
+    <additionalMetadata>
+        <metadata>
+            <gbif>
+                <dateStamp>2023-11-20T02:53:44Z</dateStamp>
+                <citation>RAKOTONDRAJAONA R, RAKOTOARISOA M, Ranaivo J, RAKOTONANDRASANA S, RANDRIAMBANONA H (2018). Database on reference specimens for medicinal plants of the Rubiaceae family, conserved at the CNARP herbarium. CNARP. Occurrence dataset https://doi.org/10.15468/nud2pn accessed via GBIF.org on 2023-11-20.</citation>
+                        <collection>
+                            <parentCollectionIdentifier></parentCollectionIdentifier>
+                            <collectionIdentifier>ORSTOM</collectionIdentifier>
+                            <collectionName>NCI</collectionName>
+                        </collection>
+                        <collection>
+                            <parentCollectionIdentifier></parentCollectionIdentifier>
+                            <collectionIdentifier></collectionIdentifier>
+                            <collectionName>ICBG</collectionName>
+                        </collection>
+                        <collection>
+                            <parentCollectionIdentifier></parentCollectionIdentifier>
+                            <collectionIdentifier></collectionIdentifier>
+                            <collectionName>CNARP</collectionName>
+                        </collection>
+                    <formationPeriod>1962-current</formationPeriod>
+                        <specimenPreservationMethod>ALCOHOL</specimenPreservationMethod>
+            </gbif>
+        </metadata>
+    </additionalMetadata>
+
+</eml:eml>
