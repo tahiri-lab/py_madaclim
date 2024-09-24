@@ -116,7 +116,7 @@ pip install .    # using pip inside conda env
 git clone https://github.com/tahiri-lab/py_madaclim.git
 cd py_madaclim
 python -m venv ~/.pyenv/py_mada_env    #python=3.10
-./.pyenv/py_mada_env/Scripts/activate
+source ~/.pyenv/py_mada_env/Scripts/activate
 ```
 <li>Activate the environment and install the requirements</li>
 
