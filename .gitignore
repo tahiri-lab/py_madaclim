@@ -1,4 +1,5 @@
 # env file
+.env 
 
 # cache
 __pycache__
@@ -11,9 +12,9 @@ test.ipynb
 # editable package dev-mode
 *.egg-info
 
-
 # example data files
 *.tif
+gbif_example
 
 #build folder
 build/
