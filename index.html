@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview &mdash; py-madaclim 0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            py-madaclim
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#package-description">Package Description</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li><a class="reference internal" href="#full-walkthrough-example">Full walkthrough example</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+<li><a class="reference internal" href="#py-madaclim-api-documentation">py-madaclim API Documentation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">py-madaclim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="overview">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Permalink to this heading"></a></h1>
+<a class="reference external image-reference" href="https://github.com/tahiri-lab/py_madaclim"><img alt="GitHub top language" src="https://img.shields.io/github/languages/top/tahiri-lab/py_madaclim?logoColor=blue" /></a>
+<a class="reference external image-reference" href="https://github.com/tahiri-lab/py_madaclim"><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/tahiri-lab/py_madaclim?color=orange&amp;logo=github" /></a>
+<a class="reference external image-reference" href="https://github.com/tahiri-lab/py_madaclim"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/tahiri-lab/py_madaclim?color=purple&amp;logo=github" /></a>
+<a class="reference external image-reference" href="https://tahirinadia.github.io"><img alt="Website status" src="https://img.shields.io/website/https/tahirinadia.github.io.svg" /></a>
+<nav class="contents" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview" id="id1">Overview</a></p>
+<ul>
+<li><p><a class="reference internal" href="#package-description" id="id2">Package Description</a></p></li>
+<li><p><a class="reference internal" href="#installation" id="id3">Installation</a></p></li>
+<li><p><a class="reference internal" href="#getting-started" id="id4">Getting Started</a></p></li>
+<li><p><a class="reference internal" href="#full-walkthrough-example" id="id5">Full walkthrough example</a></p></li>
+<li><p><a class="reference internal" href="#references" id="id6">References</a></p></li>
+<li><p><a class="reference internal" href="#py-madaclim-api-documentation" id="id7">py-madaclim API Documentation</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="package-description">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Package Description</a><a class="headerlink" href="#package-description" title="Permalink to this heading"></a></h2>
+<img alt="Example of a MadaclimCollection plot with layer 79" class="align-center" src="_images/example_coll_plot.png" />
+<p><cite>py-madaclim</cite> is a Python 3+ package that facilitates interaction with the <a class="reference external" href="https://madaclim.cirad.fr/">Madaclim db</a>, an open-source climate and environmental database for Madagascar.</p>
+<p>It provides functionalities to fetch and explore raster-based data with metadata information support, create new datasets from existent spreadsheets/csv/dataframes from any Coordinate Reference System (CRS), and to explore/manipulate data with visualization and transformation tools.</p>
+</section>
+<section id="installation">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Installation</a><a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
+<p><cite>py-madaclim</cite> works with Python 3.10 and 3.11. For now, we offer two setup options:</p>
+<ul class="simple">
+<li><p>Using <cite>pip</cite> and <cite>venv</cite> for Python=3.10.</p></li>
+<li><p>Using <a class="reference external" href="https://conda.io">Conda</a> for Python=3.11.</p></li>
+</ul>
+<p>The requirements for each setup can be found in <a class="reference external" href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/conda_requirements.txt">conda_requirements.txt</a> and <a class="reference external" href="https://github.com/tahiri-lab/coffeaPhyloGeo/blob/main/venv_requirements.txt">venv_requirements.txt</a>.</p>
+<p><strong>Linux/Debian systems</strong></p>
+<p>Steps for <code class="docutils literal notranslate"><span class="pre">pip</span></code> installation (Recommended)</p>
+<ol class="arabic">
+<li><p>Clone the repo and create a new venv:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/tahiri-lab/py_madaclim.git
+<span class="nb">cd</span><span class="w"> </span>py_madaclim
+python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>~/.pyenv/py_mada_env<span class="w">    </span><span class="c1">#python=3.10</span>
+<span class="nb">source</span><span class="w"> </span>~/.pyenv/py_mada_env/bin/activate
+</pre></div>
+</div>
+</li>
+<li><p>Activate the environment and install the requirements:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>venv_requirements.txt<span class="w">    </span><span class="c1"># reqs before py_madaclim</span>
+pip<span class="w"> </span>install<span class="w"> </span>.<span class="w">    </span><span class="c1"># to install py-madaclim</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Steps for <code class="docutils literal notranslate"><span class="pre">conda</span></code> installation (Slow environment creation)</p>
+<ol class="arabic">
+<li><p>First follow these <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html">instructions</a> to install conda on your machine.</p></li>
+<li><p>Clone the repo and configure the <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code> channel:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/tahiri-lab/py_madaclim.git
+<span class="nb">cd</span><span class="w"> </span>py_madaclim
+
+<span class="c1"># Configure correct channel priority in ~/.condarc</span>
+conda<span class="w"> </span>config<span class="w"> </span>--add<span class="w"> </span>channels<span class="w"> </span>conda-forge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>conda<span class="w"> </span>config<span class="w"> </span>--append<span class="w"> </span>channels<span class="w"> </span>plotly
+conda<span class="w"> </span>config<span class="w"> </span>--show<span class="w"> </span>channels
+<span class="c1"># channels:</span>
+<span class="c1">#   - conda-forge</span>
+<span class="c1">#   - defaults</span>
+<span class="c1">#   - plotly</span>
+</pre></div>
+</div>
+</li>
+<li><p>Create the environment with dependencies (This is the slow step, patience!):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>py_mada_env<span class="w"> </span>--file<span class="w"> </span>conda_requirements.txt
+</pre></div>
+</div>
+</li>
+<li><p>Activate the environment and install <code class="docutils literal notranslate"><span class="pre">py-madaclim</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>py_mada_env
+pip<span class="w"> </span>install<span class="w"> </span>.<span class="w">    </span><span class="c1"># using pip inside conda env</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="getting-started">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Getting Started</a><a class="headerlink" href="#getting-started" title="Permalink to this heading"></a></h2>
+<p><strong>Madaclim db metadata with the</strong> <code class="docutils literal notranslate"><span class="pre">info</span></code> <strong>module</strong></p>
+<p>Basic metada and download rasters from Madaclim server</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get available methods and properties for MadaclimLayers</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py_madaclim.info</span> <span class="kn">import</span> <span class="n">MadaclimLayers</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mada_info</span> <span class="o">=</span> <span class="n">MadaclimLayers</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">mada_info</span><span class="p">)</span>
+<span class="go">MadaclimLayers(</span>
+<span class="go">   all_layers = DataFrame(79 rows x 6 columns)</span>
+<span class="go">   categorical_layers = DataFrame(Layers 75, 76, 77, 78 with a total of 79 categories</span>
+<span class="go">   public methods -&gt; download_data, fetch_specific_layers, get_categorical_combinations</span>
+<span class="go">               get_layers_labels, select_geoclim_type_layers</span>
+<span class="go">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># To access all layers as a dataframe</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mada_info</span><span class="o">.</span><span class="n">all_layers</span>
+<span class="go">geoclim_type  layer_number layer_name                       layer_description  is_categorical    units</span>
+<span class="go">0         clim             1      tmin1   Monthly minimum temperature - January           False  °C x 10</span>
+<span class="go">...</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Built-in method to download the Madaclim raster files</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mada_info</span><span class="o">.</span><span class="n">download_data</span><span class="p">(</span><span class="n">save_dir</span><span class="o">=</span><span class="n">cwd</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Get detailed labels for each raster layers</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">env_labels</span> <span class="o">=</span> <span class="n">mada_info</span><span class="o">.</span><span class="n">get_layers_labels</span><span class="p">(</span>
+<span class="gp">... </span><span class="n">layers_subset</span><span class="o">=</span><span class="s2">&quot;env&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="n">as_descriptive_labels</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">env_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">&#39;env_71_alt_Altitude (meters)&#39;</span>
+</pre></div>
+</div>
+<p><strong>Explore the rasters and create datasets with the</strong> <code class="docutils literal notranslate"><span class="pre">raster_manipulation</span></code> <strong>module</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">MadaclimRasters</span></code> basic properties and visualization methods</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py_madaclim.raster_manipulation</span> <span class="kn">import</span> <span class="n">MadaclimRasters</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mada_rasters</span> <span class="o">=</span> <span class="n">MadaclimRasters</span><span class="p">(</span><span class="s2">&quot;madaclim_current.tif&quot;</span><span class="p">,</span> <span class="s2">&quot;madaclim_enviro.tif&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">mada_rasters</span><span class="p">)</span>
+<span class="go">MadaclimRasters(</span>
+<span class="go">   clim_raster = madaclim_current.tif,</span>
+<span class="go">   clim_crs = epsg:32738,</span>
+<span class="go">   clim_nodata_val = -32768.0</span>
+<span class="go">   env_raster = madaclim_enviro.tif,</span>
+<span class="go">   env_crs = epsg:32738,</span>
+<span class="go">   env_nodata_val = -32768.0</span>
+<span class="go">)</span>
+
+<span class="go"># Basic visualization for a continuous data layer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mada_rasters</span><span class="o">.</span><span class="n">plot_layer</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">layer</span><span class="o">=</span><span class="n">env_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">imshow_cmap</span><span class="o">=</span><span class="s2">&quot;terrain&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">histplot_binwidth</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">histplot_stat</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/rastplot_1.png"><img alt="dasdas" src="_images/rastplot_1.png" style="width: 500px;" /></a>
+<p><strong>Create sample points with</strong> <code class="docutils literal notranslate"><span class="pre">MadaclimPoint</span></code> <strong>and</strong> <code class="docutils literal notranslate"><span class="pre">MadaclimCollection</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py_madaclim.raster_manipulation</span> <span class="kn">import</span> <span class="n">MadaclimPoint</span>
+
+<span class="go"># Single point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">specimen_1</span> <span class="o">=</span> <span class="n">MadaclimPoint</span><span class="p">(</span><span class="n">specimen_id</span><span class="o">=</span><span class="s2">&quot;abbayesii&quot;</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="mf">46.8624</span><span class="p">,</span> <span class="n">latitude</span><span class="o">=-</span><span class="mf">24.7541</span><span class="p">)</span>
+
+<span class="go"># Multipoints</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coll</span> <span class="o">=</span> <span class="n">MadaclimCollection</span><span class="o">.</span><span class="n">populate_from_csv</span><span class="p">(</span><span class="s2">&quot;collection_example.csv&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">coll</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">MadaclimPoint(</span>
+<span class="go">   specimen_id = ABA,</span>
+<span class="go">   source_crs = 4326,</span>
+<span class="go">   longitude = 46.8624,</span>
+<span class="go">   latitude = -24.7541,</span>
+<span class="go">   mada_geom_point = POINT (688328.2403248843 7260998.022932809),</span>
+<span class="go">   sampled_layers = None (Not sampled yet),</span>
+<span class="go">   nodata_layers = None (Not sampled yet),</span>
+<span class="go">   is_categorical_encoded = False,</span>
+<span class="go">   Species = C.abbayesii,</span>
+<span class="go">   Botanical_series = Millotii,</span>
+<span class="go">   Genome_size_2C_pg = 1.25,</span>
+<span class="go">   gdf.shape = (1, 11)</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p><strong>Sample the rasters, visualize and encode the data for ML-related tasks</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sample the collection reflects the changes to the geodataframe</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coll</span><span class="o">.</span><span class="n">sample_from_rasters</span><span class="p">(</span>
+<span class="o">...</span>     <span class="n">clim_raster</span><span class="o">=</span><span class="n">mada_rasters</span><span class="o">.</span><span class="n">clim_raster</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">env_raster</span><span class="o">=</span><span class="n">mada_rasters</span><span class="o">.</span><span class="n">env_raster</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">layers_to_sample</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>   <span class="c1"># Or any single/list of layers labels</span>
+<span class="o">...</span>     <span class="n">layer_info</span><span class="o">=</span><span class="kc">True</span>
+<span class="o">...</span> <span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coll</span><span class="o">.</span><span class="n">gdf</span><span class="p">[</span><span class="s2">&quot;specimen_id&quot;</span><span class="p">,</span> <span class="n">env_labels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>specimen_id</p></th>
+<th class="head"><p>Percentage of forest cover in 1 km by 1 km grid cells (%)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ABA</p></td>
+<td><p>100</p></td>
+</tr>
+<tr class="row-odd"><td><p>AMB</p></td>
+<td><p>65</p></td>
+</tr>
+<tr class="row-even"><td><p>ANK1</p></td>
+<td><p>20</p></td>
+</tr>
+<tr class="row-odd"><td><p>BISS</p></td>
+<td><p>89</p></td>
+</tr>
+<tr class="row-even"><td><p>COS</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>VOHE</p></td>
+<td><p>88</p></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Visualize on the raster map</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coll</span><span class="o">.</span><span class="n">plot_on_layer</span><span class="p">(</span><span class="n">env_labels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">imshow_cmap</span><span class="o">=</span><span class="s2">&quot;coolwarm&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/rastplot_2.png"><img alt="Collection plot example" src="_images/rastplot_2.png" style="width: 500px;" /></a>
+<p>Binary encoding for downstream ML applications</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Binary encoding for ML-tasks</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coll</span><span class="o">.</span><span class="n">binary_encode_categorical</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">coll</span><span class="o">.</span><span class="n">is_categorical_encoded</span><span class="p">)</span>
+<span class="kc">True</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coll_categ_layers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[:</span><span class="mi">4</span><span class="p">])</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">coll</span><span class="o">.</span><span class="n">encoded_categ_labels</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Splitted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">coll_categ_layers</span><span class="p">)</span><span class="si">}</span><span class="s2"> layers into </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">coll</span><span class="o">.</span><span class="n">encoded_categ_labels</span><span class="p">)</span><span class="si">}</span><span class="s2"> unique categories&quot;</span><span class="p">)</span>
+<span class="n">Splitted</span> <span class="mi">4</span> <span class="n">layers</span> <span class="n">into</span> <span class="mi">83</span> <span class="n">unique</span> <span class="n">categories</span>
+
+<span class="c1"># Updated geodataframe attribute</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">env_76_encoded</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">encoded_categ_labels</span><span class="p">[</span><span class="mi">12</span><span class="p">:</span><span class="mi">30</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coll</span><span class="o">.</span><span class="n">gdf</span><span class="p">[[</span><span class="s2">&quot;specimen_id&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">env_76_encoded</span><span class="p">]</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>specimen_id</p></th>
+<th class="head"><p>env_76_soi_Soil types_Alluvio-colluvial_Deposited_Soils</p></th>
+<th class="head"><p>env_76_soi_Soil types_Andosols</p></th>
+<th class="head"><p>env_76_soi_Soil types_Bare_Rocks</p></th>
+<th class="head"><p>env_76_soi_Soil <a href="#id8"><span class="problematic" id="id9">types_Fluvio-marine_Deposited_Soils_</span></a>-_Mangroves</p></th>
+<th class="head"><p>env_76_soi_Soil types_Highly_Rejuvenated,_Penevoluted_Ferralitic_Soils</p></th>
+<th class="head"><p>env_76_soi_Soil types_Humic_Ferralitic_Soils</p></th>
+<th class="head"><p>env_76_soi_Soil types_Humic_Rejuvenated_Ferralitic_Soils</p></th>
+<th class="head"><p>env_76_soi_Soil types_Hydromorphic_Soils</p></th>
+<th class="head"><p>env_76_soi_Soil types_Indurated-Concretion_Ferralitic_Soils</p></th>
+<th class="head"><p>env_76_soi_Soil types_Podzolic_Soils_and_Podzols</p></th>
+<th class="head"><p>env_76_soi_Soil types_Poorly_Evolved_Erosion_Soils,_Lithosols</p></th>
+<th class="head"><p>env_76_soi_Soil types_Raw_Lithic_Mineral_Soils</p></th>
+<th class="head"><p>env_76_soi_Soil types_Red_Ferruginous_Soils</p></th>
+<th class="head"><p>env_76_soi_Soil types_Red_Fersiallitic_Soils</p></th>
+<th class="head"><p>env_76_soi_Soil types_Rejuvenated_Ferralitic_Soils_with_Degrading_Structure</p></th>
+<th class="head"><p>env_76_soi_Soil types_Rejuvenated_Ferralitic_Soils_with_Little_Degrading_Structure</p></th>
+<th class="head"><p>env_76_soi_Soil types_Salty_Deposited_Soils</p></th>
+<th class="head"><p>env_76_soi_Soil types_Skeletal_Shallow_Eroded_Ferruginous_Soils</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ABA</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>AMB</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>ANK1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>BISS</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>COS</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>VOHE</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>GBIF API utilities for pre-data fetching in the</strong> <code class="docutils literal notranslate"><span class="pre">utils</span></code> <strong>module</strong></p>
+<p>Request an occurence search and download the data</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py_madaclim.utils</span> <span class="kn">import</span> <span class="n">gbif_api</span>
+
+<span class="go"># Get taxonKey of interest</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coffea_key</span> <span class="o">=</span> <span class="n">gbif_api</span><span class="o">.</span><span class="n">get_taxon_key_by_species_match</span><span class="p">(</span><span class="s2">&quot;coffea&quot;</span><span class="p">)</span>
+<span class="go">EXACT match type found with 95% confidence!</span>
+<span class="go">canonical name of match: Coffea</span>
+<span class="go">GBIF_taxon_key: 2895315</span>
+
+<span class="go"># Search occurrences</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">recent_years</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">2023</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coffea_search_results_2010_present</span> <span class="o">=</span> <span class="n">gbif_api</span><span class="o">.</span><span class="n">search_occ_mdg_valid_coordinates</span><span class="p">(</span><span class="n">taxon_key</span><span class="o">=</span><span class="n">coffea_key</span><span class="p">,</span> <span class="n">year_range</span><span class="o">=</span><span class="n">recent_years</span><span class="p">)</span>
+<span class="go">Fetching all 613 occurrences in year range 2010-2023...</span>
+<span class="go">Extracting occurrences 0 to 300...</span>
+<span class="go">Extracting occurrences 300 to 600...</span>
+<span class="go">Extracting occurrences 600 to 613...</span>
+<span class="go">Total records retrieved: 613</span>
+
+<span class="go"># ...Or create a download for a given search</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">load_dotenv</span><span class="p">(</span><span class="s2">&quot;.env&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">download_id</span> <span class="o">=</span> <span class="n">gbif_api</span><span class="o">.</span><span class="n">request_occ_download_mdg_valid_coordinates</span><span class="p">(</span><span class="n">taxon_key</span><span class="o">=</span><span class="n">coffea_key</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">your_email</span><span class="nd">@gmail</span><span class="o">.</span><span class="n">com</span><span class="p">,</span> <span class="n">year_range</span><span class="o">=</span><span class="n">recent_years</span><span class="p">)</span>
+
+<span class="go"># Download, extract and read as df</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coffea_gbif_df</span> <span class="o">=</span> <span class="n">gbif_api</span><span class="o">.</span><span class="n">download_extract_read_occ</span><span class="p">(</span><span class="n">download_id</span><span class="o">=</span><span class="n">download_id</span><span class="p">,</span> <span class="n">target_dir</span><span class="o">=</span><span class="s2">&quot;gbif_example&quot;</span><span class="p">)</span>
+<span class="go">Response OK from https://api.gbif.org/v1/occurrence/download for the given &#39;download_id&#39;</span>
+<span class="go">Progress for download_0008397-230810091245214.zip : 100.0% completed of 0.21 MB downloaded [average speed of 0.41 MB/s]</span>
+<span class="go">Extracting all 17 files to target location: .../download_0008397-230810091245214/</span>
+<span class="go">Read and saved core data into pandas df: occurrence.txt</span>
+</pre></div>
+</div>
+<p><strong>Create a MadaclimCollection from the GBIF occurrences</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Keep relevant data</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">coffea_gbif_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">coffea_gbif_df</span><span class="p">[</span><span class="s2">&quot;taxonRank&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;SPECIES&quot;</span><span class="p">]</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;verbatimScientificName&quot;</span><span class="p">,</span> <span class="s2">&quot;decimalLongitude&quot;</span><span class="p">,</span> <span class="s2">&quot;decimalLatitude&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">]]</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;specimen_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;verbatimScientificName&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">row</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;specimen_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;specimen_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;Coffea &quot;</span><span class="p">)</span>
+<span class="c1"># Format for MadaclimCollection constructor</span>
+<span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;genus_species&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;specimen_id&quot;</span><span class="p">]</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 15%" />
+<col style="width: 15%" />
+<col style="width: 10%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>genus_species</p></th>
+<th class="head"><p>longitude</p></th>
+<th class="head"><p>latitude</p></th>
+<th class="head"><p>year</p></th>
+<th class="head"><p>specimen_id</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Coffea perrieri</p></td>
+<td><p>46.015693</p></td>
+<td><p>-17.117573</p></td>
+<td><p>2023</p></td>
+<td><p>perrieri_0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Coffea pervilleana</p></td>
+<td><p>45.920397</p></td>
+<td><p>-17.077081</p></td>
+<td><p>2023</p></td>
+<td><p>pervilleana_1</p></td>
+</tr>
+<tr class="row-even"><td><p>Coffea pervilleana</p></td>
+<td><p>45.923007</p></td>
+<td><p>-17.078820</p></td>
+<td><p>2023</p></td>
+<td><p>pervilleana_2</p></td>
+</tr>
+<tr class="row-odd"><td><p>Coffea boiviniana (Baill.) Drake</p></td>
+<td><p>49.353747</p></td>
+<td><p>-12.336711</p></td>
+<td><p>2020</p></td>
+<td><p>boiviniana (Baill.) Drake_3</p></td>
+</tr>
+<tr class="row-even"><td><p>Coffea humbertii J.-F.Leroy</p></td>
+<td><p>44.690055</p></td>
+<td><p>-22.888583</p></td>
+<td><p>2018</p></td>
+<td><p>humbertii J.-F.Leroy_4</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="full-walkthrough-example">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Full walkthrough example</a><a class="headerlink" href="#full-walkthrough-example" title="Permalink to this heading"></a></h2>
+<p>For a full walkthrough, follow along this <a class="reference external" href="https://nbviewer.org/github/tahiri-lab/py_madaclim/blob/main/example/full_walkthrough.ipynb">notebook</a></p>
+</section>
+<section id="references">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">References</a><a class="headerlink" href="#references" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://madaclim.cirad.fr">Madaclim</a> &#64; CIRAD</p></li>
+<li><p><a class="reference external" href="https://tahirinadia.github.io/">Tahiri lab</a> &#64; Université de Sherbrooke</p></li>
+</ul>
+</section>
+<section id="py-madaclim-api-documentation">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">py-madaclim API Documentation</a><a class="headerlink" href="#py-madaclim-api-documentation" title="Permalink to this heading"></a></h2>
+<p>Explore detailed documentation for all <cite>py-madaclim</cite> modules and their respective functionalities.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="modules.html"><span class="doc">Access the py-madaclim API Documentation</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Tahiri Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>py_madaclim.utils.gbif_api &mdash; py-madaclim 0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            py-madaclim
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">py_madaclim.utils.gbif_api</a><ul>
+<li><a class="reference internal" href="#py_madaclim.utils.gbif_api.download_extract_read_occ"><code class="docutils literal notranslate"><span class="pre">download_extract_read_occ()</span></code></a></li>
+<li><a class="reference internal" href="#py_madaclim.utils.gbif_api.get_taxon_key_by_species_match"><code class="docutils literal notranslate"><span class="pre">get_taxon_key_by_species_match()</span></code></a></li>
+<li><a class="reference internal" href="#py_madaclim.utils.gbif_api.request_occ_download_mdg_valid_coordinates"><code class="docutils literal notranslate"><span class="pre">request_occ_download_mdg_valid_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#py_madaclim.utils.gbif_api.search_occ_by_gbif_id"><code class="docutils literal notranslate"><span class="pre">search_occ_by_gbif_id()</span></code></a></li>
+<li><a class="reference internal" href="#py_madaclim.utils.gbif_api.search_occ_mdg_valid_coordinates"><code class="docutils literal notranslate"><span class="pre">search_occ_mdg_valid_coordinates()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">py-madaclim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">py_madaclim.utils.gbif_api</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/py_madaclim.utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-py_madaclim.utils.gbif_api">
+<span id="py-madaclim-utils-gbif-api"></span><h1>py_madaclim.utils.gbif_api<a class="headerlink" href="#module-py_madaclim.utils.gbif_api" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="py_madaclim.utils.gbif_api.download_extract_read_occ">
+<span class="sig-prename descclassname"><span class="pre">py_madaclim.utils.gbif_api.</span></span><span class="sig-name descname"><span class="pre">download_extract_read_occ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">download_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/py_madaclim/utils/gbif_api.html#download_extract_read_occ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#py_madaclim.utils.gbif_api.download_extract_read_occ" title="Permalink to this definition"></a></dt>
+<dd><p>Downloads, extracts and read the content of an occurrence data file from the GBIF API</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>download_id</strong> (<em>str</em>) – The ID of the download to fetch</p></li>
+<li><p><strong>target_dir</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>str</em><em>, </em><em>pathlib.Path</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – The directory path to save the download and extracted files to.
+Defaults to the current working directory</p></li>
+<li><p><strong>low_memory</strong> (<em>bool</em>) – Loads the entire file into memory if true instead of chunks.
+Avoid guessing incorrect dtypes upon read when false. Defaults to False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A pandas dataframe containing all the occurrences data with columns according to the requested format.</dt><dd><p>If data could not be properly extracted from the download, it returns None.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[None, pd.DataFrame]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If the ‘download_id’ is not a string.</p></li>
+<li><p><strong>TypeError</strong> – If the ‘target_dir’ is not a string or a pathlib.Path object.</p></li>
+<li><p><strong>NotADirectoryError</strong> – If the provided argument for ‘target_dir’ is not a valid directory.</p></li>
+<li><p><strong>Exception</strong> – If an error occurred while making the request.</p></li>
+<li><p><strong>ValueError</strong> – If the JSON response could not be parsed.</p></li>
+<li><p><strong>ValueError</strong> – If the ‘format’ object from the response is not valid.</p></li>
+<li><p><strong>FileNotFoundError</strong> – If no ‘.csv’ files are found in files from a non-DWCA download format.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="py_madaclim.utils.gbif_api.get_taxon_key_by_species_match">
+<span class="sig-prename descclassname"><span class="pre">py_madaclim.utils.gbif_api.</span></span><span class="sig-name descname"><span class="pre">get_taxon_key_by_species_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_full_on_match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></span><a class="reference internal" href="_modules/py_madaclim/utils/gbif_api.html#get_taxon_key_by_species_match"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#py_madaclim.utils.gbif_api.get_taxon_key_by_species_match" title="Permalink to this definition"></a></dt>
+<dd><p>Fetches a taxon key by matching species name and other parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The scientific name of the species to match. If not provided, at least one other match parameter must be provided.</p></li>
+<li><p><strong>return_full_on_match</strong> (<em>bool</em><em>, </em><em>optional</em>) – If set to True, returns the full match data. If False, returns only the taxon key.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>bool</em><em>]</em>) – Additional match parameters. These could include ‘rank’, ‘strict’, ‘verbose’, ‘kingdom’, ‘phylum’, ‘class’, ‘order’, ‘family’, ‘genus’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If return_full_on_match is True, returns a dictionary with full match data. Otherwise, returns the taxon key (integer).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or int</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If ‘name’ is provided and is not a str, or if ‘strict’ is provided and is not a bool, or if any other kwargs are provided and are not str.</p></li>
+<li><p><strong>ValueError</strong> – If an invalid argument is provided, or if ‘name’ is not provided and no other match parameters are provided.</p></li>
+<li><p><strong>Exception</strong> – If an error occurs while making the HTTP request.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="py_madaclim.utils.gbif_api.request_occ_download_mdg_valid_coordinates">
+<span class="sig-prename descclassname"><span class="pre">py_madaclim.utils.gbif_api.</span></span><span class="sig-name descname"><span class="pre">request_occ_download_mdg_valid_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxon_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dotenv_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reponse_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'DWCA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></span><a class="reference internal" href="_modules/py_madaclim/utils/gbif_api.html#request_occ_download_mdg_valid_coordinates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#py_madaclim.utils.gbif_api.request_occ_download_mdg_valid_coordinates" title="Permalink to this definition"></a></dt>
+<dd><p>Makes a POST request to GBIF API to download occurrence data in Madagascar for a specific taxon key.</p>
+<p>Uses a set of predetermined payload information such as Madagascar GADM geographic identifier and geographic coordinates requirements.
+Allows limited customization for taxon key and year range for the payload.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>taxon_key</strong> (<em>int</em>) – The taxon key to request occurrence data for.</p></li>
+<li><p><strong>email</strong> (<em>str</em>) – The email address to send the download link to.</p></li>
+<li><p><strong>dotenv_filepath</strong> (<em>str</em><em> or </em><em>pathlib.Path</em><em>, </em><em>optional</em>) – The path to the .env file containing GBIF credentials. Defaults to current directory.</p></li>
+<li><p><strong>reponse_format</strong> (<em>str</em><em>, </em><em>optional</em>) – The format of the download file. Choices are “DWCA”, “SIMPLE_CSV”, or “SPECIES_LIST”. Defaults to “DWCA”.</p></li>
+<li><p><strong>year_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – A tuple of two integers specifying the range of years to request data for. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The response object or the error message if an error occurred.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>requests.models.Response or str</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If ‘taxon_key’ is not an integer, or if ‘dotenv_filepath’ is not a valid type for pathlib.Path.</p></li>
+<li><p><strong>ValueError</strong> – If ‘email’ is not a valid email address</p></li>
+<li><p><strong>ValueError</strong> – If required keys are missing in ‘.env’ file</p></li>
+<li><p><strong>ValueError</strong> – If ‘response_format’ is not one of the allowed choices.</p></li>
+<li><p><strong>FileNotFoundError</strong> – If ‘.env’ file is not found.</p></li>
+<li><p><strong>Exception</strong> – If an error occurred while making the request.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="py_madaclim.utils.gbif_api.search_occ_by_gbif_id">
+<span class="sig-prename descclassname"><span class="pre">py_madaclim.utils.gbif_api.</span></span><span class="sig-name descname"><span class="pre">search_occ_by_gbif_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gbif_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/py_madaclim/utils/gbif_api.html#search_occ_by_gbif_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#py_madaclim.utils.gbif_api.search_occ_by_gbif_id" title="Permalink to this definition"></a></dt>
+<dd><p>Gets details for a single occurrence using its gbifID (key of single record) from the GBIF API ‘/occurrence/search’ endpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gbif_id</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – The unique identifier for an occurrence record in GBIF.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>If the gbif_id is valid, returns a dictionary containing the details of the record.</dt><dd><p>Otherwise, it returns None.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>data (Union[dict, None])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="py_madaclim.utils.gbif_api.search_occ_mdg_valid_coordinates">
+<span class="sig-prename descclassname"><span class="pre">py_madaclim.utils.gbif_api.</span></span><span class="sig-name descname"><span class="pre">search_occ_mdg_valid_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxon_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/py_madaclim/utils/gbif_api.html#search_occ_mdg_valid_coordinates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#py_madaclim.utils.gbif_api.search_occ_mdg_valid_coordinates" title="Permalink to this definition"></a></dt>
+<dd><p>Searches for occurrences in Madagascar with valid coordinates for a given taxon key using the GBIF API ‘/occurrence/search’ endpoint.</p>
+<p>Uses a set of predetermined search params for the Madagascar GADM geographic identifier and geographic coordinates requirements.
+Provides limited customization for taxon key and year range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>taxon_key</strong> (<em>int</em>) – The GBIF taxon key to search for.</p></li>
+<li><p><strong>year_range</strong> (<em>tuple</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – A tuple specifying the range of years to search for occurrences in.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of occurrences with valid coordinates for the given taxon key.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If ‘taxon_key’ is not an integer, or if ‘year_range’ is provided and is not a tuple of integers.</p></li>
+<li><p><strong>ValueError</strong> – If ‘year_range’ is provided and does not contain exactly 2 elements, or if the first element of ‘year_range’ is larger than the second.</p></li>
+<li><p><strong>Exception</strong> – If an error occurs while making the HTTP request.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Tahiri Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

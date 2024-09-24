@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>py_madaclim.utils.gbif_api &mdash; py-madaclim 0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            py-madaclim
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">py-madaclim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">py_madaclim.utils.gbif_api</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for py_madaclim.utils.gbif_api</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="n">ZipFile</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">requests.exceptions</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span><span class="p">,</span> <span class="n">dotenv_values</span>
+<span class="kn">from</span> <span class="nn">dwca.read</span> <span class="kn">import</span> <span class="n">DwCAReader</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">py_madaclim._constants</span> <span class="kn">import</span> <span class="n">Constants</span>
+
+<div class="viewcode-block" id="get_taxon_key_by_species_match"><a class="viewcode-back" href="../../../py_madaclim.utils.html#py_madaclim.utils.gbif_api.get_taxon_key_by_species_match">[docs]</a><span class="k">def</span> <span class="nf">get_taxon_key_by_species_match</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+    <span class="n">return_full_on_match</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetches a taxon key by matching species name and other parameters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (str, optional): The scientific name of the species to match. If not provided, at least one other match parameter must be provided.</span>
+<span class="sd">        return_full_on_match (bool, optional): If set to True, returns the full match data. If False, returns only the taxon key.</span>
+<span class="sd">        **kwargs (Union[str, bool]): Additional match parameters. These could include &#39;rank&#39;, &#39;strict&#39;, &#39;verbose&#39;, &#39;kingdom&#39;, &#39;phylum&#39;, &#39;class&#39;, &#39;order&#39;, &#39;family&#39;, &#39;genus&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict or int: If return_full_on_match is True, returns a dictionary with full match data. Otherwise, returns the taxon key (integer).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If &#39;name&#39; is provided and is not a str, or if &#39;strict&#39; is provided and is not a bool, or if any other kwargs are provided and are not str.</span>
+<span class="sd">        ValueError: If an invalid argument is provided, or if &#39;name&#39; is not provided and no other match parameters are provided.</span>
+<span class="sd">        Exception: If an error occurs while making the HTTP request.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;name&#39; must be a str if specified, but received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">possible_params</span> <span class="o">=</span> <span class="n">Constants</span><span class="o">.</span><span class="n">GBIF_MATCH_PARAMS</span>
+
+    <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">param</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">possible_params</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Argument &#39;</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">&#39; is not valid. It must be one of </span><span class="si">{</span><span class="n">possible_params</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">param</span> <span class="o">==</span> <span class="s2">&quot;strict&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The argument &#39;strict&#39; must be of type bool, but received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">param</span> <span class="o">!=</span> <span class="s2">&quot;strict&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Keyword arguments values must be of type str, but received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Provide at least one match param argument from </span><span class="si">{</span><span class="n">possible_params</span><span class="si">}</span><span class="s2"> if &#39;name&#39; is not provided.&quot;</span><span class="p">)</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="n">Constants</span><span class="o">.</span><span class="n">GBIF_BASEURLS</span><span class="p">[</span><span class="s2">&quot;species&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/match&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while making the request: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: Response is not a valid JSON.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;matchType&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No matches found.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>    
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;matchType&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> match type found with </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;confidence&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">% confidence!</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;canonical name of match: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;canonicalName&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">GBIF_taxon_key: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;usageKey&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_full_on_match</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span> 
+    <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;matchType&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;usageKey&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="search_occ_mdg_valid_coordinates"><a class="viewcode-back" href="../../../py_madaclim.utils.html#py_madaclim.utils.gbif_api.search_occ_mdg_valid_coordinates">[docs]</a><span class="k">def</span> <span class="nf">search_occ_mdg_valid_coordinates</span><span class="p">(</span><span class="n">taxon_key</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">year_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Searches for occurrences in Madagascar with valid coordinates for a given taxon key using the GBIF API &#39;/occurrence/search&#39; endpoint. </span>
+
+<span class="sd">    Uses a set of predetermined search params for the Madagascar GADM geographic identifier and geographic coordinates requirements.    </span>
+<span class="sd">    Provides limited customization for taxon key and year range.</span>
+<span class="sd">        </span>
+<span class="sd">    Args:</span>
+<span class="sd">        taxon_key (int): The GBIF taxon key to search for.</span>
+<span class="sd">        year_range (tuple[int], optional): A tuple specifying the range of years to search for occurrences in.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: A list of occurrences with valid coordinates for the given taxon key.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If &#39;taxon_key&#39; is not an integer, or if &#39;year_range&#39; is provided and is not a tuple of integers.</span>
+<span class="sd">        ValueError: If &#39;year_range&#39; is provided and does not contain exactly 2 elements, or if the first element of &#39;year_range&#39; is larger than the second.</span>
+<span class="sd">        Exception: If an error occurs while making the HTTP request.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">taxon_key</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;taxon_key&#39; must be an int, but received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">taxon_key</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">year_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">year_range</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;&#39;year_range&#39; must be a tuple&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">year_range</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;year_range&#39; must contain exactly 2 elements.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">year_range</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;all elements of year range must be integers&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">year_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">year_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;First year element in range must be smaller than the second.&quot;</span><span class="p">)</span>
+    
+    <span class="n">all_results</span> <span class="o">=</span> <span class="p">[]</span>    <span class="c1"># Occurences accross selected year range container</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="n">Constants</span><span class="o">.</span><span class="n">GBIF_BASEURLS</span><span class="p">[</span><span class="s1">&#39;occurrence&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/search&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;gadmGid&quot;</span><span class="p">:</span> <span class="s2">&quot;MDG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;has_coordinate&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;has_geospatial_issue&quot;</span><span class="p">:</span> <span class="s2">&quot;false&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;taxon_key&quot;</span><span class="p">:</span> <span class="n">taxon_key</span><span class="p">,</span>
+        <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">year_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">year_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">year_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">year_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>    <span class="c1"># Get all possible years of occurences when not specified</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Check for server and proper year range params</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while making the request: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Response is not a valid JSON.&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="c1"># Warnings/info with valid response</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Could not retrieve any records in the specified year range&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">year_range</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching all </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> occurences in year range </span><span class="si">{</span><span class="n">year_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">year_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching all </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> occurences accross all possible years...&quot;</span><span class="p">)</span>
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">300</span>    <span class="c1"># Maximum ratelimit per request</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Fetch all GBIF occurences of Madagascar coffea species within specified year range</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+        <span class="n">min_limit</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">]</span>
+        <span class="n">max_limit</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracting occurences </span><span class="si">{</span><span class="n">min_limit</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">max_limit</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+        <span class="n">all_results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;endOfRecords&quot;</span><span class="p">]:</span>    
+            <span class="k">break</span>  
+        
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span>  <span class="c1"># set the offset to the next page</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># Safety even with no specified ratelimit/time</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total records retrieved: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_results</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">all_results</span></div>
+
+<div class="viewcode-block" id="search_occ_by_gbif_id"><a class="viewcode-back" href="../../../py_madaclim.utils.html#py_madaclim.utils.gbif_api.search_occ_by_gbif_id">[docs]</a><span class="k">def</span> <span class="nf">search_occ_by_gbif_id</span><span class="p">(</span><span class="n">gbif_id</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gets details for a single occurrence using its gbifID (key of single record) from the GBIF API &#39;/occurrence/search&#39; endpoint.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        gbif_id (Union[str, int]): The unique identifier for an occurrence record in GBIF.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        data (Union[dict, None]): If the gbif_id is valid, returns a dictionary containing the details of the record.</span>
+<span class="sd">            Otherwise, it returns None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># gbif_id conversion/typechecking</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">gbif_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">gbif_id</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not convert </span><span class="si">{</span><span class="n">gbif_id</span><span class="si">}</span><span class="s2"> to str.&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Occurence/key request endpoint</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">Constants</span><span class="o">.</span><span class="n">GBIF_BASEURLS</span><span class="p">[</span><span class="s2">&quot;occurrence&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">gbif_id</span><span class="si">}</span><span class="s2">&quot;</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while making the request: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Response is not a valid JSON.&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="k">return</span> <span class="n">data</span> </div>
+
+<div class="viewcode-block" id="request_occ_download_mdg_valid_coordinates"><a class="viewcode-back" href="../../../py_madaclim.utils.html#py_madaclim.utils.gbif_api.request_occ_download_mdg_valid_coordinates">[docs]</a><span class="k">def</span> <span class="nf">request_occ_download_mdg_valid_coordinates</span><span class="p">(</span>
+    <span class="n">taxon_key</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">dotenv_filepath</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">reponse_format</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;DWCA&quot;</span><span class="p">,</span>
+    <span class="n">year_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Makes a POST request to GBIF API to download occurrence data in Madagascar for a specific taxon key.</span>
+
+<span class="sd">    Uses a set of predetermined payload information such as Madagascar GADM geographic identifier and geographic coordinates requirements.    </span>
+<span class="sd">    Allows limited customization for taxon key and year range for the payload.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        taxon_key (int): The taxon key to request occurrence data for.</span>
+<span class="sd">        email (str): The email address to send the download link to.</span>
+<span class="sd">        dotenv_filepath (str or pathlib.Path, optional): The path to the .env file containing GBIF credentials. Defaults to current directory.</span>
+<span class="sd">        reponse_format (str, optional): The format of the download file. Choices are &quot;DWCA&quot;, &quot;SIMPLE_CSV&quot;, or &quot;SPECIES_LIST&quot;. Defaults to &quot;DWCA&quot;.</span>
+<span class="sd">        year_range (tuple, optional): A tuple of two integers specifying the range of years to request data for. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        requests.models.Response or str: The response object or the error message if an error occurred.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If &#39;taxon_key&#39; is not an integer, or if &#39;dotenv_filepath&#39; is not a valid type for pathlib.Path.</span>
+<span class="sd">        ValueError: If &#39;email&#39; is not a valid email address</span>
+<span class="sd">        ValueError: If required keys are missing in &#39;.env&#39; file</span>
+<span class="sd">        ValueError: If &#39;response_format&#39; is not one of the allowed choices.</span>
+<span class="sd">        FileNotFoundError: If &#39;.env&#39; file is not found.</span>
+<span class="sd">        Exception: If an error occurred while making the request.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">taxon_key</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;taxon_key must be an int, but received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">taxon_key</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># email format validation</span>
+    <span class="n">email_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">email_pattern</span><span class="p">,</span> <span class="n">email</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid email: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># .env checker and gbif credentials to environment vars</span>
+    <span class="k">if</span> <span class="n">dotenv_filepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dotenv_filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.env&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dotenv_filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dotenv_filepath</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;&#39;dotenv_filepath&#39; must be a valid type for the pathlib.Path constructor (str or system-specific pathlib.Path/PurePath)&quot;</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dotenv_filepath</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find .env file: </span><span class="si">{</span><span class="n">dotenv_filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="n">dotenv_keys</span> <span class="o">=</span> <span class="n">Constants</span><span class="o">.</span><span class="n">GBIF_DOTENV_KEYS</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">dotenv_values</span><span class="p">(</span><span class="n">dotenv_filepath</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">key</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dotenv_keys</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing credentials keys in &#39;.env&#39; file. The file must contain both </span><span class="si">{</span><span class="n">dotenv_keys</span><span class="si">}</span><span class="s2"> keys&quot;</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> cannot be null or empty value.&quot;</span><span class="p">)</span>
+    
+    <span class="n">load_dotenv</span><span class="p">(</span><span class="n">dotenv_filepath</span><span class="p">)</span>
+    <span class="n">gbif_username</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="n">dotenv_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">gbif_password</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="n">dotenv_keys</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Predicates checker</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="p">[</span><span class="n">reponse_format</span><span class="p">,</span> <span class="n">email</span><span class="p">]]):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;&#39;response_format&#39; and &#39;email&#39; must be of type str.&quot;</span><span class="p">)</span>
+    
+    <span class="n">possible_formats</span> <span class="o">=</span> <span class="n">Constants</span><span class="o">.</span><span class="n">GBIF_DOWNLOAD_FORMAT</span>
+    <span class="k">if</span> <span class="n">reponse_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">possible_formats</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;reponse_format&#39; must be one of </span><span class="si">{</span><span class="n">possible_formats</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">year_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">year_range</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;&#39;year_range&#39; must be a tuple&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">year_range</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;year_range&#39; must contain exactly 2 elements.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">year_range</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;all elements of year range must be integers&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">year_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">year_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;First year element in range must be smaller than the second.&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Query parameters for payload specific to mascarocoffea with valid coordinates</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">Constants</span><span class="o">.</span><span class="n">GBIF_BASEURLS</span><span class="p">[</span><span class="s2">&quot;occurrence&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/download/request&quot;</span>
+    <span class="n">predicates</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;equals&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;GADM_GID&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;MDG&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;equals&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;HAS_COORDINATE&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;equals&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;HAS_GEOSPATIAL_ISSUE&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;false&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;equals&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;TAXON_KEY&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">taxon_key</span><span class="p">},</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">year_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>    <span class="c1"># Defaults to all occurrences accross all years</span>
+        <span class="n">predicates</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;equals&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;YEAR&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">year_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">year_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">})</span>
+
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;creator&quot;</span><span class="p">:</span> <span class="n">gbif_username</span><span class="p">,</span>
+        <span class="s2">&quot;notificationAddresses&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">email</span><span class="p">],</span>
+        <span class="s2">&quot;predicate&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;and&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;predicates&quot;</span><span class="p">:</span> <span class="n">predicates</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="n">reponse_format</span>
+    <span class="p">}</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="n">gbif_username</span><span class="p">,</span> <span class="n">gbif_password</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span>
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request failed with status code </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+    
+<div class="viewcode-block" id="download_extract_read_occ"><a class="viewcode-back" href="../../../py_madaclim.utils.html#py_madaclim.utils.gbif_api.download_extract_read_occ">[docs]</a><span class="k">def</span> <span class="nf">download_extract_read_occ</span><span class="p">(</span>
+        <span class="n">download_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+        <span class="n">target_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Downloads, extracts and read the content of an occurrence data file from the GBIF API</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        download_id (str): The ID of the download to fetch</span>
+<span class="sd">        target_dir (Optional[Union[str, pathlib.Path]], optional): The directory path to save the download and extracted files to. </span>
+<span class="sd">            Defaults to the current working directory</span>
+<span class="sd">        low_memory (bool): Loads the entire file into memory if true instead of chunks. </span>
+<span class="sd">            Avoid guessing incorrect dtypes upon read when false. Defaults to False</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Union[None, pd.DataFrame]: A pandas dataframe containing all the occurrences data with columns according to the requested format.</span>
+<span class="sd">            If data could not be properly extracted from the download, it returns None.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If the &#39;download_id&#39; is not a string.</span>
+<span class="sd">        TypeError: If the &#39;target_dir&#39; is not a string or a pathlib.Path object.</span>
+<span class="sd">        NotADirectoryError: If the provided argument for &#39;target_dir&#39; is not a valid directory.</span>
+<span class="sd">        Exception: If an error occurred while making the request.</span>
+<span class="sd">        ValueError: If the JSON response could not be parsed.</span>
+<span class="sd">        ValueError: If the &#39;format&#39; object from the response is not valid.</span>
+<span class="sd">        FileNotFoundError: If no &#39;.csv&#39; files are found in files from a non-DWCA download format.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">download_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;download_id&#39; must be a str, but received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">download_id</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># target_dir default and validation</span>
+    <span class="k">if</span> <span class="n">target_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">target_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">target_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target_dir</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;&#39;target_dir&#39; must be a valid type for the pathlib.Path constructor (str or system-specific pathlib.Path/PurePath)&quot;</span><span class="p">)</span>
+        
+        <span class="n">target_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">target_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target_dir</span><span class="si">}</span><span class="s2"> is not a valid directory.&quot;</span><span class="p">)</span>
+    
+    <span class="n">url</span> <span class="o">=</span> <span class="n">Constants</span><span class="o">.</span><span class="n">GBIF_BASEURLS</span><span class="p">[</span><span class="s2">&quot;occurrence&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;/download/</span><span class="si">{</span><span class="n">download_id</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while making the request: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: Response is not a valid JSON.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Response OK from </span><span class="si">{</span><span class="n">url</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> for the given &#39;download_id&#39;&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Get download properties for status bar and I/O name</span>
+    <span class="n">default_zipfile_name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;downloadLink&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">zipfile_name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;download_</span><span class="si">{</span><span class="n">default_zipfile_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">total_size</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span>  <span class="c1"># total_size is in bytes</span>
+
+    <span class="c1"># Make a new request to get the actual file data</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;downloadLink&quot;</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target_dir</span> <span class="o">/</span> <span class="n">zipfile_name</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>    <span class="c1"># approx 0.1MB chunks</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">)):</span>
+            <span class="n">percent</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">chunk_size</span> <span class="o">/</span> <span class="n">total_size</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+            <span class="n">now_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">current_speed</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">now_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">)</span>  <span class="c1"># current_speed is in MB/s</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Progress for </span><span class="si">{</span><span class="n">zipfile_name</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">percent</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">% completed of </span><span class="si">{</span><span class="n">total_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="mi">1024</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1024</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB downloaded [ current speed of </span><span class="si">{</span><span class="n">current_speed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB/s ]&quot;</span><span class="p">,</span>
+                <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+        <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Progress for </span><span class="si">{</span><span class="n">zipfile_name</span><span class="si">}</span><span class="s2"> : 100.0% completed of </span><span class="si">{</span><span class="n">total_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="mi">1024</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1024</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB downloaded [ average speed of </span><span class="si">{</span><span class="n">total_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="mi">1024</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1024</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB/s ]&quot;</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span>
+    
+    <span class="c1"># Unzipping file to target location</span>
+    <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">target_dir</span> <span class="o">/</span> <span class="n">zipfile_name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zObj</span><span class="p">:</span>
+        <span class="n">zipped_files</span> <span class="o">=</span> <span class="n">zObj</span><span class="o">.</span><span class="n">infolist</span><span class="p">()</span>
+        <span class="n">download_container</span> <span class="o">=</span> <span class="n">target_dir</span> <span class="o">/</span> <span class="n">zipfile_name</span><span class="o">.</span><span class="n">stem</span>
+        <span class="n">Path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">download_container</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>    
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracting all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">zipped_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files to target location: .../</span><span class="si">{</span><span class="n">download_container</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">)</span>
+        <span class="n">zObj</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">download_container</span><span class="p">)</span>
+
+    <span class="c1"># Read to pandas df according to download format</span>
+    <span class="n">download_format</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;request&quot;</span><span class="p">][</span><span class="s2">&quot;format&quot;</span><span class="p">]</span>
+    <span class="n">possible_formats</span> <span class="o">=</span> <span class="n">Constants</span><span class="o">.</span><span class="n">GBIF_DOWNLOAD_FORMAT</span>
+    <span class="k">if</span> <span class="n">download_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">possible_formats</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;download_format from parsed HTTP response is not one of </span><span class="si">{</span><span class="n">possible_formats</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">download_format</span> <span class="o">==</span> <span class="s2">&quot;DWCA&quot;</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">DwCAReader</span><span class="p">(</span><span class="n">target_dir</span> <span class="o">/</span> <span class="n">zipfile_name</span><span class="p">)</span> <span class="k">as</span> <span class="n">dwca</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">dwca</span><span class="o">.</span><span class="n">pd_read</span><span class="p">(</span><span class="s2">&quot;occurrence.txt&quot;</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="n">low_memory</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read and saved core data into pandas df: </span><span class="si">{</span><span class="n">dwca</span><span class="o">.</span><span class="n">descriptor</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">file_location</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1"># &#39;occurrence.txt&#39;</span>
+
+    <span class="k">elif</span> <span class="n">download_format</span> <span class="o">==</span> <span class="s2">&quot;SIMPLE_CSV&quot;</span> <span class="ow">or</span> <span class="n">download_format</span> <span class="o">==</span> <span class="s2">&quot;SPECIES_LIST&quot;</span><span class="p">:</span>
+        <span class="n">csv_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">download_container</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s2">&quot;.csv&quot;</span><span class="p">:</span>
+                <span class="n">csv_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">csv_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No &#39;.csv&#39; files in the extracted </span><span class="si">{</span><span class="n">zipfile_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">csv_files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BEWARE! More than 1 &#39;.csv&#39; file in the extracted </span><span class="si">{</span><span class="n">zipfile_name</span><span class="si">}</span><span class="s2">. Could not read into pandas df&quot;</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="kc">None</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read and saved </span><span class="si">{</span><span class="n">csv_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> into pandas df&quot;</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">download_container</span> <span class="o">/</span> <span class="n">csv_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Tahiri Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
