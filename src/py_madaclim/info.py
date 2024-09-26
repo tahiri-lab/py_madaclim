@@ -6,6 +6,7 @@ import time
 from calendar import month_name
 from pathlib import Path
 from typing import List, Union, Optional, Dict
+from io import StringIO
 
 import pandas as pd
 import numpy as np
@@ -1157,7 +1158,8 @@ class MadaclimLayers:
         
         
         # Extract climate data and format it using the metadata
-        df_clim = pd.read_json(self._clim_dataformat["table_0"])
+        #df_clim = pd.read_json(self._clim_dataformat["table_0"]) #Deprecated
+        df_clim = pd.read_json(StringIO(self._clim_dataformat["table_0"]))
         df_clim["data_type"] = "clim"    # Tag for latter id in merge
 
         # Split the layers to get initial layer_num for all clim-related layers
@@ -1165,7 +1167,8 @@ class MadaclimLayers:
         df_clim.columns = ["layer_number", "geoclim_feature", "geoclim_type"]
 
         # Formatting + add layers to the monthly bioclim metadata
-        bio_monthly_feats = pd.read_json(self._clim_metadata["table_0"])
+        #bio_monthly_feats = pd.read_json(self._clim_metadata["table_0"])   # deprecated
+        bio_monthly_feats = pd.read_json(StringIO(self._clim_metadata["table_0"]))
         bio_monthly_feats.columns = ["layer_name", "layer_description"]
         
         bio_monthly_feats = pd.concat(    # Split according to range
@@ -1175,14 +1178,17 @@ class MadaclimLayers:
         bio_monthly_feats = add_layer_numbers_bio_monthly(bio_monthly_feats)    # Append layer numbers
 
         # Formatting + add layers to the other bioclim metadata (non-monthly)
-        bioclim_feats = pd.read_json(self._clim_metadata["table_1"])
+        #bioclim_feats = pd.read_json(self._clim_metadata["table_1"]) # deprecated
+        bioclim_feats = pd.read_json(StringIO(self._clim_metadata["table_1"]))
         bioclim_feats.columns = ["layer_name", "layer_description"]
 
         current_start_layer = len(bio_monthly_feats) + 1    # Save the current state of the layer number for clim_df
         bioclim_feats["layer_number"] = range(current_start_layer, current_start_layer + len(bioclim_feats))
 
         # Formatting + add layers to monthly and annual evapotranspiration metadata
-        evap_feats = pd.read_json(self._clim_metadata["table_2"])
+        #evap_feats = pd.read_json(self._clim_metadata["table_2"]) # deprecated
+        evap_feats = pd.read_json(StringIO(self._clim_metadata["table_2"]))
+
         evap_feats.columns = ["layer_name", "layer_description"]
         
         evap_feats = pd.concat(    # Split monthly evapo data
@@ -1193,7 +1199,9 @@ class MadaclimLayers:
         evap_feats["layer_number"] = range(current_start_layer, current_start_layer + len(evap_feats))
 
         # Formatting + add layers to the bioclim water-related metadata
-        biowater_feats = pd.read_json(self._clim_metadata["table_3"])
+        #biowater_feats = pd.read_json(self._clim_metadata["table_3"]) # deprecated
+        biowater_feats = pd.read_json(StringIO(self._clim_metadata["table_3"]))
+
         biowater_feats.columns = ["layer_name", "layer_description"]
         
         current_start_layer = max(evap_feats["layer_number"]) + 1    # Save the current state of the layer number for clim_df
@@ -1206,7 +1214,8 @@ class MadaclimLayers:
 
 
         # Extract environmental data and format it using its related metadata
-        df_env = pd.read_json(self._env_dataformat["table_0"])
+        #df_env = pd.read_json(self._env_dataformat["table_0"]) # depraecated
+        df_env = pd.read_json(StringIO(self._env_dataformat["table_0"]))
         df_env.columns = ["layer_number", "geoclim_feature"]
         df_env["geoclim_type"] = "env"    # Tag for latter id in merge
 
