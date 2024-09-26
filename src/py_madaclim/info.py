@@ -1028,7 +1028,7 @@ class MadaclimLayers:
             
             # Extract the range and layername to a new smaller df of len(range(start, end))
             if "-" in row[col_to_split]:
-                start = int(re.search("\d+", row[col_to_split].split("-")[0]).group())
+                start = int(re.search("\\d+", row[col_to_split].split("-")[0]).group())
                 end = int(row[col_to_split].split("-")[1])
                 name = re.search("[a-z]*", row[col_to_split]).group()
                         
