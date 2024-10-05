@@ -1,72 +1,81 @@
-﻿old_name,new_name
-"clim_1_tmin1_Monthly minimum temperature - January (C x 10)",clim_1_tmin1_jan
-"clim_2_tmin2_Monthly minimum temperature - February (C x 10)",clim_2_tmin2_feb
-"clim_3_tmin3_Monthly minimum temperature - March (C x 10)",clim_3_tmin3_mar
-"clim_4_tmin4_Monthly minimum temperature - April (C x 10)",clim_4_tmin4_apr
-clim_5_tmin5_Monthly minimum temperature - May (C x 10),clim_5_tmin5_may
-clim_6_tmin6_Monthly minimum temperature - June (C x 10),clim_6_tmin6_jun
-clim_7_tmin7_Monthly minimum temperature - July (C x 10),clim_7_tmin7_jul
-clim_8_tmin8_Monthly minimum temperature - August (C x 10),clim_8_tmin8_aug
-clim_9_tmin9_Monthly minimum temperature - September (C x 10),clim_9_tmin9_sep
-clim_10_tmin10_Monthly minimum temperature - October (C x 10),clim_10_tmin10_oct
-clim_11_tmin11_Monthly minimum temperature - November (C x 10),clim_11_tmin11_nov
-clim_12_tmin12_Monthly minimum temperature - December (C x 10),clim_12_tmin12_dec
-clim_13_tmax1_Monthly maximum temperature - January (C x 10),clim_13_tmax1_jan
-clim_14_tmax2_Monthly maximum temperature - February (C x 10),clim_14_tmax2_feb
-clim_15_tmax3_Monthly maximum temperature - March (C x 10),clim_15_tmax3_mar
-clim_16_tmax4_Monthly maximum temperature - April (C x 10),clim_16_tmax4_apr
-clim_17_tmax5_Monthly maximum temperature - May (C x 10),clim_17_tmax5_may
-clim_18_tmax6_Monthly maximum temperature - June (C x 10),clim_18_tmax6_jun
-clim_19_tmax7_Monthly maximum temperature - July (C x 10),clim_19_tmax7_jul
-clim_20_tmax8_Monthly maximum temperature - August (C x 10),clim_20_tmax8_aug
-clim_21_tmax9_Monthly maximum temperature - September (C x 10),clim_21_tmax9_sep
-clim_22_tmax10_Monthly maximum temperature - October (C x 10),clim_22_tmax10_oct
-clim_23_tmax11_Monthly maximum temperature - November (C x 10),clim_23_tmax11_nov
-clim_24_tmax12_Monthly maximum temperature - December (C x 10),clim_24_tmax12_dec
-clim_25_prec1_Monthly total precipitation - January (mm.month-1),clim_25_prec1_jan
-clim_26_prec2_Monthly total precipitation - February (mm.month-1),clim_26_prec2_feb
-clim_27_prec3_Monthly total precipitation - March (mm.month-1),clim_27_prec3_mar
-clim_28_prec4_Monthly total precipitation - April (mm.month-1),clim_28_prec4_apr
-clim_29_prec5_Monthly total precipitation - May (mm.month-1),clim_29_prec5_may
-clim_30_prec6_Monthly total precipitation - June (mm.month-1),clim_30_prec6_jun
-clim_31_prec7_Monthly total precipitation - July (mm.month-1),clim_31_prec7_jul
-clim_32_prec8_Monthly total precipitation - August (mm.month-1),clim_32_prec8_aug
-clim_33_prec9_Monthly total precipitation - September (mm.month-1),clim_33_prec9_sep
-clim_34_prec10_Monthly total precipitation - October (mm.month-1),clim_34_prec10_oct
-clim_35_prec11_Monthly total precipitation - November (mm.month-1),clim_35_prec11_nov
-clim_36_prec12_Monthly total precipitation - December (mm.month-1),clim_36_prec12_dec
-clim_37_bio1_Annual mean temperature (degrees),clim_37_ann_mean_temp
-clim_38_bio2_Mean diurnal range (mean of monthly max temp - monthy min temp),clim_38_mean_diurn_range
-clim_39_bio3_Isothermality = BIO2/BIO7 x 100 (No units),clim_39_isotherm
-clim_40_bio4_Temperature seasonality (standard deviation x 100),clim_40_temp_season
-clim_41_bio5_Max temperature of warmest month (degrees),clim_41_tmax_warmest_m
-clim_42_bio6_Min temperature of coldest month (degrees),clim_42_tmin_coldest_m
-clim_43_bio7_Temperature annual range  = BIO5-BIO6 (degrees),clim_43_tannual_range
-clim_44_bio8_Mean temperature of wettest quarter (degrees),clim_44_tmean_wettest_q
-clim_45_bio9_Mean temperature of driest quarter (degrees),clim_45_tmean_driest_q
-clim_46_bio10_Mean temperature of warmest quarter (degrees),clim_46_tmean_warmest_q
-clim_47_bio11_Mean temperature of coldest quarter (degrees),clim_47_tmean_coldest_q
-clim_48_bio12_Annual precipitation (mm.year-1),clim_48_Annual_prec
-clim_49_bio13_Precipitation of wettest month (mm),clim_49_prec_wettest_m
-clim_50_bio14_Precipitation of driest month (mm),clim_50_prec_driest_m
-clim_51_bio15_Precipitation seasonality (coefficient of variation),clim_51_prec_season
-clim_52_bio16_Precipitation of wettest quarter (mm.3months-1),clim_52_prec_wettest_q
-clim_53_bio17_Precipitation of driest quarter (mm.3months-1),clim_53_prec_driest_q
-clim_54_bio18_Precipitation of warmest quarter (mm.3months-1),clim_54_prec_warmest_q
-clim_55_bio19_Precipitation of coldest quarter (mm.3months-1),clim_55_prec_coldest_q
-clim_56_pet1_Monthly potential evapotranspiration from the Thornthwaite equation - January (mm.month-1),clim_56_pet1_jan
-clim_57_pet2_Monthly potential evapotranspiration from the Thornthwaite equation - February (mm.month-1),clim_57_pet2_feb
-clim_58_pet3_Monthly potential evapotranspiration from the Thornthwaite equation - March (mm.month-1),clim_58_pet3_mar
-clim_59_pet4_Monthly potential evapotranspiration from the Thornthwaite equation - April (mm.month-1),clim_59_pet4_apr
-clim_60_pet5_Monthly potential evapotranspiration from the Thornthwaite equation - May (mm.month-1),clim_60_pet5_may
-clim_61_pet6_Monthly potential evapotranspiration from the Thornthwaite equation - June (mm.month-1),clim_61_pet6_jun
-clim_62_pet7_Monthly potential evapotranspiration from the Thornthwaite equation - July (mm.month-1),clim_62_pet7_jul
-clim_63_pet8_Monthly potential evapotranspiration from the Thornthwaite equation - August (mm.month-1),clim_63_pet8_aug
-clim_64_pet9_Monthly potential evapotranspiration from the Thornthwaite equation - September (mm.month-1),clim_64_pet9_sep
-clim_65_pet10_Monthly potential evapotranspiration from the Thornthwaite equation - October (mm.month-1),clim_65_pet10_oct
-clim_66_pet11_Monthly potential evapotranspiration from the Thornthwaite equation - November (mm.month-1),clim_66_pet11_nov
-clim_67_pet12_Monthly potential evapotranspiration from the Thornthwaite equation - December (mm.month-1),clim_67_pet12_dec
-clim_68_pet_Annual potential evapotranspiration from the Thornthwaite equation (mm),clim_68_pet_annual
-clim_69_cwd_Annual climatic water deficit (mm),clim_69_cwd_annual
-clim_70_ndm_Number of dry months in the year (months.year-1),clim_70_ndm_per_year
-caffeine_class,caffeine_class
+﻿old_name,new_name,long_name
+clim_1_tmin1_Monthly minimum temperature - January (C x 10),clim_1_tmin1_jan,Monthly minimum temperature - January (C x 10)
+clim_2_tmin2_Monthly minimum temperature - February (C x 10),clim_2_tmin2_feb,Monthly minimum temperature - February (C x 10)
+clim_3_tmin3_Monthly minimum temperature - March (C x 10),clim_3_tmin3_mar,Monthly minimum temperature - March (C x 10)
+clim_4_tmin4_Monthly minimum temperature - April (C x 10),clim_4_tmin4_apr,Monthly minimum temperature - April (C x 10)
+clim_5_tmin5_Monthly minimum temperature - May (C x 10),clim_5_tmin5_may,Monthly minimum temperature - May (C x 10)
+clim_6_tmin6_Monthly minimum temperature - June (C x 10),clim_6_tmin6_jun,Monthly minimum temperature - June (C x 10)
+clim_7_tmin7_Monthly minimum temperature - July (C x 10),clim_7_tmin7_jul,Monthly minimum temperature - July (C x 10)
+clim_8_tmin8_Monthly minimum temperature - August (C x 10),clim_8_tmin8_aug,Monthly minimum temperature - August (C x 10)
+clim_9_tmin9_Monthly minimum temperature - September (C x 10),clim_9_tmin9_sep,Monthly minimum temperature - September (C x 10)
+clim_10_tmin10_Monthly minimum temperature - October (C x 10),clim_10_tmin10_oct,Monthly minimum temperature - October (C x 10)
+clim_11_tmin11_Monthly minimum temperature - November (C x 10),clim_11_tmin11_nov,Monthly minimum temperature - November (C x 10)
+clim_12_tmin12_Monthly minimum temperature - December (C x 10),clim_12_tmin12_dec,Monthly minimum temperature - December (C x 10)
+clim_13_tmax1_Monthly maximum temperature - January (C x 10),clim_13_tmax1_jan,Monthly maximum temperature - January (C x 10)
+clim_14_tmax2_Monthly maximum temperature - February (C x 10),clim_14_tmax2_feb,Monthly maximum temperature - February (C x 10)
+clim_15_tmax3_Monthly maximum temperature - March (C x 10),clim_15_tmax3_mar,Monthly maximum temperature - March (C x 10)
+clim_16_tmax4_Monthly maximum temperature - April (C x 10),clim_16_tmax4_apr,Monthly maximum temperature - April (C x 10)
+clim_17_tmax5_Monthly maximum temperature - May (C x 10),clim_17_tmax5_may,Monthly maximum temperature - May (C x 10)
+clim_18_tmax6_Monthly maximum temperature - June (C x 10),clim_18_tmax6_jun,Monthly maximum temperature - June (C x 10)
+clim_19_tmax7_Monthly maximum temperature - July (C x 10),clim_19_tmax7_jul,Monthly maximum temperature - July (C x 10)
+clim_20_tmax8_Monthly maximum temperature - August (C x 10),clim_20_tmax8_aug,Monthly maximum temperature - August (C x 10)
+clim_21_tmax9_Monthly maximum temperature - September (C x 10),clim_21_tmax9_sep,Monthly maximum temperature - September (C x 10)
+clim_22_tmax10_Monthly maximum temperature - October (C x 10),clim_22_tmax10_oct,Monthly maximum temperature - October (C x 10)
+clim_23_tmax11_Monthly maximum temperature - November (C x 10),clim_23_tmax11_nov,Monthly maximum temperature - November (C x 10)
+clim_24_tmax12_Monthly maximum temperature - December (C x 10),clim_24_tmax12_dec,Monthly maximum temperature - December (C x 10)
+clim_25_prec1_Monthly total precipitation - January (mm.month-1),clim_25_prec1_jan,Monthly total precipitation - January (mm.month-1)
+clim_26_prec2_Monthly total precipitation - February (mm.month-1),clim_26_prec2_feb,Monthly total precipitation - February (mm.month-1)
+clim_27_prec3_Monthly total precipitation - March (mm.month-1),clim_27_prec3_mar,Monthly total precipitation - March (mm.month-1)
+clim_28_prec4_Monthly total precipitation - April (mm.month-1),clim_28_prec4_apr,Monthly total precipitation - April (mm.month-1)
+clim_29_prec5_Monthly total precipitation - May (mm.month-1),clim_29_prec5_may,Monthly total precipitation - May (mm.month-1)
+clim_30_prec6_Monthly total precipitation - June (mm.month-1),clim_30_prec6_jun,Monthly total precipitation - June (mm.month-1)
+clim_31_prec7_Monthly total precipitation - July (mm.month-1),clim_31_prec7_jul,Monthly total precipitation - July (mm.month-1)
+clim_32_prec8_Monthly total precipitation - August (mm.month-1),clim_32_prec8_aug,Monthly total precipitation - August (mm.month-1)
+clim_33_prec9_Monthly total precipitation - September (mm.month-1),clim_33_prec9_sep,Monthly total precipitation - September (mm.month-1)
+clim_34_prec10_Monthly total precipitation - October (mm.month-1),clim_34_prec10_oct,Monthly total precipitation - October (mm.month-1)
+clim_35_prec11_Monthly total precipitation - November (mm.month-1),clim_35_prec11_nov,Monthly total precipitation - November (mm.month-1)
+clim_36_prec12_Monthly total precipitation - December (mm.month-1),clim_36_prec12_dec,Monthly total precipitation - December (mm.month-1)
+clim_37_bio1_Annual mean temperature (degrees),clim_37_ann_mean_temp,Annual mean temperature (degrees)
+clim_38_bio2_Mean diurnal range (mean of monthly max temp - monthy min temp),clim_38_mean_diurn_range,Mean diurnal range (mean of monthly max temp - monthy min temp)
+clim_39_bio3_Isothermality = BIO2/BIO7 x 100 (No units),clim_39_isotherm,Isothermality = BIO2/BIO7 x 100 (No units)
+clim_40_bio4_Temperature seasonality (standard deviation x 100),clim_40_temp_season,Temperature seasonality (standard deviation x 100)
+clim_41_bio5_Max temperature of warmest month (degrees),clim_41_tmax_warmest_m,Max temperature of warmest month (degrees)
+clim_42_bio6_Min temperature of coldest month (degrees),clim_42_tmin_coldest_m,Min temperature of coldest month (degrees)
+clim_43_bio7_Temperature annual range  = BIO5-BIO6 (degrees),clim_43_tannual_range,Temperature annual range  = BIO5-BIO6 (degrees)
+clim_44_bio8_Mean temperature of wettest quarter (degrees),clim_44_tmean_wettest_q,Mean temperature of wettest quarter (degrees)
+clim_45_bio9_Mean temperature of driest quarter (degrees),clim_45_tmean_driest_q,Mean temperature of driest quarter (degrees)
+clim_46_bio10_Mean temperature of warmest quarter (degrees),clim_46_tmean_warmest_q,Mean temperature of warmest quarter (degrees)
+clim_47_bio11_Mean temperature of coldest quarter (degrees),clim_47_tmean_coldest_q,Mean temperature of coldest quarter (degrees)
+clim_48_bio12_Annual precipitation (mm.year-1),clim_48_Annual_prec,Annual precipitation (mm.year-1)
+clim_49_bio13_Precipitation of wettest month (mm),clim_49_prec_wettest_m,Precipitation of wettest month (mm)
+clim_50_bio14_Precipitation of driest month (mm),clim_50_prec_driest_m,Precipitation of driest month (mm)
+clim_51_bio15_Precipitation seasonality (coefficient of variation),clim_51_prec_season,Precipitation seasonality (coefficient of variation)
+clim_52_bio16_Precipitation of wettest quarter (mm.3months-1),clim_52_prec_wettest_q,Precipitation of wettest quarter (mm.3months-1)
+clim_53_bio17_Precipitation of driest quarter (mm.3months-1),clim_53_prec_driest_q,Precipitation of driest quarter (mm.3months-1)
+clim_54_bio18_Precipitation of warmest quarter (mm.3months-1),clim_54_prec_warmest_q,Precipitation of warmest quarter (mm.3months-1)
+clim_55_bio19_Precipitation of coldest quarter (mm.3months-1),clim_55_prec_coldest_q,Precipitation of coldest quarter (mm.3months-1)
+clim_56_pet1_Monthly potential evapotranspiration from the Thornthwaite equation - January (mm.month-1),clim_56_pet1_jan,Monthly potential evapotranspiration from the Thornthwaite equation - January (mm.month-1)
+clim_57_pet2_Monthly potential evapotranspiration from the Thornthwaite equation - February (mm.month-1),clim_57_pet2_feb,Monthly potential evapotranspiration from the Thornthwaite equation - February (mm.month-1)
+clim_58_pet3_Monthly potential evapotranspiration from the Thornthwaite equation - March (mm.month-1),clim_58_pet3_mar,Monthly potential evapotranspiration from the Thornthwaite equation - March (mm.month-1)
+clim_59_pet4_Monthly potential evapotranspiration from the Thornthwaite equation - April (mm.month-1),clim_59_pet4_apr,Monthly potential evapotranspiration from the Thornthwaite equation - April (mm.month-1)
+clim_60_pet5_Monthly potential evapotranspiration from the Thornthwaite equation - May (mm.month-1),clim_60_pet5_may,Monthly potential evapotranspiration from the Thornthwaite equation - May (mm.month-1)
+clim_61_pet6_Monthly potential evapotranspiration from the Thornthwaite equation - June (mm.month-1),clim_61_pet6_jun,Monthly potential evapotranspiration from the Thornthwaite equation - June (mm.month-1)
+clim_62_pet7_Monthly potential evapotranspiration from the Thornthwaite equation - July (mm.month-1),clim_62_pet7_jul,Monthly potential evapotranspiration from the Thornthwaite equation - July (mm.month-1)
+clim_63_pet8_Monthly potential evapotranspiration from the Thornthwaite equation - August (mm.month-1),clim_63_pet8_aug,Monthly potential evapotranspiration from the Thornthwaite equation - August (mm.month-1)
+clim_64_pet9_Monthly potential evapotranspiration from the Thornthwaite equation - September (mm.month-1),clim_64_pet9_sep,Monthly potential evapotranspiration from the Thornthwaite equation - September (mm.month-1)
+clim_65_pet10_Monthly potential evapotranspiration from the Thornthwaite equation - October (mm.month-1),clim_65_pet10_oct,Monthly potential evapotranspiration from the Thornthwaite equation - October (mm.month-1)
+clim_66_pet11_Monthly potential evapotranspiration from the Thornthwaite equation - November (mm.month-1),clim_66_pet11_nov,Monthly potential evapotranspiration from the Thornthwaite equation - November (mm.month-1)
+clim_67_pet12_Monthly potential evapotranspiration from the Thornthwaite equation - December (mm.month-1),clim_67_pet12_dec,Monthly potential evapotranspiration from the Thornthwaite equation - December (mm.month-1)
+clim_68_pet_Annual potential evapotranspiration from the Thornthwaite equation (mm),clim_68_pet_annual,Annual potential evapotranspiration from the Thornthwaite equation (mm)
+clim_69_cwd_Annual climatic water deficit (mm),clim_69_cwd_annual,Annual climatic water deficit (mm)
+clim_70_ndm_Number of dry months in the year (months.year-1),clim_70_ndm_per_year,Number of dry months in the year (months.year-1)
+env_71_alt_Altitude (meters),env_71_alt,Altitude (meters)
+env_72_slo_Slope (degrees),env_72_slo,Slope (degrees)
+env_73_asp_Aspect clockwise from North (degrees),env_73_asp,Aspect clockwise from North (degrees)
+"env_74_solrad_Solar radiation; computed from altitude, slope and aspect (Wh.m-2.day-1)",env_74_solrad,"Solar radiation; computed from altitude, slope and aspect (Wh.m-2.day-1)"
+"env_75_geo_Rock types (categ_vals: 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 13)",env_75_geo,"Rock types (categ_vals: 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 13)"
+"env_76_soi_Soil types (categ_vals: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)",env_76_soi,"Soil types (categ_vals: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)"
+"env_77_veg_Vegetation types (categ_vals: 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25)",env_77_veg,"Vegetation types (categ_vals: 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25)"
+"env_78_wat_Watersheds (categ_vals: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)",env_78_wat,"Watersheds (categ_vals: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)"
+env_79_forcov_Percentage of forest cover in 1 km by 1 km grid cells (%),env_79_forcov,Percentage of forest cover in 1 km by 1 km grid cells (%)
+caffeine_class,caffeine_class,caffeine_class
