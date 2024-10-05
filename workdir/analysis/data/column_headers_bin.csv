@@ -1,0 +1,159 @@
+clim_1_tmin1_Monthly minimum temperature - January (°C x 10)
+clim_2_tmin2_Monthly minimum temperature - February (°C x 10)
+clim_3_tmin3_Monthly minimum temperature - March (°C x 10)
+clim_4_tmin4_Monthly minimum temperature - April (°C x 10)
+clim_5_tmin5_Monthly minimum temperature - May (°C x 10)
+clim_6_tmin6_Monthly minimum temperature - June (°C x 10)
+clim_7_tmin7_Monthly minimum temperature - July (°C x 10)
+clim_8_tmin8_Monthly minimum temperature - August (°C x 10)
+clim_9_tmin9_Monthly minimum temperature - September (°C x 10)
+clim_10_tmin10_Monthly minimum temperature - October (°C x 10)
+clim_11_tmin11_Monthly minimum temperature - November (°C x 10)
+clim_12_tmin12_Monthly minimum temperature - December (°C x 10)
+clim_13_tmax1_Monthly maximum temperature - January (°C x 10)
+clim_14_tmax2_Monthly maximum temperature - February (°C x 10)
+clim_15_tmax3_Monthly maximum temperature - March (°C x 10)
+clim_16_tmax4_Monthly maximum temperature - April (°C x 10)
+clim_17_tmax5_Monthly maximum temperature - May (°C x 10)
+clim_18_tmax6_Monthly maximum temperature - June (°C x 10)
+clim_19_tmax7_Monthly maximum temperature - July (°C x 10)
+clim_20_tmax8_Monthly maximum temperature - August (°C x 10)
+clim_21_tmax9_Monthly maximum temperature - September (°C x 10)
+clim_22_tmax10_Monthly maximum temperature - October (°C x 10)
+clim_23_tmax11_Monthly maximum temperature - November (°C x 10)
+clim_24_tmax12_Monthly maximum temperature - December (°C x 10)
+clim_25_prec1_Monthly total precipitation - January (mm.month-1)
+clim_26_prec2_Monthly total precipitation - February (mm.month-1)
+clim_27_prec3_Monthly total precipitation - March (mm.month-1)
+clim_28_prec4_Monthly total precipitation - April (mm.month-1)
+clim_29_prec5_Monthly total precipitation - May (mm.month-1)
+clim_30_prec6_Monthly total precipitation - June (mm.month-1)
+clim_31_prec7_Monthly total precipitation - July (mm.month-1)
+clim_32_prec8_Monthly total precipitation - August (mm.month-1)
+clim_33_prec9_Monthly total precipitation - September (mm.month-1)
+clim_34_prec10_Monthly total precipitation - October (mm.month-1)
+clim_35_prec11_Monthly total precipitation - November (mm.month-1)
+clim_36_prec12_Monthly total precipitation - December (mm.month-1)
+clim_37_bio1_Annual mean temperature (degrees)
+clim_38_bio2_Mean diurnal range (mean of monthly max temp - monthy min temp)
+clim_39_bio3_Isothermality = BIO2/BIO7 x 100 (No units)
+clim_40_bio4_Temperature seasonality (standard deviation x 100)
+clim_41_bio5_Max temperature of warmest month (degrees)
+clim_42_bio6_Min temperature of coldest month (degrees)
+clim_43_bio7_Temperature annual range  = BIO5-BIO6 (degrees)
+clim_44_bio8_Mean temperature of wettest quarter (degrees)
+clim_45_bio9_Mean temperature of driest quarter (degrees)
+clim_46_bio10_Mean temperature of warmest quarter (degrees)
+clim_47_bio11_Mean temperature of coldest quarter (degrees)
+clim_48_bio12_Annual precipitation (mm.year-1)
+clim_49_bio13_Precipitation of wettest month (mm)
+clim_50_bio14_Precipitation of driest month (mm)
+clim_51_bio15_Precipitation seasonality (coefficient of variation)
+clim_52_bio16_Precipitation of wettest quarter (mm.3months-1)
+clim_53_bio17_Precipitation of driest quarter (mm.3months-1)
+clim_54_bio18_Precipitation of warmest quarter (mm.3months-1)
+clim_55_bio19_Precipitation of coldest quarter (mm.3months-1)
+clim_56_pet1_Monthly potential evapotranspiration from the Thornthwaite equation - January (mm.month-1)
+clim_57_pet2_Monthly potential evapotranspiration from the Thornthwaite equation - February (mm.month-1)
+clim_58_pet3_Monthly potential evapotranspiration from the Thornthwaite equation - March (mm.month-1)
+clim_59_pet4_Monthly potential evapotranspiration from the Thornthwaite equation - April (mm.month-1)
+clim_60_pet5_Monthly potential evapotranspiration from the Thornthwaite equation - May (mm.month-1)
+clim_61_pet6_Monthly potential evapotranspiration from the Thornthwaite equation - June (mm.month-1)
+clim_62_pet7_Monthly potential evapotranspiration from the Thornthwaite equation - July (mm.month-1)
+clim_63_pet8_Monthly potential evapotranspiration from the Thornthwaite equation - August (mm.month-1)
+clim_64_pet9_Monthly potential evapotranspiration from the Thornthwaite equation - September (mm.month-1)
+clim_65_pet10_Monthly potential evapotranspiration from the Thornthwaite equation - October (mm.month-1)
+clim_66_pet11_Monthly potential evapotranspiration from the Thornthwaite equation - November (mm.month-1)
+clim_67_pet12_Monthly potential evapotranspiration from the Thornthwaite equation - December (mm.month-1)
+clim_68_pet_Annual potential evapotranspiration from the Thornthwaite equation (mm)
+clim_69_cwd_Annual climatic water deficit (mm)
+clim_70_ndm_Number of dry months in the year (months.year-1)
+env_71_alt_Altitude (meters)
+env_72_slo_Slope (degrees)
+env_73_asp_Aspect; clockwise from North (degrees)
+"env_74_solrad_Solar radiation; computed from altitude, slope and aspect (Wh.m-2.day-1)"
+env_79_forcov_Percentage of forest cover in 1 km by 1 km grid cells (%)
+env_75_geo_Rock types_Alluvial_&_Lake_deposits
+env_75_geo_Rock types_Basement_Rocks_(Ign_&_Met)
+env_75_geo_Rock types_Lavas_(including_Basalts_&_Gabbros)
+env_75_geo_Rock types_Mangrove_Swamp
+env_75_geo_Rock types_Marble_(Cipolin)
+"env_75_geo_Rock types_Mesozoic_Limestones_+_Marls_(inc._""Tsingy"")"
+env_75_geo_Rock types_Quartzites
+env_75_geo_Rock types_Sandstones
+env_75_geo_Rock types_Tertiary_Limestones_+_Marls_&_Chalks
+env_75_geo_Rock types_Ultrabasics
+env_75_geo_Rock types_Unconsolidated_Sands
+env_75_geo_Rock types__nodata
+env_76_soi_Soil types_Alluvio-colluvial_Deposited_Soils
+env_76_soi_Soil types_Andosols
+env_76_soi_Soil types_Bare_Rocks
+env_76_soi_Soil types_Fluvio-marine_Deposited_Soils_-_Mangroves
+"env_76_soi_Soil types_Highly_Rejuvenated,_Penevoluted_Ferralitic_Soils"
+env_76_soi_Soil types_Humic_Ferralitic_Soils
+env_76_soi_Soil types_Humic_Rejuvenated_Ferralitic_Soils
+env_76_soi_Soil types_Hydromorphic_Soils
+env_76_soi_Soil types_Indurated-Concretion_Ferralitic_Soils
+env_76_soi_Soil types_Podzolic_Soils_and_Podzols
+"env_76_soi_Soil types_Poorly_Evolved_Erosion_Soils,_Lithosols"
+env_76_soi_Soil types_Raw_Lithic_Mineral_Soils
+env_76_soi_Soil types_Red_Ferruginous_Soils
+env_76_soi_Soil types_Red_Fersiallitic_Soils
+env_76_soi_Soil types_Rejuvenated_Ferralitic_Soils_with_Degrading_Structure
+env_76_soi_Soil types_Rejuvenated_Ferralitic_Soils_with_Little_Degrading_Structure
+env_76_soi_Soil types_Salty_Deposited_Soils
+env_76_soi_Soil types_Skeletal_Shallow_Eroded_Ferruginous_Soils
+env_76_soi_Soil types_Typical_Reddish-brown_Ferralitic_Soils_with_Little_Degrading_Structure
+env_76_soi_Soil types_Vertisols
+env_76_soi_Soil types_Wind-deposited_Soils
+env_76_soi_Soil types_Yellow-red_Ferruginous_Soils_(Red_Sands)
+env_76_soi_Soil types_Yellow_Fersiallitic_Soils
+env_76_soi_Soil types__nodata
+env_77_veg_Vegetation types_VegCat_01
+env_77_veg_Vegetation types_VegCat_02
+env_77_veg_Vegetation types_VegCat_03
+env_77_veg_Vegetation types_VegCat_04
+env_77_veg_Vegetation types_VegCat_05
+env_77_veg_Vegetation types_VegCat_06
+env_77_veg_Vegetation types_VegCat_07
+env_77_veg_Vegetation types_VegCat_09
+env_77_veg_Vegetation types_VegCat_10
+env_77_veg_Vegetation types_VegCat_11
+env_77_veg_Vegetation types_VegCat_12
+env_77_veg_Vegetation types_VegCat_13
+env_77_veg_Vegetation types_VegCat_14
+env_77_veg_Vegetation types_VegCat_15
+env_77_veg_Vegetation types_VegCat_16
+env_77_veg_Vegetation types_VegCat_18
+env_77_veg_Vegetation types_VegCat_19
+env_77_veg_Vegetation types_VegCat_22
+env_77_veg_Vegetation types_VegCat_23
+env_77_veg_Vegetation types_VegCat_25
+env_77_veg_Vegetation types__nodata
+env_78_wat_Watersheds_CoE_E-Betsiboka_S-Maevarano
+env_78_wat_Watersheds_CoE_N-Bemarivo
+env_78_wat_Watersheds_CoE_N-Maevarano_S-Sambirano
+env_78_wat_Watersheds_CoE_N-Mahavavy
+env_78_wat_Watersheds_CoE_N-Mangoky_S-Tsiribihina
+env_78_wat_Watersheds_CoE_N-Sambirano_W-Mahavavy
+env_78_wat_Watersheds_CoE_N-Tsiribihina_W-Betsiboka
+env_78_wat_Watersheds_CoE_S-Bemarivo_N-Mangoro
+env_78_wat_Watersheds_CoE_S-Manampatrana_N-Mananara
+env_78_wat_Watersheds_CoE_S-Mananara
+env_78_wat_Watersheds_CoE_S-Mangoky
+env_78_wat_Watersheds_CoE_S-Mangoro_N-Manampatrana
+env_78_wat_Watersheds_RetDisp_Antainambalana
+env_78_wat_Watersheds_RetDisp_Bemarivo
+env_78_wat_Watersheds_RetDisp_Betsiboka
+env_78_wat_Watersheds_RetDisp_Maevarana_(1/2_N)
+env_78_wat_Watersheds_RetDisp_Mahavavy
+env_78_wat_Watersheds_RetDisp_Manampatrana
+env_78_wat_Watersheds_RetDisp_Mananara_du_Sud
+env_78_wat_Watersheds_RetDisp_Mandrare
+env_78_wat_Watersheds_RetDisp_Mangoky
+env_78_wat_Watersheds_RetDisp_Mangoro
+env_78_wat_Watersheds_RetDisp_Onilahy
+env_78_wat_Watersheds_RetDisp_Sambirano
+env_78_wat_Watersheds_RetDisp_Tsiribihina
+env_78_wat_Watersheds__nodata
+caffeine_class

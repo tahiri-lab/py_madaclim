@@ -179,6 +179,9 @@ def main():
   plt.tight_layout()
   output_file = r'..\images\figure2.svg'  
   plt.savefig(output_file, format='svg')
+  output_file = r'..\images\figure2.png'  
+  plt.savefig(output_file, format='png')
+  
   plt.close(fig)
 
 
@@ -186,9 +189,9 @@ if __name__ == "__main__":
   main()
   
 
-  # example use
-  # python .\tree_to_map_caffeine_content.py --nwk nwk_file --gps gps_coords --offset offsets_file
-
   #nwk_file = r"..\input\aligned_caffeine_tree.nwk"
   #gps_coords = r'..\tmp\file_w_caffeine.csv'
   #offsets_file = r"..\input\offsets_caff.csv"
+# example use
+  # python .\tree_to_map_caffeine_content.py --nwk nwk_file --gps gps_coords --offset offsets_file
+

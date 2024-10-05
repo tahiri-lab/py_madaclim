@@ -1,0 +1,80 @@
+,geoclim_type,layer_number,layer_name,layer_description,raster_value,category
+0,env,75,geo,Rock types,1,Alluvial_&_Lake_deposits
+1,env,75,geo,Rock types,2,Unconsolidated_Sands
+2,env,75,geo,Rock types,4,Mangrove_Swamp
+3,env,75,geo,Rock types,5,Tertiary_Limestones_+_Marls_&_Chalks
+4,env,75,geo,Rock types,6,Sandstones
+5,env,75,geo,Rock types,7,"Mesozoic_Limestones_+_Marls_(inc._""Tsingy"")"
+6,env,75,geo,Rock types,9,Lavas_(including_Basalts_&_Gabbros)
+7,env,75,geo,Rock types,10,Basement_Rocks_(Ign_&_Met)
+8,env,75,geo,Rock types,11,Ultrabasics
+9,env,75,geo,Rock types,12,Quartzites
+10,env,75,geo,Rock types,13,Marble_(Cipolin)
+11,env,76,soi,Soil types,1,Bare_Rocks
+12,env,76,soi,Soil types,2,Raw_Lithic_Mineral_Soils
+13,env,76,soi,Soil types,3,"Poorly_Evolved_Erosion_Soils,_Lithosols"
+14,env,76,soi,Soil types,4,Wind-deposited_Soils
+15,env,76,soi,Soil types,5,Alluvio-colluvial_Deposited_Soils
+16,env,76,soi,Soil types,6,Salty_Deposited_Soils
+17,env,76,soi,Soil types,7,Fluvio-marine_Deposited_Soils_-_Mangroves
+18,env,76,soi,Soil types,8,Vertisols
+19,env,76,soi,Soil types,9,Andosols
+20,env,76,soi,Soil types,10,Podzolic_Soils_and_Podzols
+21,env,76,soi,Soil types,11,Hydromorphic_Soils
+22,env,76,soi,Soil types,12,Red_Fersiallitic_Soils
+23,env,76,soi,Soil types,13,Yellow_Fersiallitic_Soils
+24,env,76,soi,Soil types,14,Yellow-red_Ferruginous_Soils_(Red_Sands)
+25,env,76,soi,Soil types,15,Red_Ferruginous_Soils
+26,env,76,soi,Soil types,16,Skeletal_Shallow_Eroded_Ferruginous_Soils
+27,env,76,soi,Soil types,17,Typical_Reddish-brown_Ferralitic_Soils_with_Little_Degrading_Structure
+28,env,76,soi,Soil types,18,Humic_Ferralitic_Soils
+29,env,76,soi,Soil types,19,Indurated-Concretion_Ferralitic_Soils
+30,env,76,soi,Soil types,20,Humic_Rejuvenated_Ferralitic_Soils
+31,env,76,soi,Soil types,21,Rejuvenated_Ferralitic_Soils_with_Little_Degrading_Structure
+32,env,76,soi,Soil types,22,Rejuvenated_Ferralitic_Soils_with_Degrading_Structure
+33,env,76,soi,Soil types,23,"Highly_Rejuvenated,_Penevoluted_Ferralitic_Soils"
+34,env,77,veg,Vegetation types,1,VegCat_01
+35,env,77,veg,Vegetation types,2,VegCat_02
+36,env,77,veg,Vegetation types,3,VegCat_03
+37,env,77,veg,Vegetation types,4,VegCat_04
+38,env,77,veg,Vegetation types,5,VegCat_05
+39,env,77,veg,Vegetation types,6,VegCat_06
+40,env,77,veg,Vegetation types,7,VegCat_07
+41,env,77,veg,Vegetation types,9,VegCat_09
+42,env,77,veg,Vegetation types,10,VegCat_10
+43,env,77,veg,Vegetation types,11,VegCat_11
+44,env,77,veg,Vegetation types,12,VegCat_12
+45,env,77,veg,Vegetation types,13,VegCat_13
+46,env,77,veg,Vegetation types,14,VegCat_14
+47,env,77,veg,Vegetation types,15,VegCat_15
+48,env,77,veg,Vegetation types,16,VegCat_16
+49,env,77,veg,Vegetation types,18,VegCat_18
+50,env,77,veg,Vegetation types,19,VegCat_19
+51,env,77,veg,Vegetation types,22,VegCat_22
+52,env,77,veg,Vegetation types,23,VegCat_23
+53,env,77,veg,Vegetation types,25,VegCat_25
+54,env,78,wat,Watersheds,1,CoE_N-Bemarivo
+55,env,78,wat,Watersheds,2,CoE_S-Bemarivo_N-Mangoro
+56,env,78,wat,Watersheds,3,CoE_S-Mangoro_N-Manampatrana
+57,env,78,wat,Watersheds,4,CoE_S-Manampatrana_N-Mananara
+58,env,78,wat,Watersheds,5,CoE_S-Mananara
+59,env,78,wat,Watersheds,6,CoE_S-Mangoky
+60,env,78,wat,Watersheds,7,CoE_N-Mangoky_S-Tsiribihina
+61,env,78,wat,Watersheds,8,CoE_N-Tsiribihina_W-Betsiboka
+62,env,78,wat,Watersheds,9,CoE_E-Betsiboka_S-Maevarano
+63,env,78,wat,Watersheds,10,CoE_N-Maevarano_S-Sambirano
+64,env,78,wat,Watersheds,11,CoE_N-Sambirano_W-Mahavavy
+65,env,78,wat,Watersheds,12,CoE_N-Mahavavy
+66,env,78,wat,Watersheds,13,RetDisp_Bemarivo
+67,env,78,wat,Watersheds,14,RetDisp_Antainambalana
+68,env,78,wat,Watersheds,15,RetDisp_Mangoro
+69,env,78,wat,Watersheds,16,RetDisp_Manampatrana
+70,env,78,wat,Watersheds,17,RetDisp_Mananara_du_Sud
+71,env,78,wat,Watersheds,18,RetDisp_Mandrare
+72,env,78,wat,Watersheds,19,RetDisp_Onilahy
+73,env,78,wat,Watersheds,20,RetDisp_Mangoky
+74,env,78,wat,Watersheds,21,RetDisp_Tsiribihina
+75,env,78,wat,Watersheds,22,RetDisp_Betsiboka
+76,env,78,wat,Watersheds,23,RetDisp_Maevarana_(1/2_N)
+77,env,78,wat,Watersheds,24,RetDisp_Sambirano
+78,env,78,wat,Watersheds,25,RetDisp_Mahavavy
