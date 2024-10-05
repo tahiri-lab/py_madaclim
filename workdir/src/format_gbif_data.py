@@ -19,27 +19,27 @@ def format_gbif(csv_file, nodes_file):
 
     # Apply extraction function to both DataFrames
     df_gbif['key'] = df_gbif['specimen_id'].apply(extract_name)
-    df_node['key'] = df_node['Node Name'].apply(lambda x: re.sub(r'^C_|_[\dA-Za-z]+$', '', x))
+    df_node['key'] = df_node['node_name'].apply(lambda x: re.sub(r'^C_|_[\dA-Za-z]+$', '', x))
 
     # Create a dictionary for mapping key to Node Name
-    mapping = df_node.set_index('key')['Node Name'].to_dict()
+    mapping = df_node.set_index('key')['node_name'].to_dict()
 
     # Map the Node Name into a new column in df_gbif
-    df_gbif['Node Name'] = df_gbif['key'].map(mapping)
+    df_gbif['node_name'] = df_gbif['key'].map(mapping)
 
 
 
     # Drop the key column (optional)
     df_gbif.drop(columns='key', inplace=True)
-    df_gbif = df_gbif.dropna(subset=['Node Name'])
+    df_gbif = df_gbif.dropna(subset=['node_name'])
 
     #print(df_gbif)
 
 
-    df_new = df_gbif[['Node Name','longitude', 'latitude']]
+    df_new = df_gbif[['node_name','longitude', 'latitude']]
 
     # Renaming columns
-    df_new = df_new.rename(columns={'Node Name': 'specimen_id'})
+    df_new = df_new.rename(columns={'node_name': 'specimen_id'})
 
     #print(df_new)
         
