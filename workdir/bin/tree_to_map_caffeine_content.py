@@ -6,9 +6,9 @@ import cartopy.feature as cfeature
 import pandas as pd
 from Bio import Phylo
 
-nwk_file = r"../input/aligned_tree.nwk"
-gps_coords = r'..\input\0026013-240906103802322_w_caffeine.csv'
-offsets_file = r"../input/offsets.csv"
+nwk_file = r"C:\Users\adm1\OneDrive - USherbrooke\Documents\memoire\py_madaclim\workdir\input\aligned_caffeine_tree.nwk"
+gps_coords = r'C:\Users\adm1\OneDrive - USherbrooke\Documents\memoire\py_madaclim\workdir\tmp\file_w_caffeine.csv'
+offsets_file = r"C:\Users\adm1\OneDrive - USherbrooke\Documents\memoire\py_madaclim\workdir\input\offsets_caff.csv"
 
 # Create a new map with PlateCarree projection
 fig = plt.figure(figsize=(26, 11))
@@ -85,7 +85,7 @@ def value_to_color(val):
         return 'lightcoral'  # Light red
     elif 0.02 <= val <= 0.06:
         # Gradient from orange to yellow
-        cmap = plt.get_cmap('YlOrRd')  # Yellow to red colormap
+        cmap = plt.get_cmap('viridis')  # Yellow to red colormap
         norm = mcolors.Normalize(vmin=0.02, vmax=0.06)
         return mcolors.to_hex(cmap(norm(val)))
     elif val == 0.7:
@@ -123,7 +123,7 @@ text_colors = dict(zip(gps['specimen_id'], gps['color']))
 # Plot the tree
 #Phylo.draw(tree, do_show=False, axes=ax_tree, label_func=custom_label)
 Phylo.draw(tree, do_show=False, axes=ax_tree, label_func=custom_label, label_colors=text_colors)
-ax_tree.set_title("Coffea species with their geolocation per caffeine content")
+ax_tree.set_title("Coffea species with their geolocation per caffeine content", fontsize=18)
 
 # Set axes limits to verify the data range
 ax_tree.set_xlim(0, 1)
@@ -191,8 +191,8 @@ ax2.add_feature(cfeature.BORDERS)
 
 ax2.set_xlabel("Longitude")
 ax2.set_ylabel("Latitude")
-ax2.set_title("Species Coordinates")
-ax2.legend(['0 dmb caffeine'], loc='upper right')
+ax2.set_title("Species Coordinates", fontsize=18)
+ax2.legend(["0 %dmb caffeine"], loc='upper right')
 
 # --------------------------------------
 # ------------  Line mapping -----------
@@ -241,6 +241,6 @@ for index, row in df.iterrows():
 plt.tight_layout()
 #plt.show()
 # Save the figure to a file instead of showing it
-output_file = r'../images/figure1.jpg'  # Specify your desired output file name
-plt.savefig(output_file, format='jpg', dpi=300)  # Save with specified DPI
+output_file = r'C:\Users\adm1\OneDrive - USherbrooke\Documents\memoire\py_madaclim\workdir\images\figure2.svg'  # Specify your desired output file name
+plt.savefig(output_file, format='svg')
 plt.close(fig)
