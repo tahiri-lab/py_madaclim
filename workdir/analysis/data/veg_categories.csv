@@ -1,0 +1,20 @@
+VegCat,Description,Coverage,Samples with caff content,All samples
+VegCat_01,South western coastal bushland,0.30%,2,6
+VegCat_02,Degraded south western dry spiny forest,0.92%,1,1
+VegCat_03,Tapia forest,0.22%,1,3
+VegCat_04,Cultivatation,3.97%,15,35
+VegCat_05,Western dry forest,5.40%,63,148
+VegCat_06,Plateau grassland-wooded grassland mosaic,41.67%,65,128
+VegCat_07,Wooded grassland-bushland mosaic,22.93%,61,124
+VegCat_09,,,4,19
+VegCat_10,Bare Soil/rock,0.96%,,5
+VegCat_11,Wetlands,0.94%,2,3
+VegCat_12,South western dry spiny forest-thicket,3.10%,15,15
+VegCat_13,Western sub-humid forest,0.68%,1,8
+VegCat_14,Humid Forest,8.06%,96,320
+VegCat_15,,,22,39
+VegCat_16,Degraded Humid Forest,9.81%,150,212
+VegCat_19,Littoral forest,0.05%,,
+VegCat_22,Mangroves,0.41%,11,15
+VegCat_23,Western humid forest,0.01%,,
+VegCat_25,Sea/Water,0.57%,17,17
