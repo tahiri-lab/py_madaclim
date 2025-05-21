@@ -2,16 +2,70 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 import matplotlib.colors as mcolors
 import matplotlib.lines as mlines
+import matplotlib.cm as cm
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import pandas as pd
+import numpy as np
 from Bio import Phylo
 import argparse
+
+label_map = {
+    "C_abbayesii_A601": "C. abbayesii (A601)",
+    "C_ambodirianensis_A572": "C. ambodirianensis (A572)",
+    "C_ambongensis": "C. ambongensis",
+    "C_andrambovatensis_A310": "C. andrambovatensis (A310)",
+    "C_ankaranensis_A525": "C. ankaranensis (A525)",
+    "C_arenesiana_A403": "C. arenesiana (A403)",
+    "C_augagneuri_A966": "C. augagneuri (A966)",
+    "C_bernardiniana_MDC": "C. bernardiniana (MDC)",
+    "C_bertrandii_A5": "C. bertrandii (A5)",
+    "C_bissetiae": "C. bissetiae",
+    "C_boinensis": "C. boinensis",
+    "C_boiviniana_A980": "C. boiviniana (A980)",
+    "C_bonnieri_A535": "C. bonnieri (A535)",
+    "C_costei_A956": "C. costei (A956)",
+    "C_dolichophylla_A206": "C. dolichophylla (A206)",
+    "C_dubardii_A969": "C. dubardii (A969)",
+    "C_farafanganensis_A208": "C. farafanganensis (A208)",
+    "C_heimii_A516": "C. heimii (A516)",
+    "C_homollei_A945": "C. homollei (A945)",
+    "C_humbertii_RNF785": "C. humbertii (RNF785)",
+    "C_humblotiana_BM19_20": "C. humblotiana (BM19, 20)",
+    "C_jumellei_A974": "C. jumellei (A974)",
+    "C_kianjavatensis_A602": "C. kianjavatensis (A602)",
+    "C_kihansiensis_APD2922": "C. kihansiensis (APD2922)",
+    "C_labatii_APD3096": "C. labatii (APD3096)",
+    "C_lancifolia_A320": "C. lancifolia (A320)",
+    "C_leroyi_A315": "C. leroyi (A315)",
+    "C_liaudii_A1013": "C. liaudii (A1013)",
+    "C_macrocarpa-PET": "C. macrocarpa (PET)",
+    "C_mauritiana_BM17_25": "C. mauritiana (BM17, 25)",
+    "C_mauritiana_Makes4": "C. mauritiana (Makes4)",
+    "C_mcphersonii_A977": "C. mcphersonii (A977)",
+    "C_millotii_A222": "C. millotii (A222)",
+    "C_mogeneti_A975": "C. mogeneti (A975)",
+    "C_montis-sacri_A321": "C. montis-sacri (A321)",
+    "C_myrtifolia_MBR_A9": "C. myrtifolia (MBR, A9)",
+    "C_perrieri_A12": "C. perrieri (A12)",
+    "C_pervilleana_A957": "C. pervilleana (A957)",
+    "C_ratsimamangae_A528": "C. ratsimamangae (A528)",
+    "C_resinosa_A8": "C. resinosa (A8)",
+    "C_richardii_A575": "C. richardii (A575)",
+    "C_sahafaryensis_A978": "C. sahafaryensis (A978)",
+    "C_sakarahae_A304": "C. sakarahae (A304)",
+    "C_tetragona_A252": "C. tetragona (A252)",
+    "C_tsirananae_A515": "C. tsirananae (A515)",
+    "C_vatovavyensis_A830": "C. vatovavyensis (A830)",
+    "C_vianneyi_A946": "C. vianneyi (A946)",
+    "Tricalysia": "C. Tricalysia",
+}
 
 
 def custom_label(clade):
     if clade.is_terminal():
-        return clade.name
+        # return clade.name
+        return label_map.get(clade.name, clade.name)
     else:
         return None
 
@@ -71,8 +125,10 @@ def value_to_color(val):
     if val == 0.00:
         return "grey"
     elif 0.00 < val < 0.7:
-        # Gradient from orange to yellow
-        cmap = plt.get_cmap("viridis")
+        base_cmap = plt.get_cmap("viridis")
+        newcolors = base_cmap(np.linspace(0, 0.8, 256))
+        viridis_no_yellow = mcolors.ListedColormap(newcolors, name="viridis_no_yellow")
+        cmap = viridis_no_yellow
         norm = mcolors.Normalize(vmin=0.02, vmax=0.06)
         return mcolors.to_hex(cmap(norm(val)))
     elif val == 0.7:
@@ -137,7 +193,11 @@ def main():
 
     gps = pd.read_csv(args.gps)
     gps["color"] = gps["caffeine_percent"].apply(value_to_color)
-    text_colors = dict(zip(gps["specimen_id"], gps["color"]))
+    # text_colors = dict(zip(gps["specimen_id"], gps["color"]))
+    raw_color_map = dict(zip(gps["specimen_id"], gps["color"]))
+
+    # build a map from *displayed* label → color
+    text_colors = {label_map.get(raw, raw): col for raw, col in raw_color_map.items()}
 
     # Plot the tree
     Phylo.draw(
@@ -149,7 +209,8 @@ def main():
     )
 
     for txt in ax_tree.texts:
-        txt.set_fontsize(16)
+        txt.set_fontsize(24)
+        txt.set_fontstyle("italic")
 
     # ax_tree.set_title("Coffea species with their geolocation per caffeine content", fontsize=18)
     ax_tree.set_frame_on(False)  # Remove the border/frame
@@ -195,18 +256,7 @@ def main():
             markeredgecolor="black",
             alpha=0.2 if is_zero else 1.0,  # ← 50% transparent grey dots
         )
-    # for index, row in gps.iterrows():
-    #     ax2.plot(
-    #         row["longitude"],
-    #         row["latitude"],
-    #         "o",  # Circle marker
-    #         markersize=8,  # Same size as in ax.plot
-    #         markerfacecolor=row["color"],  # Use the color from the 'color' column
-    #         markeredgewidth=2,  # Same edge width
-    #         markeredgecolor="black",  # Same edge color
-    #     )
 
-    # Add coastlines and country borders for context
     ax2.coastlines(resolution="10m")
     ax2.add_feature(cfeature.LAND)
     ax2.add_feature(cfeature.OCEAN)
@@ -215,15 +265,10 @@ def main():
 
     ax2.set_xlabel("Longitude")
     ax2.set_ylabel("Latitude")
-    # ax2.set_title("Species Coordinates", fontsize=18)
-    # ax2.legend(["0 %dmb caffeine"], loc="upper right")
 
     legend_handles = [
         mlines.Line2D(
             [], [], color="grey", marker="o", linestyle="None", label="0% caffeine"
-        ),
-        mlines.Line2D(
-            [], [], color="red", marker="o", linestyle="None", label="0.7% caffeine"
         ),
         mlines.Line2D(
             [],
@@ -233,23 +278,28 @@ def main():
             linestyle="None",
             label="0.02–0.06% caffeine",
         ),
+        mlines.Line2D(
+            [], [], color="red", marker="o", linestyle="None", label="0.7% caffeine"
+        ),
     ]
     ax2.legend(
         handles=legend_handles,
-        loc="lower right",  # put it in the bottom-right
+        loc="lower right",
         frameon=True,
-        fontsize=12,  # increase to 12pt
+        fontsize=12,
     )
 
     import matplotlib as mpl
 
     # build a ScalarMappable for your viridis gradient
-    norm = mpl.colors.Normalize(vmin=0.02, vmax=0.06)
-    cmap = plt.get_cmap("viridis")
-    sm = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-    # sm.set_array([])              # only needed for older Matplotlib versions
+    base_cmap = plt.get_cmap("viridis")
+    newcolors = base_cmap(np.linspace(0, 0.8, 256))
+    viridis_no_yellow = mcolors.ListedColormap(newcolors, name="viridis_no_yellow")
+    cmap = viridis_no_yellow
 
-    # after you’ve drawn ax2 …
+    norm = mpl.colors.Normalize(vmin=0.02, vmax=0.06)
+    sm = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
+
     cbar = fig.colorbar(
         sm,
         ax=ax2,
@@ -295,58 +345,10 @@ def main():
                 )
                 fig.add_artist(con)
 
-    # for index, row in df.iterrows():
-    #     specimen = row["ID"]
-    #     if specimen in gps_grouped:
-    #         # fetch its caffeine %
-    #         caf = caff_dict.get(specimen, 0.0)
-    #         # pick a thicker line for non-zero caffeine
-    #         lw = 2.0 if caf > 0 else 0.8
-
-    #         for longitude, latitude, color in gps_grouped[specimen]:
-    #             con = ConnectionPatch(
-    #                 xyA=row["Coordinates"],
-    #                 coordsA="data",
-    #                 xyB=(longitude, latitude),
-    #                 coordsB="data",
-    #                 axesA=ax_tree,
-    #                 axesB=ax2,
-    #                 color=color,
-    #                 linewidth=lw,         # ← use our dynamic line width
-    #                 linestyle="--",
-    #                 alpha=0.2,
-    #                 zorder=2,
-    #             )
-    #             fig.add_artist(con)
-
-    # for index, row in df.iterrows():
-    #     # Get corresponding list of coordinates and color from gps DataFrame
-    #     if row["ID"] in gps_grouped:
-    #         species_coords_list = gps_grouped[row["ID"]]
-    #         # Create connection patches for each coordinate in the list
-    #         for species_coords in species_coords_list:
-    #             longitude, latitude, color = (
-    #                 species_coords  # Unpack coordinates and color
-    #             )
-    #             con = ConnectionPatch(
-    #                 xyA=row["Coordinates"],
-    #                 coordsA="data",
-    #                 xyB=(longitude, latitude),
-    #                 coordsB="data",
-    #                 axesA=ax_tree,
-    #                 axesB=ax2,
-    #                 color=color,  # Use the corresponding color for each specimen_id
-    #                 linewidth=0.8,
-    #                 linestyle="--",
-    #                 alpha=0.2,
-    #                 zorder=2,
-    #             )
-    #             fig.add_artist(con)
-
     plt.tight_layout()
-    output_file = r"..\images\figure3.svg"
+    output_file = r"..\images\tree2map.svg"
     plt.savefig(output_file, format="svg")
-    output_file = r"..\images\figure3.png"
+    output_file = r"..\images\tree2map.png"
     plt.savefig(output_file, format="png")
 
     plt.close(fig)
