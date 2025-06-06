@@ -1,12 +1,14 @@
 ```mermaid
+%%{init: {"themeVariables": {"fontSize": "22px"}}}%%
+
 flowchart TB
   %% Stage 1: Geospatial Data Prep
   subgraph Geodata
     direction TB
     GEC["_archives/scripts/geodata_to_csv.py_"]
-    GPS_ALL["GPS_ALL.csv"]
+%%    GPS_ALL["GPS_ALL.csv"]
     GPS_GBS["GPS_GBS_ONLY.csv"]
-    GEC --> GPS_ALL
+%%    GEC --> GPS_ALL
     GEC --> GPS_GBS
   end
 
@@ -17,11 +19,11 @@ flowchart TB
   subgraph Collection
     direction TB
     C1["01_madaclim_collection_creation.ipynb"]
-    COLL_ALL["coll_all.csv"]
-    COLL_BIN["coll_all_bin.csv"]
+%%    COLL_ALL["coll_all.csv"]
+%%    COLL_BIN["coll_all_bin.csv"]
     COLL_CAT["coll_all_categ_nonbin.csv"]
-    C1 --> COLL_ALL
-    C1 --> COLL_BIN
+%%    C1 --> COLL_ALL
+%%    C1 --> COLL_BIN
     C1 --> COLL_CAT
   end
 
@@ -31,12 +33,12 @@ flowchart TB
   subgraph CaffeineClass
     direction TB
     C2["02_add_caff_class_to_collection.ipynb"]
-    CCLASS["coll_caff_node_w_class.csv"]
+%%    CCLASS["coll_caff_node_w_class.csv"]
     CCLASS_BIN["coll_caff_node_bin_w_class.csv"]
-    COORDS["coords_w_caff.csv"]
-    C2 --> CCLASS
+%%    COORDS["coords_w_caff.csv"]
+%%    C2 --> CCLASS
     C2 --> CCLASS_BIN
-    C2 --> COORDS
+%%    C2 --> COORDS
   end
 
   CCLASS_BIN --> MOUT
@@ -46,11 +48,11 @@ flowchart TB
     direction TB
     MOUT["03_managing_outliers.ipynb"]
     CLEAN["cleaned_data_w_class.csv"]
-    CLEAN_NUM["cleaned_data_num_w_class.csv"]
-    CLEAN_CAT["cleaned_data_categ_w_class.csv"]
+%%    CLEAN_NUM["cleaned_data_num_w_class.csv"]
+%%    CLEAN_CAT["cleaned_data_categ_w_class.csv"]
     MOUT --> CLEAN
-    MOUT --> CLEAN_NUM
-    MOUT --> CLEAN_CAT
+%%    MOUT --> CLEAN_NUM
+%%    MOUT --> CLEAN_CAT
   end
 
   CLEAN --> ATTR
@@ -77,7 +79,7 @@ flowchart TB
   RED_BIN --> MREG
   TRAIN --> MTEST
 
-  subgraph Choice\ of\ Model
+  subgraph Choice of Model
     direction TB
     CHM["05_choice_of_model.ipynb"]
   end
