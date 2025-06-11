@@ -41,7 +41,7 @@ clim_39_bio3_Isothermality = BIO2/BIO7 x 100 (No units),clim_39_isotherm,Isother
 clim_40_bio4_Temperature seasonality (standard deviation x 100),clim_40_temp_season,Temperature seasonality (standard deviation x 100)
 clim_41_bio5_Max temperature of warmest month (degrees),clim_41_tmax_warmest_m,Max temperature of warmest month (degrees)
 clim_42_bio6_Min temperature of coldest month (degrees),clim_42_tmin_coldest_m,Min temperature of coldest month (degrees)
-clim_43_bio7_Temperature annual range  = BIO5-BIO6 (degrees),clim_43_tannual_range,Temperature annual range  = BIO5-BIO6 (degrees)
+clim_43_bio7_Temperature annual range  = Warmest month - coldest month (degrees),clim_43_tannual_range,Temperature annual range  = Warmest month - coldest month (degrees)
 clim_44_bio8_Mean temperature of wettest quarter (degrees),clim_44_tmean_wettest_q,Mean temperature of wettest quarter (degrees)
 clim_45_bio9_Mean temperature of driest quarter (degrees),clim_45_tmean_driest_q,Mean temperature of driest quarter (degrees)
 clim_46_bio10_Mean temperature of warmest quarter (degrees),clim_46_tmean_warmest_q,Mean temperature of warmest quarter (degrees)
@@ -162,3 +162,5 @@ env_78_wat_Watersheds_RetDisp_Sambirano,env_78_wat_24,RetDisp Sambirano (Watersh
 env_78_wat_Watersheds_RetDisp_Tsiribihina,env_78_wat_21,RetDisp Tsiribihina (Watershed)
 env_78_wat_Watersheds__nodata,env_78_wat_0,No Data (Watershed)
 caffeine_class,caffeine_class,caffeine_class
+9_prec_wettest_m	clim_48_Annual_prec	clim_60_pet5_may	clim_43_tannual_range	clim_34_prec10_oct	clim_35_prec11_nov	clim_39_isotherm	...	env_78_wat_14	env_78_wat_13	env_78_wat_22	env_78_wat_17	env_78_wat_1.1	env_78_wat_18	env_78_wat_15	env_78_wat_19	env_78_wat_24	env_78_wat_0
+0	1116.0	288.0	48.0	179.0	818.0	65.0	214.0	93.0	168.0	65.0	...	0	0	0	0	0	0	0	0	0	0
