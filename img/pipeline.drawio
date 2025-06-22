@@ -818,7 +818,7 @@
         <mxCell id="pHheR0D_kAahmktRWLx3-1" value="B) Preprocessing" style="swimlane;whiteSpace=wrap;html=1;startSize=23;align=left;strokeColor=#666666;fillColor=#f5f5f5;fontColor=#333333;" vertex="1" parent="g4BqMjcbEI_SkpDGdqAs-1">
           <mxGeometry x="-341" y="-22" width="433" height="710" as="geometry" />
         </mxCell>
-        <mxCell id="pHheR0D_kAahmktRWLx3-2" value="D) Modeling" style="swimlane;whiteSpace=wrap;html=1;align=left;strokeColor=#666666;fillColor=#f5f5f5;fontColor=#333333;" vertex="1" parent="g4BqMjcbEI_SkpDGdqAs-1">
+        <mxCell id="pHheR0D_kAahmktRWLx3-2" value="C) Modeling" style="swimlane;whiteSpace=wrap;html=1;align=left;strokeColor=#666666;fillColor=#f5f5f5;fontColor=#333333;" vertex="1" parent="g4BqMjcbEI_SkpDGdqAs-1">
           <mxGeometry x="-799" y="709" width="893" height="520" as="geometry" />
         </mxCell>
         <mxCell id="pHheR0D_kAahmktRWLx3-3" value="D) Phylogenetic-Spatial Analysis" style="swimlane;whiteSpace=wrap;html=1;align=left;strokeColor=#666666;fillColor=#f5f5f5;fontColor=#333333;" vertex="1" parent="g4BqMjcbEI_SkpDGdqAs-1">
