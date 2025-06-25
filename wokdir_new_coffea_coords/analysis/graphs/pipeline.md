@@ -10,8 +10,8 @@ flowchart TB
     GPS_GBS["GPS_GBS_ONLY.csv"]
 %%    GEC --> GPS_ALL
     GEC --> GPS_GBS
+  
   end
-
   %% connect to next stage
   GPS_GBS --> C1
 
@@ -106,4 +106,8 @@ flowchart TB
     MNTL --> GEO_DIST
   end
 
+  %% ===== Styling for CSV nodes =====
+  classDef csvStyle fill:#ffe680,stroke:#000,stroke-width:1px,color:#333,font-weight:bold;
+
+  class GPS_GBS,COLL_CAT,CCLASS_BIN,CLEAN,RED_BIN,TRAIN,GEO_DIST csvStyle;  
 ```

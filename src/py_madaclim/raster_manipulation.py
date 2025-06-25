@@ -457,7 +457,8 @@ class _LayerPlotter:
                 axes[1].set_xlabel(layer_units)
 
             fig.suptitle(
-                f"Layer {self.layer_num}: {layer_description}",
+                #f"Layer {self.layer_num}: {layer_description}",
+                f"{layer_description}", #CF
                 fontsize=16,
                 weight="bold",
                 ha="center"
@@ -2229,30 +2230,6 @@ class MadaclimCollection:
     def __repr__(self) -> str:
         return self.__str__()
     
-    # def __setattr__(self, name, value):
-    #     """
-    #     Overrides the __setattr__ method to update GeoDataFrame when attributes are set.
-
-    #     This method overrides the standard `__setattr__` method. When an attribute 
-    #     is set on the instance, it checks if it's a new attribute (not one of 
-    #     the instance's initial attributes). If it's new, the GeoDataFrame 
-    #     (represented by the `_gdf` attribute) is updated to reflect the new attribute. 
-
-    #     Args:
-    #         name (str): The name of the attribute being set.
-    #         value (Any): The value being assigned to the attribute.
-
-    #     Raises:
-    #         AttributeError: If the attribute being set is '_initial_attributes', 
-    #             as this attribute is meant to remain constant after object creation.
-
-    #     """
-    #     super().__setattr__(name, value)  # Call the parent class's __setattr__ first
-    #     if hasattr(self, "_MadaclimCollection__initial_attributes") and name != "_gdf":
-    #         # Update the `gdf` attribute with the newly added attribute
-    #         self._update_gdf()
-
-
     @classmethod
     def populate_from_csv(cls, csv_file: Union[str, pathlib.Path]) -> "MadaclimCollection":
         """Creates a new MadaclimCollection from a CSV file.
