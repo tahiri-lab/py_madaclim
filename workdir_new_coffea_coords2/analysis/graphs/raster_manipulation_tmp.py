@@ -287,6 +287,127 @@ class _LayerPlotter:
 
     def plot_layer(self) -> Tuple[matplotlib.figure.Figure, List[matplotlib.axes.Axes]]:
         """
+        Simplified plotting of a geoclimatic layer: raster map on the left,
+        distribution histogram on the right. No suptitle, no subplot titles,
+        and no unit label on the raster subplot.
+
+        Returns:
+            fig: matplotlib Figure
+            axes: list of Axes [raster_ax, hist_ax]
+        """
+        # Identify layer and metadata
+        band_num = self._madaclim_layers.get_bandnums_from_layers(self.layer_num)[0]
+        layer_info = self._madaclim_layers.fetch_specific_layers(
+            self.layer_num, "layer_description", "is_categorical", "units"
+        )
+        key = next(iter(layer_info))
+        info = layer_info[key]
+        is_cat = info["is_categorical"]
+        units = info.get("units", "")
+
+        # Select raster path
+        geotypes = ["clim", "env"]
+        geoclim = next(
+            gt
+            for gt in geotypes
+            if self.layer_num
+            in self._madaclim_layers.select_geoclim_type_layers(gt)[
+                "layer_number"
+            ].values
+        )
+        raster_path = (
+            self._madaclim_layers.clim_raster
+            if geoclim == "clim"
+            else self._madaclim_layers.env_raster
+        )
+
+        # Read raster data
+        with rasterio.open(raster_path) as rast:
+            data = rast.read(band_num, masked=True)
+            left, bottom, right, top = rast.bounds
+
+        # Create figure and axes
+        figsize = (20, 10) if is_cat else (12, 6)
+        fig, axes = plt.subplots(1, 2, figsize=figsize)
+        raster_ax, hist_ax = axes
+
+        # --- Raster panel ---
+        img = raster_ax.imshow(
+            data.squeeze(),
+            cmap="terrain",
+            vmin=np.nanmin(data),
+            vmax=np.nanmax(data),
+            extent=[left, right, bottom, top],
+        )
+        raster_ax.axis("off")
+
+        # Add custom colorbar without label
+        divider = make_axes_locatable(raster_ax)
+        cax = divider.append_axes("right", size="5%", pad=0.1)
+        cbar = fig.colorbar(img, cax=cax, label="")
+        cbar.ax.xaxis.label.set_visible(False)
+
+        # --- Distribution panel ---
+        if is_cat:
+            cats, counts = np.unique(data.compressed(), return_counts=True)
+            perc = counts / counts.sum() * 100
+            order = np.argsort(cats)
+            hist_ax.bar(cats[order], perc[order], color="grey")
+            hist_ax.set_ylabel("Percent (%)")
+        else:
+            sns.histplot(
+                data=data.compressed(),
+                ax=hist_ax,
+                color="grey",
+                bins="auto",
+                kde=True,
+                stat="percent",
+            )
+            hist_ax.set_xlabel(units)
+            hist_ax.set_ylabel("Percent (%)")
+
+        plt.tight_layout()
+        return fig, [raster_ax, hist_ax]
+
+    def plot_layer_map_only(self, layer_num, imshow_cmap="inferno"):
+        """
+        Just the map (with colorbar), no histogram.
+        """
+        import rasterio
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+        # choose the right raster file
+        if layer_num in self._madaclim_layers.select_geoclim_type_layers("clim")["layer_number"].values:
+            path = self._madaclim_layers.clim_raster
+        else:
+            path = self._madaclim_layers.env_raster
+
+        # read the band
+        band = self._madaclim_layers.get_bandnums_from_layers(layer_num)[0]
+        with rasterio.open(path) as src:
+            arr = src.read(band, masked=True)
+            left, bottom, right, top = src.bounds
+
+        # plot
+        fig, ax = plt.subplots(1, 1, figsize=(8, 8))
+        img = ax.imshow(arr, cmap=imshow_cmap, extent=[left, right, bottom, top])
+        ax.axis("off")
+
+        # colorbar with no label
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.1)
+        cbar = fig.colorbar(img, cax=cax)
+        cbar.ax.set_ylabel("")
+        cbar.ax.set_xlabel("")
+
+        return fig, ax
+
+
+    def plot_layer2(
+        self,
+    ) -> Tuple[matplotlib.figure.Figure, List[matplotlib.axes.Axes]]:
+        """
         Plots the raster map of the specified geoclimatic layer, along with a
         distribution histogram of the layer values. The distribution can be plotted
         as categorical or continuous based on the nature of the layer data.
@@ -487,11 +608,11 @@ class _LayerPlotter:
                 axes[0].legend(
                     handles=legend_elements, bbox_to_anchor=(1.05, 1), loc="upper left"
                 )
-
-                axes[0].set_title(
-                    f"Madagascar {geoclim_type.capitalize()} Raster Map (band={band_num})",
-                    fontsize=10,
-                )  # Raster map interface cleanup
+                # CF
+                # axes[0].set_title(
+                #     f"Madagascar {geoclim_type.capitalize()} Raster Map (band={band_num})",
+                #     fontsize=10,
+                # )  # Raster map interface cleanup
                 axes[0].set_yticks([])
                 axes[0].set_xticks([])
                 axes[0].axis("off")
@@ -527,17 +648,18 @@ class _LayerPlotter:
                 )
 
                 # Categorical bar plot
-                axes[1].bar(
-                    df_cat["category"],
-                    df_cat["counts_percent"],
-                    color=categ_colors.values(),
-                )
-                axes[1].set_title(
-                    "Distribution of raster values at 1km resolution", fontsize=10
-                )
+                # axes[1].bar(
+                #     df_cat["category"],
+                #     df_cat["counts_percent"],
+                #     color=categ_colors.values(),
+                # )
+                # axes[1].set_title(
+                #     "Distribution of raster values at 1km resolution", fontsize=10
+                # )
                 xticks = list(set(df_cat["category"].tolist() + [1]))
                 axes[1].set_xticks(sorted(xticks))
-                axes[1].set_xlabel(layer_units)
+                # axes[1].set_xlabel(layer_units)
+                # axes[1].set_xlabel("dry months/year")
                 axes[1].set_ylabel("Percent (%)")
 
             # Continous data for multi plots
@@ -558,6 +680,7 @@ class _LayerPlotter:
                 imshow_vmax = plot_cfg.imshow_args.pop(
                     "vmax", np.nanmax(band_data.squeeze())
                 )
+
                 rasterio.plot.show(
                     band_data.squeeze(),
                     ax=axes[0],
@@ -565,11 +688,12 @@ class _LayerPlotter:
                     vmin=imshow_vmin,
                     vmax=imshow_vmax,
                     extent=[left, right, bottom, top],
+                    # add_colorbar=False,          # ← here on the rasterio.show call
                     **plot_cfg.imshow_args,
-                )  # Use rasterio.plot.show() instead
-                im = axes[0].get_images()[0]  # get the first image
+                )
+                im = axes[0].get_images()[0]
+                # now add your single colorbar
 
-                # Colorbar customization
                 divider = make_axes_locatable(axes[0])
                 cax = divider.append_axes(
                     position=cax_position,
@@ -577,48 +701,81 @@ class _LayerPlotter:
                     pad=cax_pad,
                     **plot_cfg.cax_args,
                 )
-                plt.colorbar(im, cax=cax)
+                cbar = plt.colorbar(im, cax=cax, label="")  # blank label
 
-                axes[0].set_title(
-                    f"Madagascar {geoclim_type.capitalize()} Raster Map (band={band_num})",
-                    fontsize=10,
-                )
+                # 1) clear its “main” label (y-axis for a vertical bar)
+                cbar.set_label("")
+                cbar.ax.set_xlabel("")
+                cbar.ax.xaxis.label.set_visible(False)
+
+                # rasterio.plot.show(
+                #     band_data.squeeze(),
+                #     ax=axes[0],
+                #     cmap=imshow_cmap,
+                #     vmin=imshow_vmin,
+                #     vmax=imshow_vmax,
+                #     extent=[left, right, bottom, top],
+                #     add_colorbar=False,
+                #     **plot_cfg.imshow_args,
+                # )  # Use rasterio.plot.show() instead
+                # im = axes[0].get_images()[0]  # get the first image
+
+                # # Colorbar customization
+                # divider = make_axes_locatable(axes[0])
+                # cax = divider.append_axes(
+                #     position=cax_position,
+                #     size=cax_size,
+                #     pad=cax_pad,
+                #     **plot_cfg.cax_args,
+                # )
+                # cbar = plt.colorbar(im, cax=cax, label="")  # ← label="" ensures no text
+                # # if you still see leftover text, also clear the x‐label on the cbar axes:
+                # cbar.ax.xaxis.label.set_visible(False)
+
+                # axes[0].set_title(
+                #     # f"Madagascar {geoclim_type.capitalize()} Raster Map (band={band_num})",
+                #     f"{layer_description}",  # CF
+                #     fontsize=10,
+                # )
                 axes[0].set_yticks([])
                 axes[0].set_xticks([])
                 axes[0].axis("off")
-
-                fig.text(  # Add units to raster map
-                    x=(cax.get_position().x0 + cax.get_position().x1) / 2,
-                    y=cax.get_position().y0 - 0.05,
-                    s=layer_units,
-                    ha="center",
-                    va="center",
-                )
+                # CF
+                # fig.text(  # Add units to raster map
+                #     x=(cax.get_position().x0 + cax.get_position().x1) / 2,
+                #     y=cax.get_position().y0 - 0.05,
+                #     s=layer_units,
+                #     ha="center",
+                #     va="center",
+                # )
 
                 # Plot histogram of raster vals
-                sns.histplot(
-                    data=band_data.compressed(),
-                    ax=axes[1],
-                    color=histplot_color,
-                    bins=histplot_bins,
-                    kde=histplot_kde,
-                    stat=histplot_stat,
-                    line_kws=histplot_line_kws,
-                    **plot_cfg.histplot_args,
-                )
-                axes[1].lines[0].set_color("black")
-                axes[1].set_title(
-                    "Distribution of raster values at 1km resolution", fontsize=10
-                )
-                axes[1].set_xlabel(layer_units)
+                # sns.histplot(
+                #     data=band_data.compressed(),
+                #     ax=axes[1],
+                #     color=histplot_color,
+                #     bins=histplot_bins,
+                #     kde=histplot_kde,
+                #     stat=histplot_stat,
+                #     line_kws=histplot_line_kws,
+                #     **plot_cfg.histplot_args,
+                # )
+                # axes[1].lines[0].set_color("black")
+                # axes[1].set_title(
+                #     # "Distribution of raster values at 1km resolution", fontsize=10
+                #     "Distribution of CWD values at 1km resolution",# CF
+                #     fontsize=10,
+                # )
+                # axes[1].set_xlabel(layer_units)
 
-            fig.suptitle(
-                # f"Layer {self.layer_num}: {layer_description}",
-                f"{layer_description}",  # CF
-                fontsize=16,
-                weight="bold",
-                ha="center",
-            )
+            # CF commented
+            # fig.suptitle(
+            #     #f"Layer {self.layer_num}: {layer_description}",
+            #     f"{layer_description}", # CF
+            #     fontsize=16,
+            #     weight="bold",
+            #     ha="center"
+            # )
 
             fig.tight_layout()
 

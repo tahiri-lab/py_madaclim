@@ -1,0 +1,25 @@
+﻿Species_name,caffeine_percent,Population code,Species,Botanical series,Origin/locality,Province,Latitude,Longitude,Habitat class
+C_tetragona_A252,0.03,A252,C. tetragona Jum. & H.Perrier,Garcinioides,Behangony (Est de Maromandia),Mahajanga (Northwest),14°13′30″ S,48°09′ E,3
+C_dubardii_A969,0,A969,C. dubardii Jum.,Garcinioides,North of Vohemar (Diégo-Suarez),Antsiranana (North),13°20′ S,49°57′ E,3
+C_heimii_A516,0,A516,C. heimii J.-F.Leroy,Garcinioides,Diégo-Suarez (Sahafary),Antsiranana (North),12°35′ S,49°26′30″ E,3
+C_farafanganensis_A208,0.045,A208,C. farafanganensis J.-F.Leroy,Millotii complex,Farafangana (Amboangibe),Fianarantsoa (Southeast),22°53′ S,47°48′ E,1
+C_ambodirianensis_A572,0.03,A572,C. ambodirianaensis Portères,Millotii complex,reserve Ambodiriana,Toamasina (East),18°27′08″ S,48°56′36″ E,1
+C_dolichophylla_A206,0.03,A206,C. dolichophylla J.-F.Leroy,Millotii complex,"Nosy Varika Vohimanoro), Ambodilafa",Fianarantsoa (Southeast),20°29′ S,48°10′30″ E,1
+C_richardii_A575,0.03,A575,C. richardii J.-F.Leroy,Millotii complex,Fenerive-Est (Tampolo),Toamasina (East),17°17′ S,49°25′ E,1
+C_abbayesii_A601,0,A601,C. abbayesii J.-F.Leroy,Millotii complex,Fort-Dauphin (Isaka-Ivondro),Toliara (Southeast),24°45′15″ S,46°51′45″ E,2
+C_millotii_A222,0,A222,C. millotii J.-F.Leroy,Millotii complex,Mananjary (Tolongoina),Fianarantsoa (Southeast),21°31′ S,47°25′ E,2
+C_leroyi_A315,0.02,A315,C. leroyi A.P.Davis,Multiflorae,Ifanadiana (Ambodiarafia),Fianarantsoa (Southeast),21°20′ S,47°45′ E,1
+C_andrambovatensis_A310,0,A310,C. andrambovatensis J.-F.Leroy,Multiflorae,Vatovavy,Fianarantsoa (Southeast),21°24′3″ S,47°56′32″ E,1
+C_resinosa_A8,0,A8,C. resinosa (Hook.f.) Radlk.,Multiflorae,Nosy Varika,Fianarantsoa (Southeast),20°36′26.6″ S,48°31′56.5″ E,1
+C_vianneyi_A946,0.04,A946,C. vianneyi J.-F.Leroy,Multiflorae,Moramanga,Toamasina (Centre),18°56′ S,48°15′ E,2
+C_arenesiana_A403,0,A403,C. arenesiana J.-F.Leroy,Multiflorae,Moramanga (Ambodivato),Toamasina (Centre),18°56′ S,48°12′ E,2
+C_bertrandii_A5,0,A5,C. bertrandii A.Chev.,Multiflorae,Mahampoana (Fort-Dauphin),Toliara (Southeast),25°01′ S,46°38′ E,3
+C_perrieri_A12,0,A12,C. perrieri Drake ex Jum. & H.Perrier,Multiflorae,Fort-Dauphin (Amboasary-Atsimo,Toliara (Southeast),24°50′ S,46°33′55″ E,3
+C_pervilleana_A957,0,A957,C. pervilleana (Baill.) Drake,Subterminales,Route côtière Sambava-Diégo Suarez,Antsiranana (North),13°49′17″,50°02′04″ E,2
+C_tsirananae_A515,0,A515,C. tsirananae J.-F.Leroy,Subterminales,Diégo-Suarez (Cap d’Ambre),Antsiranana (North),11°58′,49°16′ E,3
+C_vatovavyensis_A830,0.01,A830,C. vatovavyensis J.-F.Leroy,Subterminales,Unknown,Unknown,Unknown,Unknown,NA
+C_lancifolia_A320,0.7,A320,C. lancifolia A.Chev.,Verae,Mananjary (Madiorano/Tolongoina),Fianarantsoa (Southeast),21°31′ S,47°29′ E,1
+C_homollei_A945,0.06,A574,C. homollei J.-F.Leroy,Verae,Réserve Ambodiriana (Tamatave),Toamasina (East),17°59′13″ S,49°17′48″ E,1
+C_kianjavatensis_A602,0.7,A602,C. kianjavatensis J.-F.Leroy,Verae,Fort-Dauphin,Toliara (Southeast),24°45′15″ S,46°51′45″ E,2
+C_humbertii_RNF785,0,,,,,,,,
+C_humblotiana_BM19_20,0,,,,,,,,
