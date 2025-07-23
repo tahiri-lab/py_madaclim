@@ -37,11 +37,11 @@ clim_35_prec11_Monthly total precipitation - November (mm.month-1),clim_35_prec1
 clim_36_prec12_Monthly total precipitation - December (mm.month-1),clim_36_prec12_dec,Monthly total precipitation - December (mm/month)
 clim_37_bio1_Annual mean temperature (degrees),clim_37_ann_mean_temp,Annual mean temperature (degrees)
 clim_38_bio2_Mean diurnal range (mean of monthly max temp - monthy min temp),clim_38_mean_diurn_range,Mean diurnal range (mean of monthly max temp - monthy min temp)
-clim_39_bio3_Isothermality = BIO2/BIO7 x 100 (No units),clim_39_isotherm,Isothermality = BIO2/BIO7 x 100 (No units)
+clim_39_bio3_Isothermality = BIO2/BIO7 x 100 (No units),clim_39_isotherm,Isothermality = Mean diurnal range/Temperature annual range
 clim_40_bio4_Temperature seasonality (standard deviation x 100),clim_40_temp_season,Temperature seasonality (standard deviation x 100)
 clim_41_bio5_Max temperature of warmest month (degrees),clim_41_tmax_warmest_m,Max temperature of warmest month (degrees)
 clim_42_bio6_Min temperature of coldest month (degrees),clim_42_tmin_coldest_m,Min temperature of coldest month (degrees)
-clim_43_bio7_Temperature annual range  = BIO5-BIO6 (degrees),clim_43_tannual_range,Temperature annual range  = BIO5-BIO6 (degrees)
+clim_43_bio7_Temperature annual range  = BIO5-BIO6 (degrees),clim_43_tannual_range,Temperature annual range  = Max temperature of warmest month-Min temperature of coldest month (degrees)
 clim_44_bio8_Mean temperature of wettest quarter (degrees),clim_44_tmean_wettest_q,Mean temperature of wettest quarter (degrees)
 clim_45_bio9_Mean temperature of driest quarter (degrees),clim_45_tmean_driest_q,Mean temperature of driest quarter (degrees)
 clim_46_bio10_Mean temperature of warmest quarter (degrees),clim_46_tmean_warmest_q,Mean temperature of warmest quarter (degrees)
