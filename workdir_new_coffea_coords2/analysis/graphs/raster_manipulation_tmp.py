@@ -365,8 +365,32 @@ class _LayerPlotter:
             )
             hist_ax.set_xlabel(units)
             hist_ax.set_ylabel("Percent (%)")
-
+        # CF added
+        # fig.text(0.05, 0.95, "A)", fontsize=14, weight="bold", ha="left", va="top")
+        # fig.text(0.55, 0.95, "B)", fontsize=14, weight="bold", ha="left", va="top")
+        # CF end added
         plt.tight_layout()
+        # CF added
+        fig.canvas.draw()  # so positions are up-to-date
+
+        for ax, lab in ((raster_ax, "A)"), (hist_ax, "B)")):
+            bbox = ax.get_position()  # figure coords (0..1)
+            y = min(bbox.y1 + 0.01, 0.985)  # keep inside the figure
+            fig.text(
+                bbox.x0,
+                y,
+                lab,
+                ha="left",
+                va="bottom",
+                fontsize=14,
+                fontweight="bold",
+                clip_on=False,
+            )
+
+        # don't call tight_layout() after this
+        fig.canvas.draw_idle()
+        # CF added end
+
         return fig, [raster_ax, hist_ax]
 
     def plot_layer_map_only(self, layer_num, imshow_cmap="inferno"):
@@ -378,7 +402,12 @@ class _LayerPlotter:
         from mpl_toolkits.axes_grid1 import make_axes_locatable
 
         # choose the right raster file
-        if layer_num in self._madaclim_layers.select_geoclim_type_layers("clim")["layer_number"].values:
+        if (
+            layer_num
+            in self._madaclim_layers.select_geoclim_type_layers("clim")[
+                "layer_number"
+            ].values
+        ):
             path = self._madaclim_layers.clim_raster
         else:
             path = self._madaclim_layers.env_raster
@@ -402,7 +431,6 @@ class _LayerPlotter:
         cbar.ax.set_xlabel("")
 
         return fig, ax
-
 
     def plot_layer2(
         self,
@@ -776,7 +804,20 @@ class _LayerPlotter:
             #     weight="bold",
             #     ha="center"
             # )
-
+            # CF added
+            fig.text(0.05, 0.95, "A)", fontsize=14, weight="bold", ha="left", va="top")
+            # fig.text(0.55, 0.95, "B)", fontsize=14, weight="bold", ha="left", va="top")
+            axes[1].text(
+                0.02,
+                0.95,
+                "B)",
+                transform=axes[1].transAxes,
+                fontsize=14,
+                weight="bold",
+                ha="left",
+                va="top",
+            )
+            # CF end added
             fig.tight_layout()
 
             return fig, axes
@@ -2141,6 +2182,12 @@ class MadaclimPoint:
 
         # Plot base raster and distribution histograms
         fig, axes = mada_rasters.plot_layer(layer=layer, **kwargs)
+
+        # CF added
+        fig.text(0.05, 0.95, "A)", fontsize=14, weight="bold", ha="left", va="top")
+        fig.text(0.55, 0.95, "B)", fontsize=14, weight="bold", ha="left", va="top")
+        # CF end added
+
         raster_legend = axes[0].get_legend()
 
         # Overlay with mada_geom_point
@@ -3781,9 +3828,10 @@ class MadaclimCollection:
             palette=color_map,
             **plot_cfg.barplot_args,
         )
-        axes[1].set_title(
-            "Distribution of sampled raster values for specimens in the collection"
-        )
+        #CF commented
+        # axes[1].set_title( 
+        #     "Distribution of sampled raster values for specimens in the collection"
+        # )
         axes[1].set_ylabel("specimen id")
         axes[1].set_xlabel("Raster value")
 
